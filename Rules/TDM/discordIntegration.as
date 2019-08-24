@@ -9,8 +9,9 @@ bool onServerProcessChat( CRules@ this, const string &in textIn, string &out tex
 {
 
     string toDiscord = textIn.replace('\\','\\\\').replace('"','\\"');
+    string username = player.getCharacterName();
 
-    tcpr('discordMessage {"guildID":593227081169502219,"channelID":593227433260613641,"content":"' +toDiscord+ '"}');
+    tcpr('discordMessage {"guildID":"593227081169502219","channelID":"593227433260613641","content":"' +toDiscord+ '", "username":"'+username+'"}');
 
 
     return true;
