@@ -1,0 +1,109 @@
+#include "MagicCommon.as";
+
+void onInit(CBlob@ this)
+{
+    this.set_u8("frame", 0);
+    this.getShape().SetGravityScale(0);
+}
+
+f32 effectRadius = 73;
+
+void onTick(CBlob@ this)
+{
+    CSprite@ sprite = this.getSprite();
+    
+    bool fullCharge = this.hasTag("fullCharge");
+    bool reverse = this.hasTag("reverse");
+
+    if((!this.hasTag("finished") || reverse)  && getGameTime() % 2 == 0)
+    {
+        this.add_u8("frame", reverse ? -1 : 1);
+        if(this.get_u8("frame") == 23)
+        {
+            this.Tag("finished");
+        }
+    }
+
+    if(reverse && this.get_u8("frame") < 1) this.server_Die();
+
+    if(!this.hasTag("finished") || !isClient()) return;
+
+    CMap@ map = getMap();
+    CBlob@[] blobs;
+    map.getBlobsInRadius(this.getPosition(),effectRadius,@blobs);
+
+    for(int i = 0; i < blobs.length; i++)
+    {
+        CBlob@ b = blobs[i];
+
+        if(b.getPlayer() is null || b.getTeamNum() == this.getTeamNum()) continue;
+        Vec2f vel = b.getVelocity();
+        b.setVelocity(Vec2f(vel.x * 0.5,vel.y * 0.9));
+
+        if(getGameTime() % 30 != 0) return;
+
+        ManaInfo@ manaInfo;
+        if (!b.get( "manaInfo", @manaInfo )) {
+            return;
+        }
+        float mana = manaInfo.mana;
+        mana -= manaInfo.manaRegen* (fullCharge ? 4 : 2.5);
+
+        if(mana >= 0)
+        {
+            manaInfo.mana -= manaInfo.manaRegen * (fullCharge ? 4 : 2.5);
+        }
+            
+
+        for(int i = 0; i < manaInfo.manaRegen*5; i++)
+            {
+                CParticle@ p = ParticlePixel(b.getPosition(),b.getVelocity() + Vec2f(XORRandom(8) - 4,XORRandom(8) - 4), randomManaColor(), true,10);
+                if(p !is null)
+                {
+                    p.gravity = Vec2f(0,0);
+                }
+            }
+    }
+}
+
+void onInit(CSprite@ this)
+{
+    this.addSpriteLayer("bar","mana_drain_circle2.png",153,153);
+    CSpriteLayer@ s = this.addSpriteLayer("circle","team_color_circle.png",100,100);
+    s.setRenderStyle(RenderStyle::Style::light);
+    s.ScaleBy(Vec2f(1.45,1.45));
+    s.SetRelativeZ(-1);
+}
+
+void onTick(CSprite@ this)
+{
+    CBlob@ blob = this.getBlob();
+    CSpriteLayer@ bar = this.getSpriteLayer("bar");
+    bar.SetVisible(true);
+    bar.SetFrame(blob.get_u8("frame"));
+
+    this.SetFrame(blob.get_u8("frame"));
+
+    bool fullCharge = blob.hasTag("fullCharge");
+    float rotateSpeed = fullCharge ? 2 : 1;
+
+    rotateSpeed /= (blob.get_u8("despelled") + 1);
+
+    this.RotateBy(rotateSpeed, Vec2f_zero);
+    bar.RotateBy(rotateSpeed * -2, Vec2f_zero);
+
+
+    CParticle@ p = ParticlePixel(blob.getPosition() + Vec2f(XORRandom(effectRadius*2) - effectRadius, XORRandom(effectRadius*2) - effectRadius),Vec2f(0,-1), randomManaColor(), true,30);
+    if(p !is null)
+    {
+        p.gravity = Vec2f(0,0);
+        p.damping = 1;
+        p.collides = false;
+    }
+
+}
+
+SColor randomManaColor()
+{
+    return SColor(255,XORRandom(85) + 100,XORRandom(80),XORRandom(55) + 200);
+}
