@@ -36,7 +36,7 @@ namespace DruidParams
 		Spell("revive", "Revive", 15, "Fully bring trusty allies back from the dead by aiming a reviving missile at their gravestone.",
 			SpellType::other, 50, 40, 0, 360.0f, true),
 			
-		Spell("spreadheal", "Natures fate", 29, "Fires a swarm of bees. Can heal team mates or attack foes.",
+		Spell("spreadheal", "Nature's Helpers", 29, "Fires a swarm of bees. Can heal friends or attack foes.",
 			SpellType::other, 30, 40, 3, 360.0f, true),	
 										
 		Spell("spikeorb", "SpikeBall", 30, "The spikeball is natures punishment to those that tread her woods unwelcomed",
@@ -48,8 +48,8 @@ namespace DruidParams
 		Spell("rock_wall", "Rock Wall", 21, "Create a wall of ordinary rock in front of you that blocks most things both ways. Its not exactly durable though.",
 			SpellType::other, 12, 7, 0, 14.0f, true),
 				
-		Spell("healing_plant", "Natures Remedy", 31, "This blessing from nature will seal your wounds",
-				SpellType::other, 12, 7, 7, 60.0f, true),
+		Spell("healing_plant", "Nature's Remedy", 31, "This blessing from nature will seal your wounds",
+				SpellType::other, 12, 7, 4, 60.0f, true),
 
 		Spell("mushroom", "Dancing Shroom", 34, "Empty spell.",
 				SpellType::other, 12, 7, 0, 60.0f),

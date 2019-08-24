@@ -13,15 +13,10 @@ void onInit(CBlob@ this)
 	this.set_u8("frame",0);
 }
 
-float effectRadius = 8*5;
+float effectRadius = 8*10;
 
 void onTick( CBlob@ this )
 {
-
-	if(getControls().isKeyPressed(KEY_KEY_K))
-	{
-		this.set_u8("frame",0);
-	}
 	if(this.get_u8("frame") < 38 && getGameTime() % 3 == 0)
 	{
 		this.getSprite().SetFrame(this.add_u8("frame",1));
