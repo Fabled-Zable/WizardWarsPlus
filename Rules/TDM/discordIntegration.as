@@ -21,6 +21,9 @@ bool onServerProcessChat( CRules@ this, const string &in textIn, string &out tex
 
 void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 {
+    print("here");
+
+    print(cmd + " " + this.getCommandID("addToChat"));
     if(this.getCommandID("addToChat") == (!isServer() ? cmd + 2 : cmd))
     {
         client_AddToChat(params.read_string(), SColor(255,255,0,255));
