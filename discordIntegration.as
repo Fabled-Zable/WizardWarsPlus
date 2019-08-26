@@ -11,7 +11,7 @@ bool onServerProcessChat( CRules@ this, const string &in textIn, string &out tex
     string toDiscord = textIn;
     string username = player.getCharacterName();
 
-    tcpr('discordMessage {"dataType":"chat","content":"' +toDiscord+ '", "username":"'+username+'"}');
+    tcpr('discordData {"dataType":"chat","content":"' +toDiscord+ '", "username":"'+username+'"}');
 
     return true;
 }
@@ -20,7 +20,7 @@ bool onServerProcessChat( CRules@ this, const string &in textIn, string &out tex
 
 void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 {
-    if(this.getCommandID("addToChat") == (!isServer() ? cmd + 2 : cmd))
+    if(this.getCommandID("addToChat") == cmd)
     {
         client_AddToChat(params.read_string(), SColor(255,255,0,255));
     }
