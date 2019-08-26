@@ -129,6 +129,10 @@ void onTick(CBlob@ this)
 	}
 	ManageCamera(this);
 
+	if(this.getPosition().y < 0 && getGameTime()%60 == 0){
+		this.server_Hit(this,this.getPosition(),Vec2f_zero,2,0);
+	}
+
 	// use menu
 
 	if (this.isKeyJustPressed(key_use))
