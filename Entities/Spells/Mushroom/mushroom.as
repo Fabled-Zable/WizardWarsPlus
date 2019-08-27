@@ -56,3 +56,7 @@ void onTick(CSprite@ this)
     this.SetOffset(Vec2f(0,-6));
     
 }
+
+bool canBePickedUp( CBlob@ this, CBlob@ byBlob ){
+    return false;
+}
