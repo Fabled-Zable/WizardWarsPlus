@@ -54,8 +54,9 @@ void onTick(CBlob@ this)
             manaInfo.mana -= manaInfo.manaRegen * (fullCharge ? 4 : 2.5);
         }
             
-
-        for(int i = 0; i < manaInfo.manaRegen*5; i++)
+        if(isClient())
+        {
+            for(int i = 0; i < manaInfo.manaRegen*5; i++)
             {
                 CParticle@ p = ParticlePixel(b.getPosition(),b.getVelocity() + Vec2f(XORRandom(8) - 4,XORRandom(8) - 4), randomManaColor(), true,10);
                 if(p !is null)
@@ -63,6 +64,7 @@ void onTick(CBlob@ this)
                     p.gravity = Vec2f(0,0);
                 }
             }
+        }
     }
 }
 

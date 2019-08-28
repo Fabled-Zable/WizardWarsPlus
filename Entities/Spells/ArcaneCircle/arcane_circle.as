@@ -47,7 +47,10 @@ void onTick(CBlob@ this)
                 Vec2f pPos = pos + norm*j;
                 float rx = XORRandom(100)/100.0 - 0.5;
                 float ry = (XORRandom(100)/100.0)- 0.5;
-                ParticleBlood(pPos,Vec2f(rx,ry),SColor(255,XORRandom(191) + 64,XORRandom(50),XORRandom(50)));
+                if(isClient())
+                {
+                    ParticleBlood(pPos,Vec2f(rx,ry),SColor(255,XORRandom(191) + 64,XORRandom(50),XORRandom(50)));
+                }
 
             }
 
@@ -66,11 +69,14 @@ void onTick(CBlob@ this)
                 {
                     int rx = XORRandom(10) - 5;
                     int ry = XORRandom(4) - 2;
-                    CParticle@ p = ParticlePixel(bPos, Vec2f(rx,ry), SColor(0,255,0,0),true,XORRandom(10));
-                    if(p !is null)
+                    if(isClient())
                     {
-                        p.gravity = Vec2f(0,0);
-                        p.damping = (XORRandom(25) + 75)/100.0;
+                        CParticle@ p = ParticlePixel(bPos, Vec2f(rx,ry), SColor(0,255,0,0),true,XORRandom(10));
+                        if(p !is null)
+                        {
+                            p.gravity = Vec2f(0,0);
+                            p.damping = (XORRandom(25) + 75)/100.0;
+                        }
                     }
                 }
 
