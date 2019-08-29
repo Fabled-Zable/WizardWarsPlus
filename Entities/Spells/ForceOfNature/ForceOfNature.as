@@ -128,7 +128,7 @@ void sparks(Vec2f Pos, int amount, CBlob@ this)
 		//set stuff
 		particle.colour = col;
 		particle.forcecolor = col;
-		particle.gravity = tempGrav / 2000;
+		particle.gravity = tempGrav / 20;//tweak the 20 till your heart is content
 
 		//particleList[a] = @particle;
 
