@@ -4,6 +4,8 @@ void onInit(CBlob@ this)
 {
     this.set_u8("frame", 0);
     this.getShape().SetGravityScale(0);
+    if(this.getTeamNum() == 0){this.set("colour",SColor(255,100,255,255));}
+    else{this.set("colour",SColor(255,255,100,100));}
 }
 
 f32 effectRadius = 73;
@@ -53,18 +55,22 @@ void onTick(CBlob@ this)
         {
             manaInfo.mana -= manaInfo.manaRegen * (fullCharge ? 4 : 2.5);
         }
-            
+
         if(isClient())
         {
             for(int i = 0; i < manaInfo.manaRegen*5; i++)
             {
-                CParticle@ p = ParticlePixel(b.getPosition(),b.getVelocity() + Vec2f(XORRandom(8) - 4,XORRandom(8) - 4), randomManaColor(), true,10);
+                CParticle@ p = ParticlePixelUnlimited(b.getPosition(), b.getVelocity() + Vec2f(XORRandom(8) - 4, XORRandom(8) - 4), randomManaColor(), true);
                 if(p !is null)
                 {
                     p.gravity = Vec2f(0,0);
+                    p.fastcollision = true;
+                    p.bounce = 0;
+                    p.timeout = 10;
                 }
             }
         }
+            
     }
 }
 
@@ -95,13 +101,70 @@ void onTick(CSprite@ this)
     bar.RotateBy(rotateSpeed * -2, Vec2f_zero);
 
 
-    CParticle@ p = ParticlePixel(blob.getPosition() + Vec2f(XORRandom(effectRadius*2) - effectRadius, XORRandom(effectRadius*2) - effectRadius),Vec2f(0,-1), randomManaColor(), true,30);
+    /*CParticle@ p = ParticlePixel(blob.getPosition() + Vec2f(XORRandom(effectRadius*2) - effectRadius, XORRandom(effectRadius*2) - effectRadius),Vec2f(0,-1), randomManaColor(), true,30);
     if(p !is null)
     {
         p.gravity = Vec2f(0,0);
         p.damping = 1;
         p.collides = false;
+    }*/
+    const Vec2f aimPos = blob.getPosition();
+    //print(currentCharge +'');
+                
+    //PARTICLESSSS
+    CParticle@[] particleList;
+    SColor col;
+    blob.get("ParticleList",particleList);
+    blob.get("colour",col);
+
+    for(int a = 0; a < 2 + XORRandom(4); a++)
+    {
+        CParticle@ p = ParticlePixel(getRandomVelocity(0,70,360) + aimPos, Vec2f(0,0), col,
+            true, 90);
+        if(p !is null)
+        {
+            p.fastcollision = true;
+            p.gravity = Vec2f(0,0);
+            p.bounce = 0;
+            p.Z = -10;
+            particleList.push_back(p);
+        }
     }
+
+
+    for(int a = 0; a < particleList.length(); a++)
+    {
+        CParticle@ particle = particleList[a];
+        //check
+        if(particle.timeout < 1)
+        {
+            particleList.erase(a);
+            a--;
+            continue;
+        }
+
+        //Gravity
+        Vec2f tempGrav = Vec2f(0,0);
+        tempGrav.x = -(particle.position.x - aimPos.x);
+        tempGrav.y = -(particle.position.y - aimPos.y);
+        tempGrav.RotateBy(45);
+
+
+        //Colour
+        SColor col = particle.colour;
+        col.setRed(col.getRed() - 1);
+        col.setGreen(col.getGreen() - 1);
+        col.setBlue(col.getBlue() - 1);
+
+        //set stuff
+        particle.colour = col;
+        particle.forcecolor = col;
+        particle.gravity = tempGrav / 2400;
+
+        //particleList[a] = @particle;
+
+    }
+    blob.set("ParticleList",particleList);
 
 }
 
