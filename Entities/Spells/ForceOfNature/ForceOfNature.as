@@ -44,7 +44,7 @@ void onTick(CBlob@ this)
 	}
 	*/
 	
-	sparks(this.getPosition(), 1);
+	sparks(this.getPosition(), 1, this);
 }
 
 bool isEnemy( CBlob@ this, CBlob@ target )
@@ -66,7 +66,7 @@ bool isEnemy( CBlob@ this, CBlob@ target )
 void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 {
 	this.getSprite().PlaySound("forceofnature_bounce.ogg", 0.6f, 1.0f + XORRandom(3)/10.0f);
-	sparks(this.getPosition(), 20);
+	sparks(this.getPosition(), 20, this);
 	
 	if( blob !is null )
 	{
@@ -77,28 +77,61 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 
 void onDie(CBlob@ this)
 {
-	sparks(this.getPosition(), 30);
+	sparks(this.getPosition(), 30,this);
 }
 
 Random _sprk_r(1265);
-void sparks(Vec2f pos, int amount)
+void sparks(Vec2f Pos, int amount, CBlob@ this)
 {
 	if ( !getNet().isClient() )
 		return;
 
-	for (int i = 0; i < amount; i++)
-    {
-        Vec2f vel(_sprk_r.NextFloat() * 2.0f, 0);
-        vel.RotateBy(_sprk_r.NextFloat() * 360.0f);
+	CParticle@[] particleList;
+	this.get("ParticleList",particleList);
+	for(int a = 0; a < 3; a++)
+	{	
+		CParticle@ p = ParticlePixelUnlimited(-getRandomVelocity(0,10,360) + Pos, Vec2f(0,0),SColor(255,0,255,0),
+			true);
+		if(p !is null)
+		{
+			p.fastcollision = true;
+			p.gravity = Vec2f(0,0);
+			p.bounce = 1;
+			p.lighting = false;
+			p.timeout = 90;
 
-        CParticle@ p = ParticlePixel( pos, vel, SColor( 255, 128+_sprk_r.NextRanged(128), 255, _sprk_r.NextRanged(128)), true );
-        if(p is null) return; //bail if we stop getting particles
+			particleList.push_back(p);
+		}
+	}
+	for(int a = 0; a < particleList.length(); a++)
+	{
+		CParticle@ particle = particleList[a];
+		//check
+		if(particle.timeout < 1)
+		{
+			particleList.erase(a);
+			a--;
+			continue;
+		}
 
-    	p.fastcollision = true;
-        p.timeout = 10 + _sprk_r.NextRanged(20);
-        p.scale = 0.5f + _sprk_r.NextFloat();
-        p.damping = 0.97f;
-		p.gravity = Vec2f(0,0);
-		p.Z = 510.0f;
-    }
+		//Gravity
+		Vec2f tempGrav = Vec2f(0,0);
+		tempGrav.x = -(particle.position.x - Pos.x);
+		tempGrav.y = -(particle.position.y - Pos.y);
+
+
+		//Colour
+		SColor col = particle.colour;
+		col.setGreen(col.getGreen() - 1);
+		col.setBlue(col.getBlue() + 1);
+
+		//set stuff
+		particle.colour = col;
+		particle.forcecolor = col;
+		particle.gravity = tempGrav / 2000;
+
+		//particleList[a] = @particle;
+
+	}
+	this.set("ParticleList",particleList);
 }

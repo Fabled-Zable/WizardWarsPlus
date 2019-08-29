@@ -119,14 +119,15 @@ void onTick(CSprite@ this)
 
     for(int a = 0; a < 2 + XORRandom(4); a++)
     {
-        CParticle@ p = ParticlePixel(getRandomVelocity(0,70,360) + aimPos, Vec2f(0,0), col,
-            true, 90);
+        CParticle@ p = ParticlePixelUnlimited(getRandomVelocity(0,70,360) + aimPos, Vec2f(0,0), col,
+            true);
         if(p !is null)
         {
             p.fastcollision = true;
             p.gravity = Vec2f(0,0);
             p.bounce = 0;
             p.Z = -10;
+            p.timeout = 90;
             particleList.push_back(p);
         }
     }
