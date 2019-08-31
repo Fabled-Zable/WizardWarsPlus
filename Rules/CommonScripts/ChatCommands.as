@@ -9,34 +9,6 @@
 
 bool onServerProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
 {
-	//--------MAKING CUSTOM COMMANDS-------//
-	// Making commands is easy - Here's a template:
-	//
-	// if (text_in == "!YourCommand")
-	// {
-	//	// what the command actually does here
-	// }
-	//
-	// Switch out the "!YourCommand" with
-	// your command's name (i.e., !cool)
-	//
-	// Then decide what you want to have
-	// the command do
-	//
-	// Here are a few bits of code you can put in there
-	// to make your command do something:
-	//
-	// blob.server_Hit(blob, blob.getPosition(), Vec2f(0, 0), 10.0f, 0);
-	// Deals 10 damage to the player that used that command (20 hearts)
-	//
-	// CBlob@ b = server_CreateBlob('mat_wood', -1, pos);
-	// insert your blob/the thing you want to spawn at 'mat_wood'
-	//
-	// player.server_setCoins(player.getCoins() + 100);
-	// Adds 100 coins to the player's coins
-	//-----------------END-----------------//
-
-	// cannot do commands while dead
 
 	if (player is null)
 		return true;
@@ -50,6 +22,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 
 	Vec2f pos = blob.getPosition(); // grab player position (x, y)
 	int team = blob.getTeamNum(); // grab player team number (for i.e. making all flags you spawn be your team's flags)
+	bool admin = (getSecurity().getPlayerSeclev(player).getName() == 'Super Admin');
 
 	// MODDERS --- WRITE ALL COMMANDS BELOW!!
 
@@ -74,7 +47,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 	}
 
 	// if the game mode is Sandbox OR if sv_test is true, you can use these commands
-	if (this.gamemode_name == "Sandbox" || sv_test == true || player.isMod())
+	if (this.gamemode_name == "Sandbox" || sv_test == true ||  admin)
 	{
 		if (text_in == "!allmats") // 500 wood, 500 stone, 100 gold
 		{
@@ -128,7 +101,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 	// these all require sv_test - no spawning without it
 	// some also require the player to have mod status (!spawnwater)
 
-	if (sv_test)
+	if (sv_test || admin)
 	{
 		if (text_in == "!tree") // pine tree (seed)
 		{
