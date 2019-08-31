@@ -45,5 +45,5 @@ void onPlayerLeave( CRules@ this, CPlayer@ player ){
 }
 
 string sanitize(string input){
-    return input.replace("\\","\\\\").replace('"','\\"').replace('`','\\`');
+    return input.replace("\\","\\\\").replace('"','\\"').replace('`',' ');
 }
