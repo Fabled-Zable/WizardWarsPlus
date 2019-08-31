@@ -40,9 +40,9 @@ void onNewPlayerJoin( CRules@ this, CPlayer@ player )
     tcpr('discordData {"dataType":"playerjoin","username":"' + sanitize(player.getCharacterName()) + '"}');
 }
 
-void onPlayerLeave( CRules@ this, CPlayer@ player ){
-    tcpr('discordData {"dataType":"playerleave","username":"' + sanitize(player.getCharacterName()) + '"}');
-}
+// void onPlayerLeave( CRules@ this, CPlayer@ player ){
+//     tcpr('discordData {"dataType":"playerleave","username":"' + sanitize(player.getCharacterName()) + '"}');
+// } //removed until more relyable
 
 string sanitize(string input){
     return input.replace("\\","\\\\").replace('"','\\"').replace('`',' ');
