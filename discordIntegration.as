@@ -22,12 +22,13 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 {
     if(this.getCommandID("addToChat") == cmd)
     {
-        client_AddToChat(params.read_string(), SColor(255,255,0,255));
+        client_AddToChat(params.read_string(), SColor(255,120,138,235));
     }
 }
 
 void onPlayerDie( CRules@ this, CPlayer@ victim, CPlayer@ attacker, u8 customData )
 {
+    if(!isServer()){return;}
     bool attNull = attacker is null;
     string victimName = victim.getCharacterName();
 
@@ -37,6 +38,7 @@ void onPlayerDie( CRules@ this, CPlayer@ victim, CPlayer@ attacker, u8 customDat
 
 void onNewPlayerJoin( CRules@ this, CPlayer@ player )
 {
+    if(!isServer()){return;}
     tcpr('discordData {"dataType":"playerjoin","username":"' + sanitize(player.getCharacterName()) + '"}');
 }
 
