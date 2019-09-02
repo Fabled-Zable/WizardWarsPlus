@@ -15,7 +15,7 @@ void onTick(CBlob@ this)
 
 
     int frame = this.get_s8("frame");
-    if(frame < 56 || this.hasTag("reverse"))
+    if(getGameTime() % 2 == 0 && frame < 29 || this.hasTag("reverse"))
     {
         this.add_s8("frame",this.hasTag("reverse") ? -1 : 1);
     }
@@ -88,10 +88,16 @@ const float rotateSpeed = 1;
 
 void onInit(CSprite@ this)
 {
-    CSpriteLayer@ s = this.addSpriteLayer("circle","team_color_circle.png",100,100);
-    s.setRenderStyle(RenderStyle::Style::light);
-    s.ScaleBy(Vec2f(1.562,1.562));
-    s.SetRelativeZ(-1);
+    {
+        CSpriteLayer@ s = this.addSpriteLayer("circle","team_color_circle.png",100,100);
+        s.setRenderStyle(RenderStyle::Style::light);
+        s.ScaleBy(Vec2f(1.562,1.562));
+        s.SetRelativeZ(-2);
+    }
+    {
+       CSpriteLayer@ s = this.addSpriteLayer("scythes","Arcane_Scythes.png",124,124);
+       s.SetRelativeZ(-1);
+    }
     this.ScaleBy(Vec2f(1.4,1.4));
     //this.SetZ(0);
 
@@ -108,13 +114,16 @@ void onTick(CSprite@ this)
 {
     bool reverse = this.getBlob().hasTag("reverse");
     CBlob@ b = this.getBlob();
-    if(b.get_s8("frame") != 28*2 || reverse)
+    CSpriteLayer@ scythes = this.getSpriteLayer("scythes");
+    if(b.get_s8("frame") != 29 || reverse)
     {
-        this.SetFrame(b.get_s8("frame")/2);
+        this.SetFrame(b.get_s8("frame"));
+        scythes.SetFrame(b.get_s8("frame"));
     }
     else
     {
         this.RotateByDegrees((b.hasTag("fullCharge") ? rotateSpeed*2 : rotateSpeed) / (b.get_u8("despelled") + 1) ,Vec2f(0,0));
+        scythes.RotateByDegrees(-1 * ((b.hasTag("fullCharge") ? rotateSpeed*2 : rotateSpeed) / (b.get_u8("despelled") + 1)),Vec2f_zero);
     }
 }
 
