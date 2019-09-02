@@ -348,12 +348,12 @@ void intitializeClasses()
 	// 												"\n     Mana Regen: 0 mana/sec",
 	// 												"knight", 2, 10, 0, 0, "WizardWars");
 
-	// playerClassButtons.registerWWPlayerClassButton("Druid", 
-	// 												"     Work In Progress. " +
-	// 												"\n\n     Health: 70" +
-	// 												"\n     Mana: 100" +
-	// 												"\n     Mana Regen: 3 mana/sec",
-	// 												"druid", 3, 20, 4, 0, "WizardWars");
+	playerClassButtons.registerWWPlayerClassButton("Druid", 
+													"     Work In Progress. " +
+													"\n\n     Health: 70" +
+													"\n     Mana: 100" +
+													"\n     Mana Regen: 3 mana/sec",
+													"druid", 3, 20, 4, 0, "WizardWars");
 													
 	/*playerClassButtons.registerWWPlayerClassButton("Archer", 
 													"     The most powerful class ever with over 1000 mana fit for taking on the Gods. Too bad they skipped magic class. " +
