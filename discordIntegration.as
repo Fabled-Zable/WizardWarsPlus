@@ -31,9 +31,10 @@ void onPlayerDie( CRules@ this, CPlayer@ victim, CPlayer@ attacker, u8 customDat
     if(!isServer()){return;}
     bool attNull = attacker is null;
     string victimName = victim.getCharacterName();
+    int team = victim.getTeamNum();
 
 
-    tcpr('discordData {"dataType":"playerdie","victim":"'+sanitize(victim.getCharacterName())+'","attacker":"'+ (attNull ? ' ' : sanitize(attacker.getCharacterName())) + '","lastVicBlob":"' +  victim.lastBlobName + '","lastAttBlob":"' + (attNull ? ' ' : attacker.lastBlobName) + '", "attackerNull":' + attNull + '}');
+    tcpr('discordData {"dataType":"playerdie","victim":"'+sanitize(victim.getCharacterName())+'","team":'+team+', "attacker":"'+ (attNull ? ' ' : sanitize(attacker.getCharacterName())) + '","lastVicBlob":"' +  victim.lastBlobName + '","lastAttBlob":"' + (attNull ? ' ' : attacker.lastBlobName) + '", "attackerNull":' + attNull + '}');
 }
 
 void onNewPlayerJoin( CRules@ this, CPlayer@ player )
