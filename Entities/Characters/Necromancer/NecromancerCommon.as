@@ -26,7 +26,7 @@ namespace NecromancerParams
 		Spell("orb", "Orb", 6, "Fire a basic orb which ricochets off of most surfaces until impacting an enemy and exploding, dealing minor damage.",
 			SpellType::other, 2, 40, 0, 360.0f),
 			
-		Spell("teleport", "Teleport to Target", 8, "Point to any visible position and teleport there.",
+		Spell("teleport", "Teleport to Target", 40, "Point to any visible position and teleport there.",
 			SpellType::other, 20, 7, 0, 270.0f, true),
 			
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",

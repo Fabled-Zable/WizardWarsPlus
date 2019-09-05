@@ -48,5 +48,5 @@ void onNewPlayerJoin( CRules@ this, CPlayer@ player )
 // } //removed until more relyable
 
 string sanitize(string input){
-    return input.replace("\\","\\\\").replace('"','\\"').replace('`',' ');
+    return input.replace("\\","\\\\").replace('"','\\"').replace('`',' ').replace("@","\\@");
 }

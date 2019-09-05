@@ -16,6 +16,22 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
     string spellName = spell.typeName;
 	switch(spellName.getHash())
 	{
+		case 1476886618:
+		{
+			Vec2f pos = this.getPosition();
+			Vec2f aim = aimpos;
+			Vec2f vel = aim - pos;
+			Vec2f norm = vel;
+			norm.Normalize();
+			CBlob@ b = server_CreateBlob('boulder',this.getTeamNum(),this.getPosition() + norm*2);
+			b.server_SetHealth(999);
+			b.server_SetTimeToDie(3);
+			print('' + vel);
+			b.setVelocity(vel/32);
+			b.getShape().SetGravityScale(0.75);
+			b.server_setTeamNum(b.getTeamNum());
+		}
+		break;
 		case -825046729: //mushroom
 			{
 				CBlob@[] mushrooms;
@@ -405,19 +421,21 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 
-		case -583930544://spreadheal
+		case 1961711901://nature's helpers
 		{
 			f32 orbspeed = 5.0f;
-			f32 healAmount = 0.18f;
-
+			f32 healAmount = 0.2f;
+			u8 speed = 1;
 			if (charge_state == NecromancerParams::cast_1) {
 				orbspeed *= (1.0f/2.0f);
 			}
 			else if (charge_state == NecromancerParams::cast_2) {
 				orbspeed *= (4.0f/5.0f);
+				speed = 2;
 			}
 			else if (charge_state == NecromancerParams::extra_ready) {
 				orbspeed *= 1.2f;
+				speed = 3;
 			}
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
@@ -437,16 +455,28 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					{
 						numOrbs + 3;
 					}
-					CBlob@ orb = server_CreateBlob( "effect_missile1", this.getTeamNum(), orbPos ); 
+					// CBlob@ orb = server_CreateBlob( "effect_missile1", this.getTeamNum(), orbPos ); 
+					// if (orb !is null)
+					// {
+					// 	orb.set_string("effect", "heal");
+					// 	orb.set_f32("heal_amount", healAmount);
+
+					// 	orb.IgnoreCollisionWhileOverlapped( this );
+					// 	orb.SetDamageOwnerPlayer( this.getPlayer() );
+					// 	Vec2f newVel = orbVel;
+					// 	newVel.RotateBy( -10 + 5*i, Vec2f());
+					// 	orb.setVelocity( newVel );
+					// }
+
+					CBlob@ orb = server_CreateBlob( "bee", this.getTeamNum(), orbPos ); 
 					if (orb !is null)
 					{
-						orb.set_string("effect", "heal");
 						orb.set_f32("heal_amount", healAmount);
 
 						orb.IgnoreCollisionWhileOverlapped( this );
 						orb.SetDamageOwnerPlayer( this.getPlayer() );
 						Vec2f newVel = orbVel;
-						newVel.RotateBy( -10 + 5*i, Vec2f());
+						newVel.RotateBy( -10 + 3*i, Vec2f());
 						orb.setVelocity( newVel );
 					}
 				}

@@ -27,7 +27,7 @@ namespace WizardParams
 			SpellType::other, 2, 40, 0, 360.0f),
 							// 2 is the cost // 40 is the charge time //360.0f is the range //the 0 is the cooldown //6 is the icon it uses
 			
-		Spell("teleport", "Teleport to Target", 8, "Point to any visible position and teleport there.",
+		Spell("teleport", "Teleport to Target", 40, "Point to any visible position and teleport there.",
 			SpellType::other, 20, 6, 0, 270.0f, true), 
 			
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
