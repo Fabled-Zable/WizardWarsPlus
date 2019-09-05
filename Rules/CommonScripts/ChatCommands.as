@@ -7,11 +7,33 @@
 #include "MakeCrate.as";
 #include "MakeScroll.as";
 
+void onInit(CRules@ this)
+{
+	this.set_bool("awootism",false);
+}
+
+string awootismIfy(string s){
+	return s.replace("O","OwO").replace("o","OwO").replace("U","UwU").replace("u","UwU");
+}
+
 bool onServerProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
 {
+	if(this.get_bool("awootism"))
+	{
+		text_out = awootismIfy(text_in);
+	}
 
 	if (player is null)
+	{
 		return true;
+	}
+	bool admin = (getSecurity().getPlayerSeclev(player).getName() == 'Super Admin');
+
+	if(admin && text_in == "!awootism")
+	{
+		this.set_bool("awootism",!this.get_bool("awootism"));
+		this.Sync("awootism",false);
+	}
 
 	CBlob@ blob = player.getBlob(); // now, when the code references "blob," it means the player who called the command
 
@@ -20,9 +42,9 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 		return true;
 	}
 
+
 	Vec2f pos = blob.getPosition(); // grab player position (x, y)
 	int team = blob.getTeamNum(); // grab player team number (for i.e. making all flags you spawn be your team's flags)
-	bool admin = (getSecurity().getPlayerSeclev(player).getName() == 'Super Admin');
 
 	// MODDERS --- WRITE ALL COMMANDS BELOW!!
 
@@ -244,6 +266,11 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 
 bool onClientProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
 {
+	if(this.get_bool("awootism"))
+	{
+		text_out = awootismIfy(text_in);
+	}
+
 	if (text_in == "!debug" && !getNet().isServer())
 	{
 		// print all blobs
