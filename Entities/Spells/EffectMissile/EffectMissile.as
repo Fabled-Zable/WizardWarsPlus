@@ -44,6 +44,23 @@ void onTick( CBlob@ this)
 	CSprite@ thisSprite = this.getSprite();
 	Vec2f thisPos = this.getPosition();
 	Vec2f thisVel = this.getVelocity();
+
+	string effect = this.get_string("effect");
+	if(effect == "heal")
+	{
+		thisSprite.SetFrame(1);
+	}
+	if(effect == "haste")
+	{
+		thisSprite.SetFrame(0);
+	}
+	if(effect == "slow"){
+		thisSprite.SetFrame(3);
+	}
+	if(effect == "revive")
+	{
+		thisSprite.SetFrame(2);
+	}
 	
 	bool isDead = this.get_bool("dead");
 	
