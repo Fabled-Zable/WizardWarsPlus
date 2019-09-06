@@ -34,6 +34,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			b.setVelocity(vel/32);
 			b.getShape().SetGravityScale(0.75);
 			b.server_setTeamNum(b.getTeamNum());
+			b.SetDamageOwnerPlayer(this.getPlayer());
 		}
 		break;
 		case -825046729: //mushroom
