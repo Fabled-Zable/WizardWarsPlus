@@ -18,6 +18,10 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 	{
 		case 1476886618:
 		{
+			if(!isServer())
+			{
+				break;
+			}
 			Vec2f pos = this.getPosition();
 			Vec2f aim = aimpos;
 			Vec2f vel = aim - pos;
