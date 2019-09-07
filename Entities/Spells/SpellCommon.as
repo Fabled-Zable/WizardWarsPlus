@@ -18,10 +18,9 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 	{
 		case 1476886618:
 		{
-			if(!isServer())
+			if(isServer())
 			{
-				break;
-			}
+
 			Vec2f pos = this.getPosition();
 			Vec2f aim = aimpos;
 			Vec2f vel = aim - pos;
@@ -30,11 +29,11 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			CBlob@ b = server_CreateBlob('boulder',this.getTeamNum(),this.getPosition() + norm*2);
 			b.server_SetHealth(999);
 			b.server_SetTimeToDie(3);
-			print('' + vel);
 			b.setVelocity(vel/32);
 			b.getShape().SetGravityScale(0.75);
 			b.server_setTeamNum(b.getTeamNum());
 			b.SetDamageOwnerPlayer(this.getPlayer());
+			}
 		}
 		break;
 		case -825046729: //mushroom
