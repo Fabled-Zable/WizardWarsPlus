@@ -141,8 +141,8 @@ void onTick( CBlob@ this)
 	if(!getNet().isClient()) 
 		return;	
 	//particle smoke
-	//if ( getGameTime() % 2 == 0 )
-		//makeSmokePuff(this);
+	if ( getGameTime() % 2 == 0 )
+		makeSmokePuff(this);
 }
 
 bool followsDeadAllies( CBlob@ this )
