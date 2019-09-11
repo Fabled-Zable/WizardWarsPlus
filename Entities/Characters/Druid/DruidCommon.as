@@ -54,8 +54,8 @@ namespace DruidParams
 		Spell("mushroom", "Dancing Shroom", 34, "Empty spell.",
 				SpellType::other, 12, 7, 0, 60.0f),
 
-		Spell("bouldershot", "Boulder Shot", 35, "Empty spell.",
-			SpellType::other, 15, 25, 0, 360.0f),
+		// Spell("bouldershot", "Boulder Shot", 35, "Empty spell.",
+		// 	SpellType::other, 15, 25, 0, 360.0f),
 
 				Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f),
