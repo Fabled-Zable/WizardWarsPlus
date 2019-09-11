@@ -6,8 +6,10 @@
 #include "Achievements.as";
 #include "shipAchieves.as";
 #include "WWPlayerClassButton.as";
+#include "WheelMenuCommon.as";
 
 bool showHelp = true;
+bool previous_showHelp = true;
 bool justJoined = true;
 bool page1 = true;
 const int slotsSize = 6;
@@ -69,18 +71,24 @@ const Vec2f windowDimensions = Vec2f(1000,600); //temp
 	Label@ helpText;
 	Label@ changeText;
 	Label@ particleText;
+    Label@ itemDistanceText;
+    Label@ hoverDistanceText;
 	Button@ changeBtn;
 	Button@ infoBtn;
 	Button@ introBtn;
 	Button@ optionsBtn;
 	Button@ barNumBtn;
 	Button@ startCloseBtn;
+    Button@ toggleSpellWheelBtn;
 	Button@ achievementBtn;
 	Button@ classesBtn;
     Button@ togglemenuBtn;
+    Button@ toggleHotkeyEmotesBtn;
 	Rectangle@ optionsFrame;
 	Icon@ helpIcon;
 	ScrollBar@ particleCount;
+    ScrollBar@ itemDistance;
+    ScrollBar@ hoverDistance;
 
 bool isGUINull()
 {
@@ -90,18 +98,24 @@ bool isGUINull()
 		|| helpText is null
 		|| changeText is null
 		|| particleText is null
+        || itemDistanceText is null
+        || hoverDistanceText is null
 		|| changeBtn is null
 		|| infoBtn is null
 		|| introBtn is null
 		|| optionsBtn is null
 		|| classesBtn is null
         || togglemenuBtn is null
+        || toggleHotkeyEmotesBtn is null
 		|| barNumBtn is null
 		|| startCloseBtn is null
+        || toggleSpellWheelBtn is null
 		|| achievementBtn is null
 		|| optionsFrame is null
 		|| helpIcon is null
-		|| particleCount is null )
+		|| particleCount is null
+        || itemDistance is null
+        || hoverDistance is null )
 	{
 		return true;
 	}
@@ -197,6 +211,28 @@ void ButtonClickHandler(int x , int y , int button, IGUIItem@ sender){ //Button 
 		startCloseBtn.desc = (startCloseBtn.toggled) ? "Start Help Closed Enabled" : "Start Help Closed Disabled";
 		startCloseBtn.saveBool("Start Closed",!startCloseBtn.toggled,"WizardWars");
 	}
+    if (sender is toggleSpellWheelBtn)
+    {
+        toggleSpellWheelBtn.toggled = !toggleSpellWheelBtn.toggled;
+		toggleSpellWheelBtn.desc = (toggleSpellWheelBtn.toggled) ? "Spell Wheel Active" : "Emoji Wheel Active";
+		toggleSpellWheelBtn.saveBool("Spell Wheel Active", toggleSpellWheelBtn.toggled,"WizardWars");
+        
+        WheelMenu@ menu = get_wheel_menu("spells");
+        if (menu != null){
+            getRules().set_bool("usespellwheel", toggleSpellWheelBtn.toggled);
+        }
+    }
+
+    //getRules().set_bool("no_hotkey_emotes", true); // toggleHotkeyEmotesBtn
+
+    if (sender is toggleHotkeyEmotesBtn)
+    {
+        toggleHotkeyEmotesBtn.toggled = !toggleHotkeyEmotesBtn.toggled;
+		toggleHotkeyEmotesBtn.desc = (toggleHotkeyEmotesBtn.toggled) ? "Hotkey Emotes Enabled" : "Hotkey Emotes Disabled";
+		toggleHotkeyEmotesBtn.saveBool("Hotkey Emotes", toggleHotkeyEmotesBtn.toggled,"WizardWars");
+        
+        getRules().set_bool("hotkey_emotes", toggleHotkeyEmotesBtn.toggled);
+    }
 }
 
 void SliderClickHandler(int dType ,Vec2f mPos, IGUIItem@ sender){
@@ -208,6 +244,31 @@ void onTick( CRules@ this )
 	bool initialized = this.get_bool("GUI initialized");
 	if ( !initialized || isGUINull() )		//this little trick is so that the GUI shows up on local host 
 	{
+        ConfigFile cfg;
+        
+        u16 itemDistance_value = 6;
+
+        u16 hoverDistance_value = 6;
+
+        if(cfg.loadFile("../Cache/WW_OptionsMenu.cfg"))//Load file, if file exists
+        {
+            print("options loaded");
+            if(cfg.exists("item_distance"))//Value already set?
+            {
+                print("default set");
+                itemDistance_value = cfg.read_u8("item_distance");//Set default
+                print(""+itemDistance_value);
+            }
+            if(cfg.exists("hover_distance"))//Value already set?
+            {
+                hoverDistance_value = cfg.read_u8("hover_distance");//Set default
+            }
+        }
+
+
+
+
+
 		CFileImage@ image = CFileImage( "GameHelp.png" );
 		Vec2f imageSize = Vec2f( image.getWidth(), image.getHeight() );
 		AddIconToken( "$HELP$", "GameHelp.png", imageSize, 0 );
@@ -245,6 +306,14 @@ void onTick( CRules@ this )
 		@startCloseBtn = @Button(Vec2f(10,50),Vec2f(200,30),"",SColor(255,255,255,255));
 		startCloseBtn.addClickListener(ButtonClickHandler);
 
+        @toggleSpellWheelBtn = @Button(Vec2f(10,300),Vec2f(200,30),"",SColor(255,255,255,255));
+		toggleSpellWheelBtn.addClickListener(ButtonClickHandler);
+
+        @toggleHotkeyEmotesBtn = @Button(Vec2f(10,250),Vec2f(200,30),"",SColor(255,255,255,255));
+		toggleHotkeyEmotesBtn.addClickListener(ButtonClickHandler);
+
+        
+
 		@achievementBtn = @Button(Vec2f(425,495),Vec2f(120,30),"Achievements",SColor(255,255,255,255));
 		achievementBtn.addClickListener(ButtonClickHandler);
 		
@@ -256,9 +325,17 @@ void onTick( CRules@ this )
 
 		@optionsFrame = @Rectangle(Vec2f(20,10),Vec2f(760,490), SColor(0,0,0,0));
 
-		@particleCount = @ScrollBar(Vec2f(10,105),80,4,true,2);
+        @particleCount = @ScrollBar(Vec2f(10,105),80,4,true,2);
 		@particleText = @Label(Vec2f(10,90),Vec2f(100,10),"Particle counts:",SColor(255,0,0,0),false);
 		particleCount.addSlideEventListener(SliderClickHandler);
+
+		@itemDistance = @ScrollBar(Vec2f(10,350),160,10,true, itemDistance_value);
+		@itemDistanceText = @Label(Vec2f(10,330),Vec2f(100,10),"Item distance:",SColor(255,0,0,0),false);
+		itemDistance.addSlideEventListener(SliderClickHandler);
+
+        @hoverDistance = @ScrollBar(Vec2f(10,400),160,10,true, hoverDistance_value);
+		@hoverDistanceText = @Label(Vec2f(10,380),Vec2f(100,10),"Hover distance:",SColor(255,0,0,0),false);
+		hoverDistance.addSlideEventListener(SliderClickHandler);
 
 		//---KGUI Parenting---\\
 		helpWindow.addChild(introText);
@@ -272,14 +349,34 @@ void onTick( CRules@ this )
 		helpWindow.addChild(optionsFrame);
 		helpWindow.addChild(achievementBtn);
 		helpWindow.addChild(classesBtn);
-		helpWindow.addChild(togglemenuBtn);
-        optionsFrame.addChild(barNumBtn);
+        helpWindow.addChild(togglemenuBtn);
+		optionsFrame.addChild(barNumBtn);
 		optionsFrame.addChild(startCloseBtn);
+        optionsFrame.addChild(toggleSpellWheelBtn);
+        optionsFrame.addChild(toggleHotkeyEmotesBtn);
 		optionsFrame.addChild(particleCount);
 		optionsFrame.addChild(particleText);
+        
+        optionsFrame.addChild(itemDistance);
+		optionsFrame.addChild(itemDistanceText);
+        optionsFrame.addChild(hoverDistance);
+		optionsFrame.addChild(hoverDistanceText);
 		showHelp = startCloseBtn.getBool("Start Closed","WizardWars");
 		startCloseBtn.toggled = !startCloseBtn.getBool("Start Closed","WizardWars");
 		startCloseBtn.desc = (startCloseBtn.toggled) ? "Start Help Closed Enabled" : "Start Help Closed Disabled";
+        
+		toggleSpellWheelBtn.toggled = toggleSpellWheelBtn.getBool("Spell Wheel Active","WizardWars");
+		toggleSpellWheelBtn.desc = (toggleSpellWheelBtn.toggled) ? "Spell Wheel Active" : "Emoji Wheel Active";
+        WheelMenu@ menu = get_wheel_menu("spells");
+        if (menu != null){
+            this.set_bool("usespellwheel", toggleSpellWheelBtn.toggled);
+        }
+
+        toggleHotkeyEmotesBtn.toggled = toggleHotkeyEmotesBtn.getBool("Hotkey Emotes","WizardWars");
+		toggleHotkeyEmotesBtn.desc = (toggleHotkeyEmotesBtn.toggled) ? "Hotkey Emotes Enabled" : "Hotkey Emotes Disabled";
+        this.set_bool("hotkey_emotes", toggleHotkeyEmotesBtn.toggled);
+
+
 		barNumBtn.toggled = barNumBtn.getBool("Bar Numbers","WizardWars");
 		barNumBtn.desc = (barNumBtn.toggled) ? "Bar Numbers Enabled" : "Bar Numbers Disabled";
 		optionsFrame.isEnabled = false;
@@ -290,7 +387,11 @@ void onTick( CRules@ this )
 		helpWindow.addChild(shipAchievements);	
 		
 		intitializeClasses();
-		helpWindow.addChild(playerClassButtons);	
+		helpWindow.addChild(playerClassButtons);
+
+
+
+        updateOptionSliderValues();//Takes slider values and sets other settings
 		
 		this.set_bool("GUI initialized", true);
 		print("GUI has been initialized");
@@ -354,6 +455,52 @@ void onTick( CRules@ this )
 		params.write_string(getLocalPlayer().getUsername());
 		this.SendCommand(this.getCommandID("requestClasses"),params);
 	}
+
+    if(previous_showHelp != showHelp)//Menu just closed or opened
+    {
+        if(previous_showHelp)//Menu closed
+        {
+            ConfigFile cfg;
+            cfg.loadFile("../Cache/WW_OptionsMenu.cfg");
+
+            cfg.add_u16("item_distance", itemDistance.value);
+            cfg.add_u16("hover_distance", hoverDistance.value);
+
+            cfg.saveFile("WW_OptionsMenu.cfg");
+        }
+    }
+
+    if(showHelp)//Only do if the help menu is open
+    {
+        updateOptionSliderValues();
+    }
+
+
+    bool previous_showHelp = showHelp;//Must be last
+}
+
+void updateOptionSliderValues()
+{
+    float item_distance = 0.3f;//used for changing the value and storing the final value
+    for(uint i = 0; i < itemDistance.value; i++)
+    {
+        item_distance += 0.1f;
+    }
+    item_distance = WheelMenu::default_item_distance * item_distance;
+
+    float hover_distance = 0.3f;//used for changing the value and storing the final value
+    for(uint i = 0; i < hoverDistance.value; i++)
+    {
+        hover_distance += 0.1f;
+    }
+    hover_distance = WheelMenu::default_hover_distance * hover_distance;
+
+
+    WheelMenu@ menu = get_wheel_menu("spells");
+    if (menu != null){
+        menu.item_distance = item_distance;
+        menu.hover_distance = hover_distance;
+    }
 }
 
 void onCommand( CRules@ this, u8 cmd, CBitStream @params )
@@ -448,7 +595,8 @@ void onRender( CRules@ this )
 		temp += "High";
 	}
 	particleText.setText(temp);
-	
+
+
 	int minHelpYPos = -530;
 	int maxHelpYPos = 48;
 	int scrollSpeed = 40;
