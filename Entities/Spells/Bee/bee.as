@@ -7,6 +7,7 @@ void onInit(CBlob@ this){
     this.getShape().SetGravityScale(0);
     this.set_u8("speed",3);
     this.set_f32("targetAngle",0);
+    this.set_f32("heal_ammount",0.2);
     //this.set_netid("caster",0);
     if(!isServer()){return;}
     this.server_SetTimeToDie(5);
@@ -59,7 +60,7 @@ int closestBlobIndex(CBlob@ this, CBlob@[] blobs, CBlob@ caster)
     int bestIndex = -1;
 
     for(int i = 0; i < blobs.length; i++){
-        if((caster.getTeamNum() == blobs[i].getTeamNum() && blobs[i].getHealth() == blobs[i].getInitialHealth()) || blobs[i] is caster || blobs[i].getPlayer() is null){
+        if((this.getTeamNum() == blobs[i].getTeamNum() && blobs[i].getHealth() == blobs[i].getInitialHealth()) || (caster !is null && blobs[i] is caster) || blobs[i].getPlayer() is null){
             continue;
         }
         f32 dist = this.getDistanceTo(blobs[i]);
