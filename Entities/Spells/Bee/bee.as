@@ -18,7 +18,10 @@ void onTick(CBlob@ this){
     CBlob@[] blobs;
     getMap().getBlobsInRadius(this.getPosition(),radius,@blobs);
 
-    int index = closestBlobIndex(this,blobs,this.getDamageOwnerPlayer().getBlob());
+    CPlayer@ damageOwnerPlayer = this.getDamageOwnerPlayer();
+
+
+    int index = closestBlobIndex(this,blobs,this.getDamageOwnerPlayer());
     if(index == -1) return;
 
     CBlob@ target = blobs[index];
@@ -54,13 +57,13 @@ void onTick(CSprite@ this){
     this.RotateBy(this.getBlob().getVelocity().getAngle() * -1,Vec2f_zero);
 }
 
-int closestBlobIndex(CBlob@ this, CBlob@[] blobs, CBlob@ caster)
+int closestBlobIndex(CBlob@ this, CBlob@[] blobs, CPlayer@ caster)
 {
     f32 bestDistance = 99999999;
     int bestIndex = -1;
 
     for(int i = 0; i < blobs.length; i++){
-        if((this.getTeamNum() == blobs[i].getTeamNum() && blobs[i].getHealth() == blobs[i].getInitialHealth()) || (caster !is null && blobs[i] is caster) || blobs[i].getPlayer() is null){
+        if((this.getTeamNum() == blobs[i].getTeamNum() && blobs[i].getHealth() == blobs[i].getInitialHealth()) || (caster !is null && blobs[i] is caster.getBlob()) || blobs[i].getPlayer() is null){
             continue;
         }
         f32 dist = this.getDistanceTo(blobs[i]);
