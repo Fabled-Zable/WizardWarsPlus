@@ -46,7 +46,15 @@ void onTick(CBlob@ this){
             this.server_Die();
         }
         else{
-            target.server_Hit(target,this.getPosition(), Vec2f_zero,0.3,0);
+            f32 health = target.getHealth();
+            if(health <= 0)
+            {
+                target.server_Hit(target,this.getPosition(), Vec2f_zero,0.3,0);
+            }
+            else 
+            {
+                target.server_SetHealth(health - 0.1);
+            }
             this.server_Die();
         }
     }
