@@ -3,7 +3,7 @@
 
 void onRender( CSprite@ this )
 {
-
+    f32 scale = 1;
 
     CBlob@ blob = this.getBlob();
     if(getLocalPlayer() is blob.getPlayer())
@@ -11,7 +11,6 @@ void onRender( CSprite@ this )
         int width = 93;//it seems that you need to * 2 in order for it to be accurate
         int height = 44;
         int teamNum = blob.getTeamNum();
-        f32 scale = 1;
 
         Vec2f checkbox1 = Vec2f(57,8) * scale;
         Vec2f checkbox2 = Vec2f(57,26) * scale;
