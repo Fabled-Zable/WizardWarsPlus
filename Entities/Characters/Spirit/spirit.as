@@ -2,6 +2,9 @@
 
 void onInit(CBlob@ this)
 {
+    this.set_bool("gravity",false);
+    this.set_bool("noclip",false);
+
     this.set_f32("effectRadius", 8*5); //5 block radius
 	Force mode;
     mode.init(this);
