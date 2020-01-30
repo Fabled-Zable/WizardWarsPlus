@@ -73,7 +73,9 @@ shared class TDMSpawns : RespawnSystem
 
 			for (uint i = 0; i < team.spawns.length; i++)
 			{
+				team.spawns[i].team = team_num;
 				TDMPlayerInfo@ info = cast < TDMPlayerInfo@ > (team.spawns[i]);
+				
 
 				UpdateSpawnTime(info, i);
 				DoSpawnPlayer(info);
@@ -284,6 +286,12 @@ shared class TDMCore : RulesCore
 
 	TDMSpawns@ tdm_spawns;
 
+	int team1id;
+	int team2id;
+
+	int team1c;
+	int team2c;
+
 	TDMCore() {}
 
 	TDMCore(CRules@ _rules, RespawnSystem@ _respawns)
@@ -293,6 +301,18 @@ shared class TDMCore : RulesCore
 
 	void Setup(CRules@ _rules = null, RespawnSystem@ _respawns = null)
 	{
+		array<int> possible_teams = {0, 1, 2, 4, 5, 6, 7};
+		
+		int selected_id = XORRandom(possible_teams.length);
+		team1id = possible_teams[selected_id];
+		possible_teams.removeAt(selected_id);
+
+		selected_id = XORRandom(possible_teams.length + 1);
+		team2id = possible_teams[selected_id];
+
+		team1c = 0;
+		team2c = 0;
+
 		RulesCore::Setup(_rules, _respawns);
 		gametime = getGameTime() + 100;
 		@tdm_spawns = cast < TDMSpawns@ > (_respawns);
@@ -302,6 +322,8 @@ shared class TDMCore : RulesCore
 		sudden_death = false;
 
 		sv_mapautocycle = true;
+
+		
 	}
 
 	int gametime;
@@ -452,9 +474,11 @@ shared class TDMCore : RulesCore
 
 	bool allTeamsHavePlayers()
 	{
-		for (uint i = 0; i < teams.length; i++)
+		CMap@ map = getMap();
+		array<int> real_teams = {team1id, team2id};
+		for (uint i = 0; i < real_teams.length; i++)
 		{
-			if (teams[i].players_count < minimum_players_in_team)
+			if (teams[real_teams[i]].players_count < minimum_players_in_team)
 			{
 				return false;
 			}
@@ -474,8 +498,21 @@ shared class TDMCore : RulesCore
 	void AddPlayer(CPlayer@ player, u8 team = 0, string default_config = "")
 	{
 		TDMPlayerInfo p(player.getUsername(), player.getTeamNum(), player.isBot() ? "knight" : "wizard" );
+		CMap@ map = getMap();
+		p.team = getSmallerTeam();
+		if(p.team == team1id)
+			team1c++;
+		else
+			team2c++;
 		players.push_back(p);
 		ChangeTeamPlayerCount(p.team, 1);
+	}
+
+	int getSmallerTeam()
+	{
+		if(team2c < team1c)
+			return team2id;
+		return team1id;
 	}
 
 	void onPlayerDie(CPlayer@ victim, CPlayer@ killer, u8 customData)
@@ -526,6 +563,8 @@ shared class TDMCore : RulesCore
 
 	void SetupBases()
 	{
+	
+
 		const string base_name = "tdm_spawn";
 		// destroy all previous spawns if present
 		CBlob@[] oldBases;
@@ -541,6 +580,7 @@ shared class TDMCore : RulesCore
 
 		if (map !is null)
 		{
+
 			// team 0 ruins
 			Vec2f[] respawnPositions;
 			Vec2f respawnPos;
@@ -553,7 +593,7 @@ shared class TDMCore : RulesCore
 				warn("TDM: Blue spawn marker not found on map");
 				respawnPos = Vec2f(150.0f, map.getLandYAtX(150.0f / map.tilesize) * map.tilesize - 32.0f);
 				respawnPos.y -= 16.0f;
-				SetupBase(server_CreateBlob(base_name, 0, respawnPos));
+				SetupBase(server_CreateBlob(base_name, team1id, respawnPos));
 			}
 			else
 			{
@@ -561,7 +601,7 @@ shared class TDMCore : RulesCore
 				{
 					respawnPos = respawnPositions[i];
 					respawnPos.y -= 16.0f;
-					SetupBase(server_CreateBlob(base_name, 0, respawnPos));
+					SetupBase(server_CreateBlob(base_name, team1id, respawnPos));
 				}
 			}
 
@@ -574,7 +614,7 @@ shared class TDMCore : RulesCore
 				warn("TDM: Red spawn marker not found on map");
 				respawnPos = Vec2f(map.tilemapwidth * map.tilesize - 150.0f, map.getLandYAtX(map.tilemapwidth - (150.0f / map.tilesize)) * map.tilesize - 32.0f);
 				respawnPos.y -= 16.0f;
-				SetupBase(server_CreateBlob(base_name, 1, respawnPos));
+				SetupBase(server_CreateBlob(base_name, team2id, respawnPos));
 			}
 			else
 			{
@@ -582,7 +622,7 @@ shared class TDMCore : RulesCore
 				{
 					respawnPos = respawnPositions[i];
 					respawnPos.y -= 16.0f;
-					SetupBase(server_CreateBlob(base_name, 1, respawnPos));
+					SetupBase(server_CreateBlob(base_name, team2id, respawnPos));
 				}
 			}
 
@@ -633,7 +673,7 @@ shared class TDMCore : RulesCore
 			//set up an array of which teams are alive
 			array<bool> teams_alive;
 			s32 teams_alive_count = 0;
-			for (int i = 0; i < teams.length; i++)
+			for (int i = 0; i < teams.length; i++) 
 				teams_alive.push_back(false);
 
 			//check with each player
@@ -642,8 +682,10 @@ shared class TDMCore : RulesCore
 				CPlayer@ p = getPlayer(i);
 				CBlob@ b = p.getBlob();
 				s32 team = p.getTeamNum();
+				if(team == 3)
+					continue;
 				if (b !is null && !b.hasTag("dead") && //blob alive
-				        team >= 0 && team < teams.length) //team sensible
+				        team >= 0 && team < teams_alive.length) //team sensible
 				{
 					if (!teams_alive[team])
 					{
@@ -656,7 +698,7 @@ shared class TDMCore : RulesCore
 			//only one team remains!
 			if (teams_alive_count == 1)
 			{
-				for (int i = 0; i < teams.length; i++)
+				for (int i = 0; i < teams_alive.length; i++)
 				{
 					if (teams_alive[i])
 					{
@@ -821,7 +863,7 @@ void onInit(CRules@ this)
 
 void onPlayerLeave(CRules@ this, CPlayer@ player)
 {
-    uint team0 = 0;
+    /*uint team0 = 0;
     uint team1 = 0;
     for (u32 i = 0; i < getPlayersCount(); i++)
     {
@@ -844,7 +886,9 @@ void onPlayerLeave(CRules@ this, CPlayer@ player)
     }
     if((team0 + team1 == 1 && lastteamplayer) || getPlayerCount() == 1)//Next map when the last player on a team leaves or the last player in the game leaves
 	{//We check for lastteamplayer to confirm that the player that left was not a spectator, if the player that left WAS a spectator the map would reset, it does this because we only check
-    //for the amount of players in the team, and this only checks onPlayerLeave so we need to make sure it was the last player in a team that left
+    //for the amount of players in the team, and this only checks onPlayerLeave so we need to make sure it was the last player in a team that left*/
+	if(getPlayerCount() == 0)
+	{
 		print("Next mapping due to the last player on a team or last player on the server leaving");
         LoadNextMap();
 	}
