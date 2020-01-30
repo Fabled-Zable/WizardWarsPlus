@@ -25,6 +25,8 @@ void onInit(CSprite@ this)
     CSpriteLayer@ s = this.addSpriteLayer("glow","team_color_circle",100,100);
     s.ScaleBy(Vec2f(0.1,0.1));
     s.SetRelativeZ(-1);
+    b.set_f32("soft_frame",0);
+
 
 }
 
@@ -46,8 +48,11 @@ void onChangeTeam( CBlob@ this, const int oldTeam )
     this.SetLightColor(color);
 }
 
+const f32 speedConst = 0.1; //this is a arbitrary value :D
+
 void onTick(CSprite@ this)
 {
+    
     getHUD().SetCursorImage("arrow_cursor.png");
 
     CSpriteLayer@ glow = this.getSpriteLayer("glow");
@@ -55,7 +60,17 @@ void onTick(CSprite@ this)
     glow.setRenderStyle(RenderStyle::Style::light);//done every tick so that it doesn't break on team change, probably bad /shrug
 
     CBlob@ b = this.getBlob();
+    if(b is null) return;
+    Vec2f vel = b.getVelocity();
+    f32 speed = Maths::Abs(vel.x) + Maths::Abs(vel.y) + 1; //const is to keep it moving when hovering
+    speed = speed > 6 ? 6 : speed;//cap it
 
-    this.SetFrame(getGameTime()%8);
-    this.RotateBy(15,Vec2f_zero);
+    f32 softframe = b.add_f32("soft_frame", speed * speedConst);
+
+    if(softframe > 4)
+    {
+        b.set_f32("soft_frame",0);
+    }
+
+    this.SetFrame(softframe);
 }

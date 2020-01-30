@@ -83,4 +83,27 @@ void onTick(CMovement@ this)
     }
 
     b.setVelocity(vel + deltaV);
+
+    if((vel + deltaV).x > 0)//two if statements instead of boolean operators so that when the velocity is at 0 the sprite will face the last position
+    {
+        b.SetFacingLeft(false);
+    }
+    else if((vel + deltaV).x < 0)
+    {
+        b.SetFacingLeft(true);
+    }
+
+
+    CControls@ controls = getControls();
+    if(controls.isKeyJustPressed(KEY_KEY_V))
+    {
+        b.set_bool("noclip",!b.get_bool("noclip"));
+
+        b.Sync("noclip", false);
+    }
+    if(controls.isKeyJustPressed(KEY_KEY_G))
+    {
+        b.set_bool("gravity",!b.get_bool("gravity"));
+        b.Sync("gravity", false);
+    }
 }
