@@ -538,6 +538,8 @@ void onRenderScoreboard(CRules@ this)
 	if (localPlayer is null)
 		return;
 	int localTeam = localPlayer.getTeamNum();
+	if(localTeam == this.getSpectatorTeamNum())
+		localTeam = 0;
 	//if (localTeam != 0 && localTeam != 1)
 		//localTeam = 0;
 
