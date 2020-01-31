@@ -10,7 +10,7 @@ class Force : IEffectMode
 {
 	CBlob@ blob;
 
-	bool _push = true;
+	bool _push = false;
 	bool push
 	{
 		get{return _push;}
@@ -21,6 +21,17 @@ class Force : IEffectMode
 			blob.SendCommand(blob.getCommandID("Ppush"),params);
 		}
 	}
+	bool _effectPlayers = true;
+	bool effectPlayers
+	{
+		get{return _effectPlayers;}
+		set
+		{
+			CBitStream params;
+			params.write_bool(value);
+			blob.SendCommand(blob.getCommandID("PeffectPlayers"),params);
+		}
+	}
 
 	CParticle@[] particles;
 	bool particleFlipFlop = true;
@@ -29,6 +40,7 @@ class Force : IEffectMode
 	{
 		@this.blob = blob;
 		this.blob.addCommandID("Ppush");
+		this.blob.addCommandID("PeffectPlayers");
 	}
 
 	void onTick()
@@ -43,6 +55,7 @@ class Force : IEffectMode
 			for(int i = 0; i < blobs.length(); i++)
 			{
 				CBlob@ cblob = blobs[i];
+				if(cblob.getPlayer() !is null && !effectPlayers) {continue;}
 
 				Vec2f pos = cblob.getPosition();
 				Vec2f aimPos = blob.getAimPos();
@@ -109,6 +122,10 @@ class Force : IEffectMode
 			{
 				push = !push;
 			}
+			if(controls.isKeyJustPressed(KEY_KEY_O))
+			{
+				effectPlayers = !effectPlayers;
+			}
 		}
 	}
 
@@ -117,6 +134,10 @@ class Force : IEffectMode
 		if(cmd == blob.getCommandID("Ppush"))
 		{
 			this._push = params.read_bool();
+		}
+		else if(cmd == blob.getCommandID("PeffectPlayers"))
+		{
+			this._effectPlayers = params.read_bool();
 		}
 	}
 
