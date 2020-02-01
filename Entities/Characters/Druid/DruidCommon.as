@@ -24,7 +24,7 @@ namespace DruidParams
 	const ::Spell[] spells = 
 	{
 		Spell("orb", "Orb", 6, "Fire a basic orb which ricochets off of most surfaces until impacting an enemy and exploding, dealing minor damage.",
-			SpellType::other, 2, 80, 0, 360.0f),
+			SpellType::other, 1, 80, 0, 360.0f),
 							// 2 is the cost // 40 is the charge time //360.0f is the range //the 0 is the cooldown //6 is the icon it uses
 			
 		Spell("teleport", "Teleport to Target", 40, "Point to any visible position and teleport there.",
@@ -40,19 +40,25 @@ namespace DruidParams
 			SpellType::other, 30, 40, 3, 360.0f, true),	
 										
 		Spell("spikeorb", "SpikeBall", 30, "The spikeball is natures punishment to those that tread her woods unwelcomed",
-				SpellType::other, 4, 18, 0, 360.0f),			
+				SpellType::other, 4, 5, 1, 360.0f),			
 				
 		Spell("sporeshot", "SporeShot", 31, "A foul fungus that is painful to the touch, lighter than air",
-				SpellType::other, 4, 40, 0, 360.0f),	
+				SpellType::other, 4, 10, 1, 360.0f),	
 				
 		Spell("rock_wall", "Rock Wall", 36, "Create a wall of ordinary rock in front of you that blocks most things both ways. Its not exactly durable though.",
-			SpellType::other, 12, 7, 0, 14.0f, true),
+			SpellType::other, 12, 5, 5, 30.0f, true),
 				
-		Spell("healing_plant", "Nature's Remedy", 37, "This blessing from nature will seal your wounds",
+		Spell("healing_plant", "Nature's Remedy", 37, "This blessing from nature will seal your wounds.",
 				SpellType::other, 12, 7, 4, 60.0f, true),
 
-		Spell("mushroom", "Dancing Shroom", 34, "Empty spell.",
+		Spell("mushroom", "Dancing Shroom", 34, "A happy mushroom that will create it's own cloud of spores for you.",
 				SpellType::other, 12, 7, 0, 60.0f),
+				
+		Spell("slow", "Slow", 19, "Deprive a player of his speed and ability to teleport for a few moments.",
+			SpellType::other, 25, 20, 0, 360.0f, true), 
+			 
+		Spell("haste", "Haste", 20, "Give your allies some added speed and maneuverability. Fully charge to hasten yourself.",
+			SpellType::other, 20, 20, 0, 360.0f, true),
 
 		// Spell("bouldershot", "Boulder Shot", 35, "Empty spell.",
 		// 	SpellType::other, 15, 25, 0, 360.0f),
@@ -78,19 +84,20 @@ namespace DruidParams
 				Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f),
 
-				Spell("", "", 0, "Empty spell.",
+				/*Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f),
 
 				Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f)
-		/*Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		
+				Spell("", "", 0, "Empty spell.",
+		SpellType::other, 1, 1, 0, 0.0f),
 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+				Spell("", "", 0, "Empty spell.",
+		SpellType::other, 1, 1, 0, 0.0f),
 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f)*/		
+				Spell("", "", 0, "Empty spell.",
+		SpellType::other, 1, 1, 0, 0.0f)*/		
 				
 	};
 }

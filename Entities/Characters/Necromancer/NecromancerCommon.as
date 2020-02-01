@@ -24,22 +24,22 @@ namespace NecromancerParams
 	const ::Spell[] spells = 
 	{
 		Spell("orb", "Orb", 6, "Fire a basic orb which ricochets off of most surfaces until impacting an enemy and exploding, dealing minor damage.",
-			SpellType::other, 2, 40, 0, 360.0f),
+			SpellType::other, 3, 40, 0, 360.0f),
 			
 		Spell("teleport", "Teleport to Target", 40, "Point to any visible position and teleport there.",
-			SpellType::other, 20, 7, 0, 270.0f, true),
+			SpellType::other, 25, 10, 0, 270.0f, true),
 			
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
 			SpellType::other, 15, 10, 0, 8.0f, true),
 			 
 		Spell("slow", "Slow", 19, "Deprive a player of his speed and ability to teleport for a few moments.",
-			SpellType::other, 18, 30, 5, 360.0f, true), 
+			SpellType::other, 12, 30, 5, 360.0f, true), 
 			 
 		Spell("zombie", "Summon Zombie", 2, "Summon an undead minion to fight by your side. Summons at the aim location.",
 			SpellType::summoning, 20, 10, 0, 64.0f, true),
 			 
 		Spell("black_hole", "Black Hole", 18, "Open a portal into outer space, pulling your enemies into the airless void. Also drains the mana of enemies in the area and gives it to the caster.",
-			SpellType::other, 45, 65, 10, 180.0f, true),
+			SpellType::other, 45, 60, 5, 180.0f, true),
 			 
 		//Spell("greg", "Greg", 4, "Testing",
 			//SpellType::summoning, 20, 50, 15, 64.0f, true),
@@ -51,7 +51,7 @@ namespace NecromancerParams
 			SpellType::other, 50, 40, 0, 360.0f, true),
 			
 		Spell("arrow_rain", "Arrow Rain", 22, "Cause a long volley of randomly assorted arrows to fall upon thy foe. Great for area denial, and possibly overpowered!",
-			SpellType::other, 75, 60, 0, 360.0f, true),
+			SpellType::other, 75, 60, 10, 360.0f, true),
 			
 		Spell("recall_undead", "Recall Undead", 23, "Instantly bring all summoned minions, along with the unfortunate victims they may be carrying, to your location. ",
 				SpellType::other, 15, 10, 10, 8.0f, true),
@@ -66,7 +66,7 @@ namespace NecromancerParams
 				SpellType::other, 60, 10, 3, 360.0f, true),
 				
 		Spell("arcane_circle","Arcane Circle",32,"Summon an unholy circle that will drain the life force of your foes",
-			SpellType::other,45,40,30,360,true),
+			SpellType::other,55,40,10,360,true),
 							
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),	
