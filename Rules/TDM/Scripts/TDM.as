@@ -731,7 +731,7 @@ shared class TDMCore : RulesCore
 			//no teams survived, draw
 			if (teams_alive_count == 0)
 			{
-				winteamIndex = -1;
+				winteamIndex = -255;
 				team_wins_on_end = -1;
 			}
 
@@ -773,6 +773,12 @@ shared class TDMCore : RulesCore
 			}
 			regRules.set_bool("winner", false);
 			regRules.set_f32("coreHP", 0.0f);
+		}
+		else if(winteamIndex == -255)
+		{
+			rules.SetTeamWon(-1);   //game over!
+			rules.SetCurrentState(GAME_OVER);
+			rules.SetGlobalMessage("Draw!");
 		}
 	}
 
