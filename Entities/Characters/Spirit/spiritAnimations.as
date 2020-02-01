@@ -52,8 +52,10 @@ const f32 speedConst = 0.1; //this is a arbitrary value :D
 
 void onTick(CSprite@ this)
 {
-    
-    getHUD().SetCursorImage("arrow_cursor.png");
+    if(this.getBlob().getPlayer() is getLocalPlayer())
+    {
+        getHUD().SetCursorImage("arrow_cursor.png");
+    }
 
     CSpriteLayer@ glow = this.getSpriteLayer("glow");
 
