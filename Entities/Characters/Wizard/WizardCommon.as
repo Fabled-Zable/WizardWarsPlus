@@ -67,7 +67,7 @@ namespace WizardParams
 				SpellType::other, 40, 10, 0, 180.0f, true),
 
 		Spell("mana_drain_circle", "Circle of disenchant", 33, "Those who stand inside this circle lose their mana and are slowed to a crawl",
-				SpellType::other,45,40,30,360,true),			
+				SpellType::other,45,40,10,360,true),			
 				
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
