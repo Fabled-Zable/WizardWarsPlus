@@ -41,14 +41,14 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 	{
 		if(admin && text_in == "!admin")
 		{
-			server_CreateBlob("spirit",3,Vec2f(getMap().tilemapwidth*4,0)).server_SetPlayer(player);
+			server_CreateBlob("pixie",3,Vec2f(getMap().tilemapwidth*4,0)).server_SetPlayer(player);
 		}
 		return true;
 	}
 
 	if(admin && text_in == "!admin")
 	{
-		server_CreateBlob("spirit",blob.getTeamNum(),blob.getPosition()).server_SetPlayer(player);
+		server_CreateBlob("pixie",blob.getTeamNum(),blob.getPosition()).server_SetPlayer(player);
 		blob.server_Die();
 	}
 
