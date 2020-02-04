@@ -40,7 +40,7 @@ namespace WizardParams
 			SpellType::other, 18, 25, 0, 360.0f, true),
 			
 		Spell("heal", "Lesser Heal", 14, "Salves the least of your allies' wounds to restore a moderate portion of their health. Fully charge in order to heal yourself with less efficiency.",
-			SpellType::other, 15, 20, 0, 360.0f, true), 
+			SpellType::other, 20, 20, 10, 360.0f, true), 
 			 
 		Spell("firebomb", "Fire Bomb", 11, "Throw a high velocity condensed ball of flames that explodes on contact with enemies, igniting them. Has a minimum engagement distance of about 8 blocks.",
 			SpellType::other, 25, 25, 0, 360.0f, true),

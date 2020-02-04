@@ -394,6 +394,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 			else if (charge_state == NecromancerParams::extra_ready) {
 				orbspeed *= 1.2f;
+				healAmount *= 0.5f;
 			}
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
