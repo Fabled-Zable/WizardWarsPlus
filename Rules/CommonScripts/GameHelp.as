@@ -27,15 +27,7 @@ const string map_key = getControls().getActionKeyKeyName( AK_MAP );
 const string zoomIn_key = getControls().getActionKeyKeyName( AK_ZOOMIN );
 const string zoomOut_key = getControls().getActionKeyKeyName( AK_ZOOMOUT );
 
-const string lastChangesInfo = "Last changes :\n"
-		+ "- 10-12-2015 - By Chrispin\n"
-		+ "   Added in-game help menu for noobs.\n"
-		+ "   Hopefully I never have to tell anyone how to select spells ever again.\n"
-		+ "   Meteors no longer kill your teammates.\n"
-		+ "   Thinking about how to turn this into a more objective-based game.\n"
-		+ "   ---Considering a 'destroy the core' mode with builders, turrets, and auto respawning.\n"
-		+ "   ---Attack the enemy core while also protecting your own.\n"
-		+ "   ---Custom buildings and blocks to control the battlefield (i.e. prevent teleporting).\n";
+const string lastChangesInfo = "For changes please see https://github.com/Zable-the-Unable/WizardWarsPlus";
 
 const string textInfo = 
 		"- Default Basic Controls:\n" +
