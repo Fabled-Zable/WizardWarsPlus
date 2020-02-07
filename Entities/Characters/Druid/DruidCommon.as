@@ -63,8 +63,8 @@ namespace DruidParams
 		// Spell("bouldershot", "Boulder Shot", 35, "Empty spell.",
 		// 	SpellType::other, 15, 25, 0, 360.0f),
 
-				Spell("", "", 0, "Empty spell.",
-		SpellType::other, 1, 1, 0, 0.0f),
+				Spell("stone_spikes", "Stone Spikes", 16, "Creates a line of dangerous shark rocks.",
+		SpellType::other, 1, 30, 0, 180.0f),
 
 				Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f),

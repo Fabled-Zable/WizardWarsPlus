@@ -952,6 +952,18 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			this.SendCommand(this.getCommandID("rain"), params);
 		}
 		break;
+
+		case -1911379896://stone_spikes
+		{
+			if (!isServer())
+				return;
+			bool isleft = this.isFacingLeft();
+			Vec2f tilespace(int(aimpos.x / 8), int(aimpos.y / 8));
+			CBlob@ newblob = server_CreateBlob("stone_spike", this.getTeamNum(), (tilespace * 8) + Vec2f(4, 4));
+			newblob.set_u8("spikesleft", 8 + charge_state * 1.5 + (charge_state == 5 ? 7 : 0));
+			newblob.set_bool("leftdir", isleft);
+		}
+		break;
 			
 		default:
 		{
