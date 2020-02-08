@@ -2,23 +2,18 @@
 #include "ArcherCommon.as";
 #include "SpellCommon.as";
 
-const s32 bomb_fuse = 120;
 const f32 arrowMediumSpeed = 8.0f;
 const f32 arrowFastSpeed = 13.0f;
-
-
-//maximum is 15 as of 22/11/12 (see ArcherCommon.as)
-
-const s32 FIRE_IGNITE_TIME = 5;
 
 void onInit(CBlob@ this)
 {
 	CShape@ shape = this.getShape();
 	ShapeConsts@ consts = shape.getConsts();
-	consts.mapCollisions = false;	 // weh ave our own map collision
+	consts.mapCollisions = false;	 // we have our own map collision
 	consts.bullet = false;
 	consts.net_threshold_multiplier = 4.0f;
 	this.Tag("projectile");
+	this.Tag("counterable");
 
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
@@ -29,9 +24,6 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	u32 shooTime = this.get_u32("shooTime"); //base for timer system
-	bool allowStick = this.get_bool("allowStick"); //base for sticking delay
-
     CShape@ shape = this.getShape();
 
     f32 angle;
@@ -50,13 +42,14 @@ void onTick(CBlob@ this)
 			}
 		}
         angle = (this.getVelocity()).Angle();
-		Pierce(this);   //map
+		Pierce(this);   //Pierce call
 		this.setAngleDegrees(-angle);
     }
 	//start of sword launch logic
-	u32 lTime = getGameTime();
+	u32 shooTime = this.get_u32("shooTime"); 		//base for timer system
+	u32 lTime = getGameTime();						//clock
 
-		if (this.hasTag("soundProducer"))
+		if (this.hasTag("soundProducer"))  //check if this is the sword assigned for the spawn sound
 	{
 		this.getSprite().PlaySound("swordsummon.ogg");
 		this.Untag("soundProducer");
@@ -64,15 +57,10 @@ void onTick(CBlob@ this)
 
 	if (!this.hasTag("canStickNow"))
 	{
-		u32 fTime = shooTime + 30;
+		u32 fTime = shooTime + 20;
 		if (lTime > fTime)  //timer system for collision with walls
 		{
-		allowStick = true;
-		this.Tag("canStickNow");
-		}
-		else
-		{
-		allowStick = false;
+		this.Tag("canStickNow"); //stops
 		}
 	}
 
@@ -87,7 +75,7 @@ void onTick(CBlob@ this)
 			swordVel *= swordSpeed;
 			this.setVelocity(swordVel);
 			this.getSprite().PlaySound("swordlaunch.ogg");
-			this.Tag("cruiseMode"); //as to not set the drag every tick
+			this.Tag("cruiseMode"); //stops
 		}
 	}
 }
@@ -98,7 +86,7 @@ void Pierce(CBlob@ this, CBlob@ blob = null)
 	CMap@ map = this.getMap();
 	Vec2f position = blob is null ? this.getPosition() : blob.getPosition();
 	
-	if (this.hasTag("canStickNow"))
+	if (this.hasTag("canStickNow"))  //doesn't do raycasts until needed
 	{
 		if (map.rayCastSolidNoBlobs(this.getShape().getVars().oldpos, position, end))
 		{
@@ -161,7 +149,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 	
 	if (blob !is null)
 	{
-		if (isEnemy(this, blob))
+		if (isEnemy(this, blob) && this.hasTag("cruiseMode"))
 		{
 		float expundamage = this.get_f32("damage");
 		this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
