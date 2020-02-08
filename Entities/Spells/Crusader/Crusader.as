@@ -18,7 +18,9 @@ void onInit(CBlob@ this)
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
 
-    this.server_SetTimeToDie(20);
+    this.server_SetTimeToDie(10);
+
+	this.setAngleDegrees(90);
 
 }
 
@@ -43,7 +45,6 @@ void onTick(CBlob@ this)
 		}
         angle = (this.getVelocity()).Angle();
 		Pierce(this);   //Pierce call
-		this.setAngleDegrees(-angle);
     }
 	//start of sword launch logic
 	u32 shooTime = this.get_u32("shooTime"); 		//base for timer system
@@ -57,7 +58,7 @@ void onTick(CBlob@ this)
 
 	if (!this.hasTag("canStickNow"))
 	{
-		u32 fTime = shooTime + 18;
+		u32 fTime = shooTime + 10;
 		if (lTime > fTime)  //timer system for collision with walls
 		{
 		this.Tag("canStickNow"); //stops
@@ -68,13 +69,8 @@ void onTick(CBlob@ this)
 	{
 		if (lTime > shooTime)  //timer system for roboteching
 		{
-			shape.setDrag(0.0f);
-			Vec2f swordVel = this.get_Vec2f("targetto");
-			float swordSpeed = this.get_f32("speeddo");
-			swordVel.Normalize();
-			swordVel *= swordSpeed;
-			this.setVelocity(swordVel);
-			this.getSprite().PlaySound("swordlaunch.ogg");
+			shape.SetGravityScale(2);
+			shape.SetStatic(false);
 			this.Tag("cruiseMode"); //stops
 		}
 	}
@@ -84,7 +80,7 @@ void Pierce(CBlob@ this, CBlob@ blob = null)
 {
 	Vec2f end;
 	CMap@ map = this.getMap();
-	Vec2f position = blob is null ? this.getPosition() : blob.getPosition();
+	Vec2f position = blob is null ? (this.getPosition() + Vec2f(0,20)) : blob.getPosition();
 	
 	if (this.hasTag("canStickNow"))  //doesn't do raycasts until needed
 	{
@@ -98,14 +94,7 @@ void Pierce(CBlob@ this, CBlob@ blob = null)
 
 void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 customData)
 {
-	if (velocity.Length() > arrowFastSpeed)
-	{
-		this.getSprite().PlaySound("ArrowHitGroundFast.ogg");
-	}
-	else
-	{
-		this.getSprite().PlaySound("ArrowHitGround.ogg");
-	}
+	this.getSprite().PlaySound("bling.ogg");
 
 	f32 radius = this.getRadius();
 
@@ -116,7 +105,7 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 	Vec2f norm = velocity;
 	norm.Normalize();
 	norm *= (1.5f * radius);
-	Vec2f lock = worldPoint - norm;
+	Vec2f lock = worldPoint + Vec2f(0,-20);
 	this.set_Vec2f("lock", lock);
 
 	this.Sync("lock", true);
@@ -142,6 +131,7 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 			}
 		}
 	}
+	this.getShape().SetStatic(true);
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )

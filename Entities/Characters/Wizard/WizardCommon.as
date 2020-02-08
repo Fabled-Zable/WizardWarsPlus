@@ -72,8 +72,8 @@ namespace WizardParams
 		Spell("sword_cast", "Sword Casting", 33, "New sword throwing spell.",
 				SpellType::other, 1, 30, 0, 360.0f,true),
 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("crusader", "Crusader", 33, "New sword blockading spell.",
+				SpellType::other, 1, 1, 0, 360.0f, true),
 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
