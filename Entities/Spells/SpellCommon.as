@@ -933,7 +933,62 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			this.getSprite().PlaySound("forceofnature_start.ogg", 2.0f, 1.0f);
 		}
 		break;
-			
+		
+		case 482205956://sword_cast
+		{
+		if (!isServer()){
+           		return;
+			}
+
+			f32 orbspeed = NecromancerParams::shoot_max_vel * 1.1f;
+			f32 orbDamage = 2.0f;
+            f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;//Is this condition true? yes is 1.2f and no is 1.0f
+
+            if (charge_state == NecromancerParams::cast_3) {
+				orbDamage *= 1.0f + extraDamage;
+			}
+			else if (charge_state == NecromancerParams::extra_ready) {
+				orbspeed *= 1.2f;
+				orbDamage *= 1.5f + extraDamage;
+			}
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f spawnVel = Vec2f(0,(3 * -1.0f));
+			bool allowStick = false;
+			float swordWheelRot = (XORRandom(45) +1 * -1.0f);
+			const int numOrbs = 8;
+			for (int i = 0; i < numOrbs; i++)
+			{
+			CBlob@ orb = server_CreateBlob( "expunger" );
+			if (orb !is null)
+				{
+				u32 shooTime = getGameTime() + (XORRandom(16) +42);
+				orb.set_bool("allowStick", allowStick);
+				orb.set_Vec2f("targetto", orbVel);
+				orb.set_f32("speeddo", orbspeed);
+				orb.set_f32("damage", orbDamage);
+				orb.set_u32("shooTime", shooTime);
+
+				if (i == 1)
+				{
+					orb.Tag("soundProducer");
+				}
+
+				orb.IgnoreCollisionWhileOverlapped( this );
+				orb.SetDamageOwnerPlayer( this.getPlayer() );
+				orb.server_setTeamNum( this.getTeamNum() );
+				orb.getShape().SetGravityScale(0);
+				orb.setPosition( orbPos );
+				Vec2f newVel = spawnVel;
+				newVel.RotateBy(swordWheelRot + 45*i, Vec2f());
+				orb.setVelocity(newVel);
+				}
+			}
+		}
+		break;
+		
 		case 2029285710://zombie_rain
 		case 1033042153://skeleton_rain
 		case 1761466304://meteor_rain
