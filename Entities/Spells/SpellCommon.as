@@ -1062,6 +1062,40 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			this.SendCommand(this.getCommandID("rain"), params);
 		}
 		break;
+
+		case -1911379896://stone_spikes
+		{
+			if (!isServer())
+				return;
+			bool isleft = this.isFacingLeft();
+			Vec2f tilespace(int(aimpos.x / 8), int(aimpos.y / 8));
+			Vec2f worldspace = tilespace * 8 + Vec2f(4, 4);
+			Vec2f spawnpos = Vec2f_zero;
+			CMap@ map = getMap();
+			for(int i = 0; i < 50; i++)
+			{
+				if(!map.isTileSolid(worldspace + Vec2f(0, i * 8)) && map.isTileSolid(worldspace + Vec2f(0, i * 8 + 8)))
+				{
+					spawnpos = worldspace + Vec2f(0, i * 8);
+					break;
+				}	
+				/*else if(!map.isTileSolid(worldspace + Vec2f(0, i * -8)) && map.isTileSolid(worldspace + Vec2f(0, i * -8 + 8)))
+				{
+					spawnpos = worldspace + Vec2f(0, i * -8);
+					break;
+				}*/
+			}
+			if(spawnpos != Vec2f_zero)
+			{
+				if(map.getBlobAtPosition(spawnpos) is null || !(map.getBlobAtPosition(spawnpos).getName() == "stone_spike"))
+				{
+					CBlob@ newblob = server_CreateBlob("stone_spike", this.getTeamNum(), spawnpos);
+					newblob.set_u8("spikesleft", 8 + charge_state * 1.5 + (charge_state == 5 ? 7 : 0));
+					newblob.set_bool("leftdir", isleft);
+				}
+			}
+		}
+		break;
 			
 		default:
 		{
@@ -1252,7 +1286,7 @@ void counterSpell( CBlob@ blob )
 				bool sameTeam = b.getTeamNum() == blob.getTeamNum();
 			
 				bool countered = false;
-				if ( b.hasTag("counterable") && !sameTeam )
+				if ( b.hasTag("counterable") && (!sameTeam || b.hasTag("alwayscounter")) )
 				{
 					b.Untag("exploding");
 					b.server_Die();

@@ -5,6 +5,7 @@ void onInit(CBlob@ this)
 {
 	this.Tag("standingup");
 	this.Tag("counterable");
+	this.Tag("alwayscounter");
 	//this.set_f32("explosive_radius", 2.0f);
 	//this.set_f32("explosive_damage", 10.0f);
 	//this.set_f32("map_damage_radius", 4.0f);
@@ -14,14 +15,36 @@ void onInit(CBlob@ this)
 	this.SetMapEdgeFlags(CBlob::map_collide_none);
 	
 	this.getShape().getConsts().bullet = true;
-	this.getSprite().SetZ(1000.0f);
+	
 	this.getShape().SetGravityScale(0.0f);
 	this.getShape().SetStatic(true);
 	this.SetFacingLeft(XORRandom(2) == 0);
-	this.getSprite().SetFrame(XORRandom(4));
-	this.server_SetTimeToDie(54);
-	this.set_string("custom_explosion_sound", "SporeShotExplosion.ogg");
-	this.getSprite().PlaySound("WizardShoot.ogg", 2.0f);
+	this.server_SetTimeToDie(30);
+	
+}
+
+void onInit(CSprite@ this)
+{
+	this.SetFrame(XORRandom(4));
+	this.PlaySound("Rubble" + (XORRandom(2) + 1) + ".ogg", 2.0f);
+	makeGibParticle("GenericGibs", this.getBlob().getPosition(), getRandomVelocity(0, 3.0f, 360.0f) + Vec2f(0.0f, -2.0f),
+		                2, 4 + XORRandom(4), Vec2f(8, 8), 2.0f, 0, "", 0);
+	this.SetZ(100.0f);
+	
+	this.SetOffset(Vec2f(0, 5));
+}
+
+void onTick(CSprite@ this)
+{
+	if(this.getBlob().getTickSinceCreated() < 5)
+	{
+		this.SetOffset(Vec2f(0, 5.0 + -1.0 * this.getBlob().getTickSinceCreated()));
+	}
+	else
+	{
+		this.SetOffset(Vec2f_zero);
+		this.getCurrentScript().tickFrequency = 0;
+	}
 }
 
 float homingRadius = 40;
@@ -33,27 +56,43 @@ void onTick(CBlob@ this)
 		if(this.get_u8("spikesleft") > 0 && isServer())
 		{
 			CMap@ map = getMap();
-			Vec2f dir = (this.get_bool("leftdir") ? -Vec2f(8, 8) : Vec2f(8, 8));
+			Vec2f dir = (this.get_bool("leftdir") ? -Vec2f(8, 0) : Vec2f(8, 0));
 			Vec2f pos = this.getPosition();
+			/*
 			if(!map.isTileSolid(pos + dir) && map.isTileSolid(pos + dir + Vec2f(0, 8)))
 			{
 				continueSpikes(this, pos + dir);
 			}
-			else if(!map.isTileSolid(this.getPosition() + dir + Vec2f(0, -8)) && map.isTileSolid(this.getPosition() + dir))
+			else if(!map.isTileSolid(pos + dir + Vec2f(0, -8)) && map.isTileSolid(pos + dir))
 			{
 				continueSpikes(this, pos + dir + Vec2f(0, -8));
 			}
-			else if(!map.isTileSolid(this.getPosition() + dir + Vec2f(0, 8)) && map.isTileSolid(this.getPosition() + dir + Vec2f(0, 16)))
+			else if(!map.isTileSolid(pos + dir + Vec2f(0, 8)) && map.isTileSolid(pos + dir + Vec2f(0, 16)))
 			{
 				continueSpikes(this, pos + dir + Vec2f(0, 8));
+			}*/
+			for(int i = 0; i < 5; i++)
+			{
+				if(!map.isTileSolid(pos + Vec2f(0, i * 8) + dir) && map.isTileSolid(pos + Vec2f(0, i * 8 + 8) + dir))
+				{
+					continueSpikes(this, pos + Vec2f(0, i * 8) + dir, map);
+					break;
+				}	
+				else if(!map.isTileSolid(pos + Vec2f(0, i * -8) + dir) && map.isTileSolid(pos + Vec2f(0, i * -8 + 8) + dir))
+				{
+					continueSpikes(this, pos + Vec2f(0, i * -8) + dir, map);
+					break;
+				}
 			}
 		}
 		this.getCurrentScript().tickFrequency = 0;
 	}
 }
 
-void continueSpikes(CBlob@ this, Vec2f pos)
+void continueSpikes(CBlob@ this, Vec2f pos, CMap@ map)
 {
+	if(map.getBlobAtPosition(pos) !is null && map.getBlobAtPosition(pos).getName() == "stone_spike")
+		return;
 	CBlob@ new = server_CreateBlob("stone_spike", this.getTeamNum(), pos);
 	new.set_u8("spikesleft", this.get_u8("spikesleft") - 1);
 	new.set_bool("leftdir", this.get_bool("leftdir"));
