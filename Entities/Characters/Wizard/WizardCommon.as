@@ -73,10 +73,10 @@ namespace WizardParams
 				SpellType::other, 30, 30, 0, 360.0f,true),
 
 		Spell("crusader", "Crusader", 42, "New sword blockading spell.",
-				SpellType::other, 25, 30, 0, 360.0f, true),
+				SpellType::other, 20, 30, 0, 360.0f, true),
 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("executioner", "Executioner", 43, "New sword Execution spell.",
+				SpellType::other, 30, 20, 0, 360.0f, true),
 
 				Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f),
