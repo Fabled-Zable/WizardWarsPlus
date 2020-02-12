@@ -3,6 +3,7 @@
 #include "NecromancerCommon.as";
 #include "WizardCommon.as";
 #include "DruidCommon.as";
+#include "SwordCasterCommon.as";
 #include "Hitters.as";
 #include "PlayerPrefsCommon.as";
 
