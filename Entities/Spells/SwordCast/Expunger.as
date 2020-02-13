@@ -14,6 +14,7 @@ void onInit(CBlob@ this)
 	consts.net_threshold_multiplier = 4.0f;
 	this.Tag("projectile");
 	this.Tag("counterable");
+	shape.SetGravityScale( 0.0f );
 
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
