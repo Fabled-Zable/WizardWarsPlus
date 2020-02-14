@@ -11,7 +11,7 @@ void onInit(CBlob@ this)
 	ShapeConsts@ consts = shape.getConsts();
 	consts.mapCollisions = false;	 // we have our own map collision
 	consts.bullet = false;
-	consts.net_threshold_multiplier = 4.0f;
+	consts.net_threshold_multiplier = 0.1f;
 	this.Tag("projectile");
 	this.Tag("counterable");
 	shape.SetGravityScale( 0.0f );
@@ -142,14 +142,14 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 	{
 		if (isEnemy(this, blob) && this.hasTag("cruiseMode"))
 		{
+			float expundamage = this.get_f32("damage");
 			if (!blob.hasTag("barrier"))
 			{
-				float expundamage = this.get_f32("damage");
 				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
 			}
 			else
 			{
-				this.server_Die();
+				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), (expundamage / 2) , Hitters::arrow, true);
 			}
 		}
 	}

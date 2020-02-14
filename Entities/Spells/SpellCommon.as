@@ -942,7 +942,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 
 			f32 orbspeed = NecromancerParams::shoot_max_vel * 1.1f;
-			f32 orbDamage = 0.8f;
+			f32 orbDamage = 0.4f;
             f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;//Is this condition true? yes is 1.2f and no is 1.0f
 
             if (charge_state == NecromancerParams::cast_3) {
@@ -1053,12 +1053,12 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
             f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;
 
 			if (charge_state == NecromancerParams::cast_3) {
-					orbDamage *= 1.0f + extraDamage;
-				}
-					else if (charge_state == NecromancerParams::extra_ready) {
-					orbspeed *= 1.0f;
-					orbDamage *= 1.5f + extraDamage;
-				}
+				orbDamage *= 1.0f + extraDamage;
+			}
+				else if (charge_state == NecromancerParams::extra_ready) {
+				orbspeed *= 1.0f;
+				orbDamage *= 1.5f + extraDamage;
+			}
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
@@ -1066,20 +1066,15 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
-			u32 timer = getGameTime();
 			//distance between you and the target
 			float stopLength = (targetPos - orbPos).Length() / 128;
 			float lifetime = stopLength *15;
-			u32 stopTime = timer + lifetime;
+			u32 stopTime = getGameTime() + lifetime;
 			u32 shooTime = stopTime + 45;
-
-			
 
 			CBlob@ orb = server_CreateBlob("executioner",this.getTeamNum(),orbPos);
 			if (orb !is null)
-				{
-				orb.set_u16("caster", this.getNetworkID());
-				orb.set_Vec2f("speeddo", orbVel);
+			{
 				orb.set_f32("damage", orbDamage);
 				orb.set_u32("stopTime", stopTime);
 				orb.set_u32("shooTime", shooTime);
@@ -1087,7 +1082,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orb.SetDamageOwnerPlayer( this.getPlayer() );
 				orb.getShape().SetGravityScale(0);
 				orb.setVelocity( orbVel );
-				}
+			}
 			
 		}
 		break;

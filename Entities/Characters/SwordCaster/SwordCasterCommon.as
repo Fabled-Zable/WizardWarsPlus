@@ -34,12 +34,12 @@ namespace SwordCasterParams
 			SpellType::other, 15, 10, 0, 8.0f, true),
 			
 		Spell("executioner", "Executioner", 43, "New sword Execution spell.",
-				SpellType::other, 30, 20, 0, 360.0f, true),
+				SpellType::other, 40, 30, 0, 360.0f, true),
 			
 		Spell("crusader", "Crusader", 42, "New sword blockading spell.",
 				SpellType::other, 20, 30, 0, 360.0f, true),
 			
-		Spell("sword_cast", "Sword Casting", 41, "New sword throwing spell.",
+		Spell("sword_cast", "Expunger", 41, "New sword throwing spell.",
 				SpellType::other, 30, 30, 0, 360.0f,true),
 			 
 		Spell("", "", 0, "Empty spell.",
