@@ -150,7 +150,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 	
 	if (blob !is null)
 	{
-		if (isEnemy(this, blob)
+		if (isEnemy(this, blob))
 		{
 		float expundamage = this.get_f32("damage");
 		if (!this.hasTag("collided"))

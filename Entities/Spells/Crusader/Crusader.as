@@ -59,7 +59,7 @@ void onTick(CBlob@ this)
 
 	if (!this.hasTag("canStickNow"))
 	{
-		u32 fTime = shooTime + 10;
+		u32 fTime = shooTime + 15;
 		if (lTime > fTime)  //timer system for collision with walls
 		{
 		this.Tag("canStickNow"); //stops

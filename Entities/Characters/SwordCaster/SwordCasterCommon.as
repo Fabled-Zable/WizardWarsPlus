@@ -17,7 +17,7 @@ namespace SwordCasterParams
 	const ::f32 shoot_max_vel = 8.0f;
 	const ::f32 MAX_ATTACK_DIST = 360.0f;
 	const ::s32 MAX_MANA = 150;
-	const ::s32 MANA_REGEN = 4;
+	const ::s32 MANA_REGEN = 5;
 	
 	const ::string[] zombieTypes = {"zombie", "skeleton", "greg", "wraith"};
 	
@@ -28,10 +28,10 @@ namespace SwordCasterParams
 							// 2 is the cost // 40 is the charge time //360.0f is the range //the 0 is the cooldown //6 is the icon it uses
 			
 		Spell("teleport", "Teleport to Target", 40, "Point to any visible position and teleport there.",
-			SpellType::other, 20, 6, 0, 270.0f, true), 
+			SpellType::other, 25, 6, 0, 270.0f, true), 
 			
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
-			SpellType::other, 15, 10, 0, 8.0f, true),
+			SpellType::other, 30, 10, 0, 8.0f, true),
 			
 		Spell("executioner", "Executioner", 43, "New sword Execution spell.",
 				SpellType::other, 40, 30, 0, 360.0f, true),

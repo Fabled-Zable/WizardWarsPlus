@@ -1086,6 +1086,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			
 		}
 		break;
+
 		
 		case 2029285710://zombie_rain
 		case 1033042153://skeleton_rain
