@@ -150,18 +150,21 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 	
 	if (blob !is null)
 	{
+		if (isEnemy(this, blob)
+		{
 		float expundamage = this.get_f32("damage");
 		if (!this.hasTag("collided"))
-		{
-			this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
-			if (blob.hasTag("barrier"))
+			{
+				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
+				if (blob.hasTag("barrier"))
+				{
+					this.server_Die();
+				}
+			}
+			else
 			{
 				this.server_Die();
 			}
-		}
-		else
-		{
-			this.server_Die();
 		}
 	}
 }

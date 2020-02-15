@@ -17,7 +17,7 @@ namespace SwordCasterParams
 	const ::f32 shoot_max_vel = 8.0f;
 	const ::f32 MAX_ATTACK_DIST = 360.0f;
 	const ::s32 MAX_MANA = 150;
-	const ::s32 MANA_REGEN = 3;
+	const ::s32 MANA_REGEN = 4;
 	
 	const ::string[] zombieTypes = {"zombie", "skeleton", "greg", "wraith"};
 	
