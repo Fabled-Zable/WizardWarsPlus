@@ -144,6 +144,7 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 			}
 		}
 	}
+	this.getCurrentScript().tickFrequency = 0;
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
