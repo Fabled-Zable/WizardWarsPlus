@@ -7,6 +7,7 @@
 #include "WizardCommon.as"
 #include "NecromancerCommon.as"
 #include "DruidCommon.as"
+#include "SwordCasterCommon.as"
 
 #define CLIENT_ONLY
 
@@ -16,6 +17,7 @@ enum spellClass
     Wizard = 1,
     Necromancer,
     Druid,
+	SwordCaster,
 }
 
 void onInit(CRules@ rules)
@@ -97,6 +99,11 @@ void onSetPlayer( CRules@ this, CBlob@ blob, CPlayer@ player )//Selects the spel
         _class = Druid;
         spells_length = DruidParams::spells.length;
     }
+    else if(blob_name == "swordcaster")
+    {
+        _class = SwordCaster;
+        spells_length = SwordCasterParams::spells.length;
+    }
     else
     {
         return;
@@ -123,6 +130,9 @@ void onSetPlayer( CRules@ this, CBlob@ blob, CPlayer@ player )//Selects the spel
             break;
             case Druid:
                 spell = DruidParams::spells[i];
+            break;
+            case SwordCaster:
+                spell = SwordCasterParams::spells[i];
             break;
             
             default:

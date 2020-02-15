@@ -69,8 +69,14 @@ namespace WizardParams
 		Spell("mana_drain_circle", "Circle of disenchant", 33, "Those who stand inside this circle lose their mana and are slowed to a crawl",
 				SpellType::other,45,40,10,360,true),			
 				
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		/*Spell("sword_cast", "Sword Casting", 41, "New sword throwing spell.",
+				SpellType::other, 30, 30, 0, 360.0f,true),
+
+		Spell("crusader", "Crusader", 42, "New sword blockading spell.",
+				SpellType::other, 20, 30, 0, 360.0f, true),
+
+		Spell("executioner", "Executioner", 43, "New sword Execution spell.",
+				SpellType::other, 30, 20, 0, 360.0f, true),*/
 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
@@ -78,8 +84,11 @@ namespace WizardParams
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
 
-				Spell("", "", 0, "Empty spell.",
-		SpellType::other, 1, 1, 0, 0.0f),
+		Spell("", "", 0, "Empty spell.",
+				SpellType::other, 1, 1, 0, 0.0f),
+
+		Spell("", "", 0, "Empty spell.",
+				SpellType::other, 1, 1, 0, 0.0f),
 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f)						

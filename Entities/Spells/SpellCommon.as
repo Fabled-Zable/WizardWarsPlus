@@ -3,6 +3,7 @@
 #include "NecromancerCommon.as";
 #include "WizardCommon.as";
 #include "DruidCommon.as";
+#include "SwordCasterCommon.as";
 #include "Hitters.as";
 #include "PlayerPrefsCommon.as";
 
@@ -933,7 +934,178 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			this.getSprite().PlaySound("forceofnature_start.ogg", 2.0f, 1.0f);
 		}
 		break;
+		
+		case 482205956://sword_cast
+		{
+		if (!isServer()){
+           		return;
+			}
+
+			f32 orbspeed = NecromancerParams::shoot_max_vel * 1.1f;
+			f32 orbDamage = 0.4f;
+            f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;//Is this condition true? yes is 1.2f and no is 1.0f
+
+            if (charge_state == NecromancerParams::cast_3) {
+				orbDamage *= 1.0f + extraDamage;
+			}
+			else if (charge_state == NecromancerParams::extra_ready) {
+				orbspeed *= 1.2f;
+				orbDamage *= 1.5f + extraDamage;
+			}
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f spawnVel = Vec2f(0,(3 * -1.0f));
+			float swordWheelRot = (XORRandom(45) +1 * -1.0f);
+			const int numOrbs = 8;
+			for (int i = 0; i < numOrbs; i++)
+			{
+			CBlob@ orb = server_CreateBlob( "expunger" );
+			if (orb !is null)
+				{
+				u32 shooTime = getGameTime() + (XORRandom(16) +42);
+				orb.set_Vec2f("targetto", orbVel);
+				orb.set_f32("speeddo", orbspeed);
+				orb.set_f32("damage", orbDamage);
+				orb.set_u32("shooTime", shooTime);
+
+				if (i == 1)
+				{
+					orb.Tag("soundProducer");
+				}
+
+				orb.IgnoreCollisionWhileOverlapped( this );
+				orb.SetDamageOwnerPlayer( this.getPlayer() );
+				orb.server_setTeamNum( this.getTeamNum() );
+				orb.getShape().SetGravityScale(0);
+				orb.setPosition( orbPos );
+				Vec2f newVel = spawnVel;
+				newVel.RotateBy(swordWheelRot + 45*i, Vec2f());
+				orb.setVelocity(newVel);
+				}
+			}
+		}
+		break;
+
+		case -32608566://crusader
+		{
+			u16 lifetime = 10;
+
+			u32 landheight = getLandHeight(aimpos);
+			if(landheight != 0)
+			{
+                if (!isServer()){
+				    return;
+			    }
+					f32 orbDamage = 1.2f;
+            		f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;//Is this condition true? yes is 1.2f and no is 1.0f
+
+            		if (charge_state == NecromancerParams::cast_3) {
+					orbDamage *= 1.0f + extraDamage;
+				}
+					else if (charge_state == NecromancerParams::extra_ready) {
+					orbDamage *= 1.5f + extraDamage;
+				}
+
+				Vec2f baseSite = Vec2f(aimpos.x , landheight - 8);
+				const int numOrbs = 3;
+				for (int i = 0; i < numOrbs; i++)
+				{
+					Vec2f cruSpawn = baseSite + Vec2f(-30.0f + 30.0f*i, -90.0f);
+
+					CBlob@ orb = server_CreateBlob( "crusader" );
+					if (orb !is null)
+					{
+						orb.set_f32("damage", orbDamage);
+						u32 shooTime = getGameTime() + (XORRandom(16) +42);
+						orb.set_u32("shooTime", shooTime);
+
+						orb.SetDamageOwnerPlayer( this.getPlayer() );
+						orb.getShape().SetGravityScale(0);
+						orb.server_setTeamNum( this.getTeamNum() );
+						orb.setPosition( cruSpawn );
+					}
+				}
+			}
+            else//Can't place this under the map
+            {
+				ManaInfo@ manaInfo;
+				if (!this.get( "manaInfo", @manaInfo )) {
+					return;
+				}
+				
+				manaInfo.mana += spell.mana;
+				
+				this.getSprite().PlaySound("ManaStunCast.ogg", 1.0f, 1.0f);
+            }
+		}
+		break;
+
+		case 603057094://executioner
+		{
+			if (!isServer()){
+           		return;
+			}
+
+			f32 orbspeed = NecromancerParams::shoot_max_vel * 1.0f;
+			f32 orbDamage = 2.5f;
+            f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;
+
+			if (charge_state == NecromancerParams::cast_3) {
+				orbDamage *= 1.0f + extraDamage;
+			}
+				else if (charge_state == NecromancerParams::extra_ready) {
+				orbspeed *= 1.0f;
+				orbDamage *= 1.5f + extraDamage;
+			}
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (targetPos- orbPos);
+			orbVel.Normalize();
+			orbVel *= orbspeed;
+
+			//distance between you and the target
+			float stopLength = (targetPos - orbPos).Length() / 128;
+			float lifetime = stopLength *15;
+			u32 stopTime = getGameTime() + lifetime;
+			u32 shooTime = stopTime + 45;
+
+			CBlob@ orb = server_CreateBlob("executioner",this.getTeamNum(),orbPos);
+			if (orb !is null)
+			{
+				orb.set_f32("damage", orbDamage);
+				orb.set_u32("stopTime", stopTime);
+				orb.set_u32("shooTime", shooTime);
+
+				orb.SetDamageOwnerPlayer( this.getPlayer() );
+				orb.getShape().SetGravityScale(0);
+				orb.setVelocity( orbVel );
+			}
 			
+		}
+		break;
+
+		case 408450338://bladed_shell
+		{
+			if (!isServer()){
+           		return;
+			}
+
+			f32 orbDamage = 0.2f;
+            f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;
+
+			if (charge_state == NecromancerParams::cast_3) {
+				orbDamage *= 1.0f + extraDamage;
+			}
+				else if (charge_state == NecromancerParams::extra_ready) {
+				orbDamage *= 1.0f + extraDamage;
+			}
+			
+		}
+		break;
+		
 		case 2029285710://zombie_rain
 		case 1033042153://skeleton_rain
 		case 1761466304://meteor_rain
