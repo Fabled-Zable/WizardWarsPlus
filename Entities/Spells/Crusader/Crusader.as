@@ -150,6 +150,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 			else
 			{
 				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), (expundamage / 2) , Hitters::arrow, true);
+				this.server_Die();
 			}
 		}
 	}
