@@ -69,7 +69,7 @@ void onTick(CBlob@ this)
 	{
 		if (lTime > shooTime)  //timer system for roboteching
 		{
-			shape.setDrag(0.0f);
+			shape.setDrag(0.000000001f);
 			Vec2f swordVel = this.get_Vec2f("targetto");
 			float swordSpeed = this.get_f32("speeddo");
 			swordVel.Normalize();
