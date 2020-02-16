@@ -1,4 +1,4 @@
-// Wizard animations
+// Necromancer animations
 
 #include "SwordCasterCommon.as"
 #include "PlayerPrefsCommon.as"
@@ -18,7 +18,7 @@ const string damageboost_layer2 = "damage boost 2";
 
 void onInit(CSprite@ this)
 {
-	RunnerTextures@ runner_tex = addRunnerTextures(this, "wizard", "Wizard");
+	RunnerTextures@ runner_tex = addRunnerTextures(this, "swordcaster", "SwordCaster");
 
 	LoadSprites(this);
 }
@@ -67,7 +67,7 @@ void LoadSprites( CSprite@ this )
 		damageboost.SetVisible(false);
 		damageboost.SetRelativeZ(-5.0f);
 	}
-    
+
     this.RemoveSpriteLayer(damageboost_layer2);
 	CSpriteLayer@ damageboost2 = this.addSpriteLayer( damageboost_layer2, "DamageBoost.png", 32, 32 );
 
@@ -80,8 +80,6 @@ void LoadSprites( CSprite@ this )
         damageboost2.SetRelativeZ(-5.0f);
 	}
 }
-
-
 
 // stuff for shiny - global cause is used by a couple functions in a tick
 bool needs_shiny = false;
@@ -108,7 +106,7 @@ void onTick( CSprite@ this )
 			this.RemoveSpriteLayer(shiny_layer);
             this.RemoveSpriteLayer(damageboost_layer);
             this.RemoveSpriteLayer(damageboost_layer2);
-        }
+		}
         
         Vec2f vel = blob.getVelocity();
 
@@ -125,8 +123,8 @@ void onTick( CSprite@ this )
         return;
     }
     
-    SwordCasterInfo@ swrd;
-	if (!blob.get( "swordcasterInfo", @swrd )) 
+    SwordCasterInfo@ swordcaster;
+	if (!blob.get( "swordcasterInfo", @swordcaster )) 
 	{
 		return;
 	}
@@ -153,12 +151,12 @@ void onTick( CSprite@ this )
 	const bool inair = (!blob.isOnGround() && !blob.isOnLadder());
 	bool spell_ready = false;
 	if (blob.isKeyPressed(key_action1))
-		spell_ready = SwordCasterParams::spells[playerPrefsInfo.primarySpellID].needs_full ? swrd.charge_state >= SwordCasterParams::cast_3 : swrd.charge_state >= SwordCasterParams::cast_1;
+		spell_ready = SwordCasterParams::spells[playerPrefsInfo.primarySpellID].needs_full ? swordcaster.charge_state >= SwordCasterParams::cast_3 : swordcaster.charge_state >= SwordCasterParams::cast_1;
 	else if (blob.isKeyPressed(key_action2))
-		spell_ready = SwordCasterParams::spells[Maths::Min(playerPrefsInfo.hotbarAssignments_SwordCaster[15], spellsLength-1)].needs_full ? swrd.charge_state >= SwordCasterParams::cast_3 : swrd.charge_state >= SwordCasterParams::cast_1;
-	bool full_charge = swrd.charge_state == SwordCasterParams::extra_ready;
+		spell_ready = SwordCasterParams::spells[Maths::Min(playerPrefsInfo.hotbarAssignments_SwordCaster[15], spellsLength-1)].needs_full ? swordcaster.charge_state >= SwordCasterParams::cast_3 : swordcaster.charge_state >= SwordCasterParams::cast_1;
+	bool full_charge = swordcaster.charge_state == SwordCasterParams::extra_ready;
 	needs_shiny = spell_ready;
-	needs_shiny2 = swrd.charge_state >= SwordCasterParams::charging;
+	needs_shiny2 = swordcaster.charge_state >= SwordCasterParams::charging;
 	needs_damageboost = blob.hasTag("extra_damage");
     bool crouch = false;
 
@@ -189,15 +187,15 @@ void onTick( CSprite@ this )
 	{
 		if (inair)
 		{
-			this.SetAnimation("jump");
+			this.SetAnimation("shoot_jump");
 		}
 		else if ((left || right) ||
              (blob.isOnLadder() && (up || down) ) ) {
-			this.SetAnimation("run");
+			this.SetAnimation("shoot_run");
 		}
 		else
 		{
-			this.SetAnimation("fire");
+			this.SetAnimation("shoot");
 			if (spell_ready)
 				this.SetFrameIndex(1);
 		}
@@ -280,6 +278,7 @@ void onTick( CSprite@ this )
 			shiny2.SetOffset(shiny_offset);
 		}
 	}
+
     //Damage boost sprite
     CSpriteLayer@ damageboost = this.getSpriteLayer( damageboost_layer );
     if(damageboost !is null)
@@ -288,7 +287,7 @@ void onTick( CSprite@ this )
 		if(needs_damageboost)
 		{
 			damageboost.RotateBy(-5, Vec2f());
-			damageboost.SetOffset(Vec2f(2.0f,-1.0f));
+			damageboost.SetOffset(Vec2f(0.0f,-1.0f));
 		}
 	}
     CSpriteLayer@ damageboost2 = this.getSpriteLayer( damageboost_layer2 );
@@ -298,7 +297,7 @@ void onTick( CSprite@ this )
 		if(needs_damageboost)
 		{
 			damageboost2.RotateBy(4, Vec2f());
-			damageboost2.SetOffset(Vec2f(2.0f,-1.0f));
+			damageboost2.SetOffset(Vec2f(0.0f,-1.0f));
 		}
 	}
 
