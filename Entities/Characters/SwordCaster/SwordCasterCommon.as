@@ -42,7 +42,7 @@ namespace SwordCasterParams
 		Spell("sword_cast", "Expunger", 41, "New sword throwing spell.",
 				SpellType::other, 30, 30, 0, 360.0f,true),
 			 
-		Spell("", "", 0, "Empty spell.",
+		Spell("bladed_shell", "Bladed Shell", 0, "A circle of shear death... or at least it would be if you used the edge",
 				SpellType::other, 1, 1, 0, 0.0f),
 			 
 		Spell("", "", 0, "Empty spell.",
