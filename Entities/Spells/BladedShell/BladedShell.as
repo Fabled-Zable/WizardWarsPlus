@@ -13,6 +13,9 @@ void onTick(CBlob@ this)
 		this.set_bool("setupDone",true);
 	}
 
+	if(this.hasTag("dead") ) //removes script if user dies
+	{cleanUp(this);}
+
 	u16 timeActive = this.get_u32("timeActive");
 	f32 effectRadius = this.get_f32("effectRadius");
 	if(timeActive < getGameTime())//remove script if we are past the active time
@@ -35,7 +38,7 @@ void onTick(CBlob@ this)
 		
 		if(!other.exists("BladedShellCooldown" + other.getNetworkID()) || (other.get_u32("BladedShellCooldown" + other.getNetworkID()) < getGameTime()))
 		{
-			this.server_Hit(other, other.getPosition(), Vec2f(0,0),0.2f,Hitters::hits::sword);// hit em
+			this.server_Hit(other, other.getPosition(), Vec2f(0,0),0.4f,Hitters::hits::sword);// hit em
 			other.set_u32("BladedShellCooldown" + other.getNetworkID(), getGameTime() + 15);//a second between hits
 
 			Vec2f norm = (this.getPosition() - other.getPosition()) * -1;
