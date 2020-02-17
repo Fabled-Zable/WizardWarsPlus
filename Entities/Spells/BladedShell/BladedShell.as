@@ -23,7 +23,10 @@ void onTick(CBlob@ this)
 	f32 effectRadius = this.get_f32("effectRadius");
 	if(timeActive < getGameTime())//remove script if we are past the active time
 	{
-		cleanUp(this);
+		if(this !is null)
+		{
+			cleanUp(this);
+		}
 	}
 
 	
@@ -88,6 +91,30 @@ void onTick(CSprite@ this)
 
 		layer.SetFacingLeft(true);
 	}
+
+	if(b.hasTag("doubleBlade")) //if activated twice, second layer of knives
+	{
+		if(!b.exists("spriteSetupDone2") || !b.get_bool("spriteSetupDone2"))
+		{
+			for(int h = 0; h < 360; h += 45)//makes 8
+			{
+				CSpriteLayer@ layer = this.addSpriteLayer("2knife" + h,"Knife.png",13,4,b.getTeamNum(),0);
+			}
+			b.set_bool("spriteSetupDone2",true);
+		}
+
+		for(int h = 0; h < 360; h += 45)
+		{
+			CSpriteLayer@ layer = this.getSpriteLayer("2knife" + h);
+			layer.ResetTransform();
+			f32 r = getGameTime() + h;
+			Vec2f angle = Vec2f(1,0).RotateByDegrees(r);
+			layer.RotateBy(-r + 180,Vec2f_zero);
+			layer.SetOffset(angle * 24);//three blocks
+
+			layer.SetFacingLeft(false);
+		}
+	}
 }
 
 void cleanUp(CBlob@ this)//because we don't use onInit we need to cleanup so that the script is ready for when it is added again
@@ -97,8 +124,22 @@ void cleanUp(CBlob@ this)//because we don't use onInit we need to cleanup so tha
 		this.getSprite().RemoveSpriteLayer("knife" + i);
 	}
 
+	if(this.hasTag("doubleBlade"))
+	{
+		for(int h = 0; h < 360; h += 45)
+		{
+		this.getSprite().RemoveSpriteLayer("2knife" + h);
+		}
+	}
+
+	if(this.hasTag("doubleBlade"))
+	{
+		this.Untag("doubleBlade");
+	}
+
 	this.set_bool("setupDone",false);
 	this.set_bool("spriteSetupDone",false);
+	this.set_bool("spriteSetupDone2",false);
 	this.getSprite().RemoveScript("BladedShell.as");
 	this.RemoveScript("BladedShell.as");
 

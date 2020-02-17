@@ -1103,9 +1103,21 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbDamage *= 1.0f + extraDamage;
 			}
 
-			
-			this.AddScript("BladedShell.as");
-			
+			if(this.hasScript("BladedShell.as"))
+			{
+				this.set_u32("timeActive",(10*30) + getGameTime());
+				if(!this.hasTag("doubleBlade"))
+				{
+					this.Tag("doubleBlade");
+					this.set_f32("effectRadius",8*4);
+				}
+			}
+
+			if(!this.hasScript("BladedShell.as"))
+			{
+				this.AddScript("BladedShell.as");
+			}
+
 		}
 		break;
 		
