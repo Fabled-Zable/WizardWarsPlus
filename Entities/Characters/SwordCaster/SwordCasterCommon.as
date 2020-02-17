@@ -40,13 +40,13 @@ namespace SwordCasterParams
 				SpellType::other, 25, 40, 0, 360.0f, true),
 			
 		Spell("sword_cast", "Expunger", 41, "Conjure your vast arsenal of magical daggers to attack the enemy.",
-				SpellType::other, 30, 30, 0, 360.0f,true),
+				SpellType::other, 30, 30, 0, 360.0f, true),
 			 
 		Spell("bladed_shell", "Bladed Shell", 0, "A circle of shear death... or at least it would be if you used the edge",
 				SpellType::other, 40, 60, 0, 0.0f, true),
 			 
-		Spell("magic_barrier", "aaaa", 21, "Empty spell.",
-				SpellType::other, 1, 1, 0, 10.0f, true),
+		Spell("", "", 0, "Empty spell.",
+				SpellType::other, 1, 1, 0, 0.0f),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

@@ -7,7 +7,7 @@ void onTick(CBlob@ this)
 	if(!this.exists("setupDone") || !this.get_bool("setupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
 	{
 		this.set_u32("timeActive",(8*30) + getGameTime());//8 seconds from now
-		this.set_f32("effectRadius",8*1.5);// 1.5 block radius
+		this.set_f32("effectRadius",8*2);// 2 block radius
 		this.getSprite().AddScript("BladedShell.as");//need to do this to get the sprite hooks to run
 
 		this.set_bool("setupDone",true);
