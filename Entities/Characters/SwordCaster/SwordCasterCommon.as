@@ -28,7 +28,7 @@ namespace SwordCasterParams
 							// 2 is the cost // 40 is the charge time //360.0f is the range //the 0 is the cooldown //6 is the icon it uses
 			
 		Spell("teleport", "Teleport", 40, "Point to any visible position and teleport there.",
-			SpellType::other, 30, 6, 0, 360.0f, true), 
+			SpellType::other, 30, 6, 0, 250.0f, true), 
 			
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
 			SpellType::other, 35, 10, 0, 8.0f, true),
@@ -37,16 +37,16 @@ namespace SwordCasterParams
 				SpellType::other, 40, 30, 0, 360.0f, true),
 			
 		Spell("crusader", "Crusader", 42, "This spell materializes three big swords to block the enemy advancement.",
-				SpellType::other, 20, 30, 0, 360.0f, true),
+				SpellType::other, 25, 40, 0, 360.0f, true),
 			
 		Spell("sword_cast", "Expunger", 41, "Conjure your vast arsenal of magical daggers to attack the enemy.",
 				SpellType::other, 30, 30, 0, 360.0f,true),
 			 
 		Spell("bladed_shell", "Bladed Shell", 0, "A circle of shear death... or at least it would be if you used the edge",
-				SpellType::other, 40, 60, 0, 0.0f),
+				SpellType::other, 40, 60, 0, 0.0f, true),
 			 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("magic_barrier", "aaaa", 21, "Empty spell.",
+				SpellType::other, 1, 1, 0, 10.0f, true),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

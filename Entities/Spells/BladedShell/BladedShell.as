@@ -7,7 +7,7 @@ void onTick(CBlob@ this)
 	if(!this.exists("setupDone") || !this.get_bool("setupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
 	{
 		this.set_u32("timeActive",(8*30) + getGameTime());//8 seconds from now
-		this.set_f32("effectRadius",8*3);// 3 block radius
+		this.set_f32("effectRadius",8*1.5);// 1.5 block radius
 		this.getSprite().AddScript("BladedShell.as");//need to do this to get the sprite hooks to run
 
 		this.set_bool("setupDone",true);
@@ -35,11 +35,24 @@ void onTick(CBlob@ this)
 		
 		if(!other.exists("BladedShellCooldown" + other.getNetworkID()) || (other.get_u32("BladedShellCooldown" + other.getNetworkID()) < getGameTime()))
 		{
-			this.server_Hit(other, other.getPosition(), Vec2f(0,0),1,Hitters::hits::sword);// hit em
+			this.server_Hit(other, other.getPosition(), Vec2f(0,0),0.2f,Hitters::hits::sword);// hit em
 			other.set_u32("BladedShellCooldown" + other.getNetworkID(), getGameTime() + 15);//a second between hits
 
 			Vec2f norm = (this.getPosition() - other.getPosition()) * -1;
 			norm.Normalize();
+
+			if(other.hasTag("barrier")) //Knockback System against barriers
+			{
+				CBlob@ self = this;
+				Vec2f selfPos = self.getPosition();
+				Vec2f othPos = other.getPosition();
+				Vec2f kickDir = selfPos - othPos;
+				kickDir.Normalize();
+				kickDir *= 13.0f;
+				kickDir += Vec2f(0,-1);
+				this.server_Hit(self, self.getPosition(), Vec2f(0,0),0.2f,Hitters::hits::sword);
+				this.setVelocity(this.getVelocity() + kickDir);
+			}
 
 			//ParticleAnimated("Knife.png", this.getPosition(), norm ,norm.getAngle(),1,RenderStyle::Style::normal,0, Vec2f(13,4),0,0, true);//ahh doesn't work, good enough without it
 		}
