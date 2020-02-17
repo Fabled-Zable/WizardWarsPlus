@@ -2,21 +2,24 @@
 #include "ArcherCommon.as";
 #include "SpellCommon.as";
 
+const f32 arrowMediumSpeed = 8.0f;
+const f32 arrowFastSpeed = 13.0f;
+
 void onInit(CBlob@ this)
 {
 	CShape@ shape = this.getShape();
 	ShapeConsts@ consts = shape.getConsts();
 	consts.mapCollisions = false;	 // we have our own map collision
 	consts.bullet = false;
-	consts.net_threshold_multiplier = 0.1f;
+	consts.net_threshold_multiplier = 4.0f;
 	this.Tag("projectile");
 	this.Tag("counterable");
 	shape.SetGravityScale( 0.0f );
-	
+
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
-	
-    this.server_SetTimeToDie(20);
+
+    this.server_SetTimeToDie(5);
 }
 
 void onTick(CBlob@ this)
@@ -38,53 +41,25 @@ void onTick(CBlob@ this)
 				return;
 			}
 		}
-		if (!this.hasTag("aimMode"))
+		if(this.hasTag("primed"))
 		{
-        	angle = (this.getVelocity()).Angle();
+    	    angle = (this.getVelocity()).Angle();
 			Pierce(this);   //Pierce call
 			this.setAngleDegrees(-angle);
 		}
-    }
-	//start of sword launch logic
-	this.Sync("shooTime", true);
-	this.Sync("stopTime", true);
-
-	u32 shooTime = this.get_u32("shooTime"); 		//base for timer system
-	u32 stopTime = this.get_u32("stopTime");
-	u32 lTime = getGameTime();						//clock
-
-	if (!this.hasTag("aimMode") && !this.hasTag("cruiseMode"))
-	{
-		if (lTime > stopTime)  //timer system for sentry mode
+		else
 		{
-			this.setVelocity(Vec2f(0,0));
-			this.Tag("aimMode"); //stops
-			this.getSprite().PlaySound("exepause.ogg");
-		}
-	}
-
-	if (!this.hasTag("cruiseMode") && this.hasTag("aimMode")) //Aims sword to caster's cursor
-	{
-		CPlayer@ p = this.getDamageOwnerPlayer();
-		if( p !is null) {
-			CBlob@ caster = p.getBlob();
-			if( caster !is null) {
-				Vec2f aimPos = caster.getAimPos() + Vec2f(0.0f,-2.0f);
-				Vec2f aimDir = aimPos - this.getPosition();
-				angle = aimDir.Angle();
-				this.setAngleDegrees(-angle);
-				if (lTime > shooTime)  //timer system for roboteching
-				{
-					aimDir.Normalize();
-					Vec2f swordSpeed = aimDir * 15;
-					this.setVelocity(swordSpeed);
-					this.getSprite().PlaySound("execruise.ogg");
-					this.Tag("cruiseMode"); //stops the loop
-					this.Untag("aimMode");
-				}
+			u16 targtid = this.get_u16("attached"); //finds target ID
+			CBlob@ targt = getBlobByNetworkID(targtid);
+			if(targt !is null)
+			{
+				if(targt.hasTag("dead"))
+				{this.server_Die();}
+				this.setVelocity(Vec2f(0,0));
+				this.setPosition(targt.getPosition());
 			}
 		}
-	}
+    }
 }
 
 void Pierce(CBlob@ this, CBlob@ blob = null)
@@ -92,21 +67,26 @@ void Pierce(CBlob@ this, CBlob@ blob = null)
 	Vec2f end;
 	CMap@ map = this.getMap();
 	Vec2f position = blob is null ? this.getPosition() : blob.getPosition();
-	
-	if (this.hasTag("cruiseMode"))  //doesn't do raycasts until needed
+
+	if (map.rayCastSolidNoBlobs(this.getShape().getVars().oldpos, position, end))
 	{
-		if (map.rayCastSolidNoBlobs(this.getShape().getVars().oldpos, position, end))
-		{
-			ArrowHitMap(this, end, this.getOldVelocity(), 0.5f, Hitters::arrow);
-		}
+		ArrowHitMap(this, end, this.getOldVelocity(), 0.5f, Hitters::arrow);
 	}
 	
 }
 
 void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 customData)
 {
+	if (velocity.Length() > arrowFastSpeed)
+	{
+		this.getSprite().PlaySound("ArrowHitGroundFast.ogg");
+	}
+	else
+	{
+		this.getSprite().PlaySound("ArrowHitGround.ogg");
+	}
 
-	this.getSprite().PlaySound("exehit.ogg");
+	f32 radius = this.getRadius();
 
 	f32 angle = velocity.Angle();
 
@@ -126,6 +106,7 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 	//this.getShape().server_SetActive( false );
 
 	this.Tag("collided");
+	this.Untag("primed");
 
 	//kill any grain plants we shot the base of
 	CBlob@[] blobsInRadius;
@@ -141,28 +122,39 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 			}
 		}
 	}
-	this.getCurrentScript().tickFrequency = 0;
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
+	float expundamage = this.get_f32("damage");
 	if (blob !is null)
 	{
-		if (isEnemy(this, blob) && !this.hasTag("aimMode"))
+		if (isEnemy(this, blob))
 		{
-			float expundamage = this.get_f32("damage");
-			if (!this.hasTag("collided"))
+			if (blob.hasTag("barrier"))
 			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
-				if (blob.hasTag("barrier"))
-				{
-					this.server_Die();
-				}
+			this.server_Die();
 			}
 			else
 			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.2f , Hitters::arrow, true);
-				this.server_Die();
+				if (blob.hasTag("collided"))
+				{
+					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.2f , Hitters::arrow, true);
+					this.server_Die();
+				}
+				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
+				if(this.hasTag("primed"))
+				{
+					if(blob !is null)
+					{
+					this.getSprite().PlaySound("ImpStuck.ogg", 100.0f);
+					this.setVelocity(Vec2f(0,0));
+					this.server_SetTimeToDie(15);
+					u16 netid = blob.getNetworkID();
+					this.set_u16("attached",netid);
+					this.Untag("primed");
+					}
+				}
 			}
 		}
 	}

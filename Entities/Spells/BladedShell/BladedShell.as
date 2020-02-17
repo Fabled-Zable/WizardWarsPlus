@@ -49,7 +49,19 @@ void onTick(CBlob@ this)
 
 			Vec2f norm = (this.getPosition() - other.getPosition()) * -1;
 			norm.Normalize();
-
+			
+			if(other.hasTag("barrier")) //Knockback System against barriers
+			{
+				CBlob@ self = this;
+				Vec2f selfPos = self.getPosition();
+				Vec2f othPos = other.getPosition();
+				Vec2f kickDir = selfPos - othPos;
+				kickDir.Normalize();
+				kickDir *= 13.0f;
+				kickDir += Vec2f(0,-1);
+				this.server_Hit(self, self.getPosition(), Vec2f(0,0),0.2f,Hitters::hits::sword);
+				this.setVelocity(this.getVelocity() + kickDir);
+			}
 			//ParticleAnimated("Knife.png", this.getPosition(), norm ,norm.getAngle(),1,RenderStyle::Style::normal,0, Vec2f(16,16),0,0, true);//ahh doesn't work, good enough without it
 		}
 	}

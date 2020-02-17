@@ -42,11 +42,11 @@ namespace SwordCasterParams
 		Spell("sword_cast", "Expunger", 41, "Conjure your vast arsenal of magical daggers to attack the enemy.",
 				SpellType::other, 30, 30, 0, 360.0f, true),
 			 
-		Spell("bladed_shell", "Bladed Shell", 43, "A circle of shear death... or at least it would be if you used the edge. This spell makes you weak to some magic attacks.",
+		Spell("bladed_shell", "Bladed Shell", 44, "A circle of shear death... or at least it would be if you used the edge. This spell makes you weak to some magic attacks.",
 				SpellType::other, 45, 60, 0, 0.0f, true),
 			 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("impaler", "Impaler", 45, "Sharpen your enemies and use them as a weapon against themselves.",
+				SpellType::other, 20, 15, 0, 360.0f, true),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

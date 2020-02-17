@@ -1044,6 +1044,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 603057094://executioner
 		{
+			this.getSprite().PlaySound("execast.ogg");
 			if (!isServer()){
            		return;
 			}
@@ -1118,6 +1119,46 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				this.AddScript("BladedShell.as");
 			}
 
+		}
+		break;
+
+		case -1661937901://impaler
+		{
+			this.getSprite().PlaySound("ImpCast.ogg", 100.0f);
+			if (!isServer()){
+           		return;
+			}
+
+			f32 orbspeed = NecromancerParams::shoot_max_vel*1.1f;
+			f32 orbDamage = 0.4f;
+            f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;//Is this condition true? yes is 1.2f and no is 1.0f
+            
+            if (charge_state == NecromancerParams::cast_3) {
+				orbDamage *= 1.0f + extraDamage;
+			}
+			else if (charge_state == NecromancerParams::extra_ready) {
+				orbspeed *= 1.2f;
+				orbDamage *= 1.5f + extraDamage;
+			}
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (targetPos- orbPos);
+			orbVel.Normalize();
+			orbVel *= orbspeed;
+
+			CBlob@ orb = server_CreateBlob( "impaler" );
+			if (orb !is null)
+			{
+				orb.set_f32("damage", orbDamage);
+
+				orb.IgnoreCollisionWhileOverlapped( this );
+				orb.SetDamageOwnerPlayer( this.getPlayer() );
+				orb.server_setTeamNum( this.getTeamNum() );
+				orb.setPosition( orbPos );
+				orb.setVelocity( orbVel );
+				orb.Tag("primed");
+			}
 		}
 		break;
 		
