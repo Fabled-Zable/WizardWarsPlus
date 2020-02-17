@@ -15,7 +15,7 @@ namespace SwordCasterParams
 		}
 
 	const ::f32 shoot_max_vel = 8.0f;
-	const ::f32 MAX_ATTACK_DIST = 360.0f;
+	const ::f32 MAX_ATTACK_DIST = 400.0f;
 	const ::s32 MAX_MANA = 120;
 	const ::s32 MANA_REGEN = 5;
 	
@@ -27,8 +27,8 @@ namespace SwordCasterParams
 			SpellType::other, 4, 40, 0, 360.0f),
 							// 2 is the cost // 40 is the charge time //360.0f is the range //the 0 is the cooldown //6 is the icon it uses
 			
-		Spell("teleport", "Blink", 40, "Short Range Teleport Spell.",
-			SpellType::other, 8, 3, 0, 110.0f, true), 
+		Spell("teleport", "Teleport", 40, "Point to any visible position and teleport there.",
+			SpellType::other, 30, 6, 0, 360.0f, true), 
 			
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
 			SpellType::other, 35, 10, 0, 8.0f, true),
@@ -43,7 +43,7 @@ namespace SwordCasterParams
 				SpellType::other, 30, 30, 0, 360.0f,true),
 			 
 		Spell("bladed_shell", "Bladed Shell", 0, "A circle of shear death... or at least it would be if you used the edge",
-				SpellType::other, 1, 1, 0, 0.0f),
+				SpellType::other, 40, 60, 0, 0.0f),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
