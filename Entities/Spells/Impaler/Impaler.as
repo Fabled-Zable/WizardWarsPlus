@@ -51,8 +51,13 @@ void onTick(CBlob@ this)
 		{
 			u16 targtid = this.get_u16("attached"); //finds target ID
 			CBlob@ targt = getBlobByNetworkID(targtid);
-			this.setVelocity(Vec2f(0,0));
-			this.setPosition(targt.getPosition());
+			if(targt !is null)
+			{
+				if(targt.hasTag("dead"))
+				{this.server_Die();}
+				this.setVelocity(Vec2f(0,0));
+				this.setPosition(targt.getPosition());
+			}
 		}
     }
 }
@@ -140,12 +145,15 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
 				if(this.hasTag("primed"))
 				{
+					if(blob !is null)
+					{
 					this.getSprite().PlaySound("ImpStuck.ogg", 100.0f);
 					this.setVelocity(Vec2f(0,0));
 					this.server_SetTimeToDie(15);
 					u16 netid = blob.getNetworkID();
 					this.set_u16("attached",netid);
 					this.Untag("primed");
+					}
 				}
 			}
 		}
