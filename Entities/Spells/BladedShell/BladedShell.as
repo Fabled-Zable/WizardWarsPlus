@@ -6,15 +6,18 @@ void onTick(CBlob@ this)
 {
 	if(!this.exists("setupDone") || !this.get_bool("setupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
 	{
-		this.set_u32("timeActive",(8*30) + getGameTime());//8 seconds from now
+		this.set_u32("timeActive",(10*30) + getGameTime());//10 seconds from now
 		this.set_f32("effectRadius",8*2);// 2 block radius
 		this.getSprite().AddScript("BladedShell.as");//need to do this to get the sprite hooks to run
 
 		this.set_bool("setupDone",true);
 	}
 
+	if(this !is null)
+	{
 	if(this.hasTag("dead") ) //removes script if user dies
 	{cleanUp(this);}
+	}
 
 	u16 timeActive = this.get_u32("timeActive");
 	f32 effectRadius = this.get_f32("effectRadius");
@@ -38,7 +41,7 @@ void onTick(CBlob@ this)
 		
 		if(!other.exists("BladedShellCooldown" + other.getNetworkID()) || (other.get_u32("BladedShellCooldown" + other.getNetworkID()) < getGameTime()))
 		{
-			this.server_Hit(other, other.getPosition(), Vec2f(0,0),0.4f,Hitters::hits::sword);// hit em
+			this.server_Hit(other, other.getPosition(), Vec2f(0,0),0.6f,Hitters::hits::sword);// hit em
 			other.set_u32("BladedShellCooldown" + other.getNetworkID(), getGameTime() + 15);//a second between hits
 
 			Vec2f norm = (this.getPosition() - other.getPosition()) * -1;

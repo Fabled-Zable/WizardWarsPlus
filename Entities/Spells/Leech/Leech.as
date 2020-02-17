@@ -229,8 +229,10 @@ void onTick( CBlob@ this)
 
 						this.server_Hit(hi.blob, hi.hitpos, Vec2f(0,0), DAMAGE * extraDamage, Hitters::explosion, true);
 						
-						if(hi.blob.hasScript("BladedShell.as")) //blows up the enemy if it's using Bladed Shell
+						if(hi.blob !is null)
 						{
+							if(hi.blob.hasScript("BladedShell.as")) //blows up the enemy if it's using Bladed Shell
+							{
 							CBlob@ self = this;
 							Vec2f selfPos = self.getPosition();
 							Vec2f othPos = hi.blob.getPosition();
@@ -240,6 +242,7 @@ void onTick( CBlob@ this)
 							kickDir += Vec2f(0,1);
 							CBlob@ bumb = server_CreateBlob("bomb",-1,( hi.blob.getPosition() + kickDir ));
 							bumb.server_Die();
+							}
 						}
 
 						CPlayer@ ownerPlayer = this.getDamageOwnerPlayer();
