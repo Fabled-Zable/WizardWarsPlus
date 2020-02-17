@@ -164,7 +164,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 			}
 			else
 			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), ( expundamage / 4 ) , Hitters::arrow, true);
+				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.2f , Hitters::arrow, true);
 				this.server_Die();
 			}
 		}

@@ -72,12 +72,6 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 	{
 		Vec2f bPos = blob.getPosition();
 		this.server_Hit(blob, bPos, bPos-this.getPosition(), 40.0f, Hitters::explosion, true);
-		if(blob.getConfig() == "force_of_nature")
-		{
-			server_CreateBlob('black_hole',-1,this.getPosition());
-			blob.server_Die();
-			this.server_Die();
-		}
 	} 
 }
 

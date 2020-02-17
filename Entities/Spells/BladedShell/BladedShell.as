@@ -6,18 +6,27 @@ void onTick(CBlob@ this)
 {
 	if(!this.exists("setupDone") || !this.get_bool("setupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
 	{
-		this.set_u32("timeActive",(5*30) + getGameTime());//5 seconds from now
-		this.set_f32("effectRadius",8*3);// 3 block radius
+		this.set_u32("timeActive",(10*30) + getGameTime());//10 seconds from now
+		this.set_f32("effectRadius",8*2);// 2 block radius
 		this.getSprite().AddScript("BladedShell.as");//need to do this to get the sprite hooks to run
 
 		this.set_bool("setupDone",true);
+	}
+
+	if(this !is null)
+	{
+	if(this.hasTag("dead") ) //removes script if user dies
+	{cleanUp(this);}
 	}
 
 	u16 timeActive = this.get_u32("timeActive");
 	f32 effectRadius = this.get_f32("effectRadius");
 	if(timeActive < getGameTime())//remove script if we are past the active time
 	{
-		cleanUp(this);
+		if(this !is null)
+		{
+			cleanUp(this);
+		}
 	}
 
 	
@@ -35,7 +44,7 @@ void onTick(CBlob@ this)
 		
 		if(!other.exists("BladedShellCooldown" + other.getNetworkID()) || (other.get_u32("BladedShellCooldown" + other.getNetworkID()) < getGameTime()))
 		{
-			this.server_Hit(other, other.getPosition(), Vec2f(0,0),1,Hitters::hits::sword);// hit em
+			this.server_Hit(other, other.getPosition(), Vec2f(0,0),0.6f,Hitters::hits::sword);// hit em
 			other.set_u32("BladedShellCooldown" + other.getNetworkID(), getGameTime() + 15);//a second between hits
 
 			Vec2f norm = (this.getPosition() - other.getPosition()) * -1;
@@ -84,6 +93,30 @@ void onTick(CSprite@ this)
 			p.damping = 0.75;
 		}
 	}
+
+	if(b.hasTag("doubleBlade")) //if activated twice, second layer of knives
+	{
+		if(!b.exists("spriteSetupDone2") || !b.get_bool("spriteSetupDone2"))
+		{
+			for(int h = 0; h < 360; h += 45)//makes 8
+			{
+				CSpriteLayer@ layer = this.addSpriteLayer("2knife" + h,"Knife.png",13,4,b.getTeamNum(),0);
+			}
+			b.set_bool("spriteSetupDone2",true);
+		}
+
+		for(int h = 0; h < 360; h += 45)
+		{
+			CSpriteLayer@ layer = this.getSpriteLayer("2knife" + h);
+			layer.ResetTransform();
+			f32 r = getGameTime() + h;
+			Vec2f angle = Vec2f(1,0).RotateByDegrees(r);
+			layer.RotateBy(-r + 180,Vec2f_zero);
+			layer.SetOffset(angle * 24);//three blocks
+
+			layer.SetFacingLeft(false);
+		}
+	}
 }
 
 void cleanUp(CBlob@ this)//because we don't use onInit we need to cleanup so that the script is ready for when it is added again
@@ -93,8 +126,22 @@ void cleanUp(CBlob@ this)//because we don't use onInit we need to cleanup so tha
 		this.getSprite().RemoveSpriteLayer("knife" + i);
 	}
 
+	if(this.hasTag("doubleBlade"))
+	{
+		for(int h = 0; h < 360; h += 45)
+		{
+		this.getSprite().RemoveSpriteLayer("2knife" + h);
+		}
+	}
+
+	if(this.hasTag("doubleBlade"))
+	{
+		this.Untag("doubleBlade");
+	}
+
 	this.set_bool("setupDone",false);
 	this.set_bool("spriteSetupDone",false);
+	this.set_bool("spriteSetupDone2",false);
 	this.getSprite().RemoveScript("BladedShell.as");
 	this.RemoveScript("BladedShell.as");
 

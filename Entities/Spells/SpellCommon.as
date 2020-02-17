@@ -998,14 +998,14 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
                 if (!isServer()){
 				    return;
 			    }
-					f32 orbDamage = 1.2f;
+					f32 orbDamage = 1.0f;
             		f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;//Is this condition true? yes is 1.2f and no is 1.0f
 
             		if (charge_state == NecromancerParams::cast_3) {
 					orbDamage *= 1.0f + extraDamage;
 				}
 					else if (charge_state == NecromancerParams::extra_ready) {
-					orbDamage *= 1.5f + extraDamage;
+					orbDamage *= 1.2f + extraDamage;
 				}
 
 				Vec2f baseSite = Vec2f(aimpos.x , landheight - 8);
@@ -1049,7 +1049,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 
 			f32 orbspeed = NecromancerParams::shoot_max_vel * 1.0f;
-			f32 orbDamage = 2.5f;
+			f32 orbDamage = 2.4f;
             f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;
 
 			if (charge_state == NecromancerParams::cast_3) {
@@ -1057,7 +1057,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 				else if (charge_state == NecromancerParams::extra_ready) {
 				orbspeed *= 1.0f;
-				orbDamage *= 1.5f + extraDamage;
+				orbDamage *= 1.1f + extraDamage;
 			}
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
@@ -1103,9 +1103,21 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbDamage *= 1.0f + extraDamage;
 			}
 
-			
-			this.AddScript("BladedShell.as");
-			
+			if(this.hasScript("BladedShell.as"))
+			{
+				this.set_u32("timeActive",(10*30) + getGameTime());
+				if(!this.hasTag("doubleBlade"))
+				{
+					this.Tag("doubleBlade");
+					this.set_f32("effectRadius",8*4);
+				}
+			}
+
+			if(!this.hasScript("BladedShell.as"))
+			{
+				this.AddScript("BladedShell.as");
+			}
+
 		}
 		break;
 		
