@@ -122,6 +122,9 @@ void onTick(CSprite@ this)
 		p.gravity = Vec2f_zero;
 		p.damping = 0.9;
 		p.collides = false;
+		p.fastcollision = true;
+		p.bounce = 0;
+		p.lighting = false;
 	}
 
 	for(int i = 0; i < 360; i += plants.length + 1)
