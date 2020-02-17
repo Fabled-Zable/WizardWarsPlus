@@ -41,7 +41,7 @@ void onTick(CBlob@ this)
 			Vec2f norm = (this.getPosition() - other.getPosition()) * -1;
 			norm.Normalize();
 
-			//ParticleAnimated("Knife.png", this.getPosition(), norm ,norm.getAngle(),1,RenderStyle::Style::normal,0, Vec2f(13,4),0,0, true);//ahh doesn't work, good enough without it
+			//ParticleAnimated("Knife.png", this.getPosition(), norm ,norm.getAngle(),1,RenderStyle::Style::normal,0, Vec2f(16,16),0,0, true);//ahh doesn't work, good enough without it
 		}
 	}
 }
@@ -62,12 +62,27 @@ void onTick(CSprite@ this)
 	{
 		CSpriteLayer@ layer = this.getSpriteLayer("knife" + i);
 		layer.ResetTransform();
-		f32 r = getGameTime() + i;
+		f32 r = getGameTime() * 4 + i;
 		Vec2f angle = Vec2f(1,0).RotateByDegrees(r);
 		layer.RotateBy(r + 180,Vec2f_zero);
 		layer.SetOffset(angle * 12);//block and a half
 
 		layer.SetFacingLeft(true);
+
+		CParticle@ p = ParticlePixelUnlimited(
+			layer.getOffset() * 1.5 + b.getInterpolatedPosition(), //position
+			b.getVelocity() + Vec2f(XORRandom(2) == 1 ? 0.1 : -0.1,XORRandom(10)/10.0),// velocity
+			 SColor(255,255,225,225),//color
+			  true);//self lit
+		if(p !is null)
+		{
+			p.fastcollision = true;
+			p.gravity = Vec2f(0,-0.1);
+			p.bounce = 1;
+			p.lighting = false;
+			p.timeout = XORRandom(30);
+			p.damping = 0.75;
+		}
 	}
 }
 

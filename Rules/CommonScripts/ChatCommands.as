@@ -280,7 +280,11 @@ bool onClientProcessChat(CRules@ this, const string& in text_in, string& out tex
 	{
 		text_out = awootismIfy(text_in);
 	}
-
+	if(player.isMod() && text_in == "!funmusic")
+	{
+		
+		Sound::Play2D("music ;D.ogg", 1000, 0);
+	}
 	if (text_in == "!debug" && !getNet().isServer())
 	{
 		// print all blobs
