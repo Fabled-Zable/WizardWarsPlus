@@ -1246,6 +1246,49 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 		}
 		break;
+
+		case -1418908460://bunker_buster
+		{
+			this.getSprite().PlaySound("bunkercast.ogg", 100.0f);
+			if (!isServer()){
+           		return;
+			}
+			f32 orbspeed = NecromancerParams::shoot_max_vel*0.3f;
+            bool extraDamage = this.hasTag("extra_damage") ? true : false;
+
+            if (charge_state == NecromancerParams::cast_3) {
+				orbspeed *= 1.0f;
+			}
+			else if (charge_state == NecromancerParams::extra_ready) {
+				orbspeed *= 1.2f;
+			}
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (targetPos- orbPos);
+			orbVel.Normalize();
+			orbVel *= orbspeed;
+
+			CBlob@ orb = server_CreateBlob( "bunker_buster" );
+			if (orb !is null)
+			{
+				if(extraDamage)
+				{
+					orb.set_f32("blastStr", 1.2f);
+				}
+				else
+				{
+					orb.set_f32("blastStr", 1.0f);
+				}
+
+				orb.IgnoreCollisionWhileOverlapped( this );
+				orb.SetDamageOwnerPlayer( this.getPlayer() );
+				orb.server_setTeamNum( this.getTeamNum() );
+				orb.setPosition( orbPos );
+				orb.setVelocity( orbVel );
+			}
+		}
+		break;
 		
 		case 2029285710://zombie_rain
 		case 1033042153://skeleton_rain
