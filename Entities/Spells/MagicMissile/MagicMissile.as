@@ -175,6 +175,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 			{
 				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.25f, Hitters::water, true);
 				this.set_bool("death triggered", true);
+				this.Sync("death triggered", true);
 			}
 		}
 	}
@@ -289,7 +290,7 @@ void Explode( CBlob@ this )
 				CBlob @b = blobsInRadius[i];
 				if (b !is null)
 				{
-					if(blob.hasScript("BladedShell.as"))
+					if(b.hasScript("BladedShell.as"))
 					{
 						this.setVelocity(-(this.getVelocity()*2));
 						continue;
