@@ -48,8 +48,8 @@ namespace SwordCasterParams
 		Spell("impaler", "Impaler", 45, "Sharpen your enemies and use them as a weapon against themselves.",
 				SpellType::other, 20, 15, 0, 360.0f, true),
 			 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("parry", "Parry", 46, "Reflect enemy attacks.",
+				SpellType::other, 25, 10, 0, 20.0f, true),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

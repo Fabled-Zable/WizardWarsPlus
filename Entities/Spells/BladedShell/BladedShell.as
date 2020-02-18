@@ -57,7 +57,7 @@ void onTick(CBlob@ this)
 				Vec2f othPos = other.getPosition();
 				Vec2f kickDir = selfPos - othPos;
 				kickDir.Normalize();
-				kickDir *= 13.0f;
+				kickDir *= 11.0f;
 				kickDir += Vec2f(0,-1);
 				this.server_Hit(self, self.getPosition(), Vec2f(0,0),0.2f,Hitters::hits::sword);
 				this.setVelocity(this.getVelocity() + kickDir);

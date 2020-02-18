@@ -1161,6 +1161,91 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 		}
 		break;
+
+		case 1647813557://parry
+		{
+			u16 ownTeam = this.getTeamNum(); //Team of caster shortcut
+			CMap@ map = getMap(); //going to need map in order to see what blobs are in the radius
+			CBlob@[] blobs;//blob handle array to store blobs we want to effect
+			float effectRadius = 8;
+			f32 extraRadius = this.hasTag("extra_damage") ? 0.3f : 0.0f; //if yes, a bit more range
+			f32 scale = 0.25f;
+            if (charge_state == NecromancerParams::cast_3) {
+				effectRadius *= 2.0f + extraRadius; //2 block radius
+				scale = 0.25f;
+			}
+			else if (charge_state == NecromancerParams::extra_ready) {
+				effectRadius *= 3.0f + extraRadius; //3 block radius
+				scale = 0.375f;
+			}
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f userPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f castDev = (targetPos- userPos);
+			castDev.Normalize();
+			castDev *= 20; //all of this to get position 2.5 blocks in front of caster
+			Vec2f castPos = userPos + castDev;
+
+			if ( isClient() ) //temporary Counterspell effect
+			{
+				CParticle@ p = ParticleAnimated( "Flash2.png",
+						castPos,
+						Vec2f(0,0),
+						0,
+						scale, 
+						8, 
+						0.0f, true ); 	
+										
+				if ( p !is null)
+				{
+					p.bounce = 0;
+    				p.fastcollision = true;
+					p.Z = 600.0f;
+				}
+				CParticle@ pb = ParticleAnimated( "Shockwave2.png",
+						castPos,
+						Vec2f(0,0),
+						float(XORRandom(360)),
+						scale, 
+						2, 
+						0.0f, true );    
+				if ( pb !is null)
+				{
+					pb.bounce = 0;
+    				pb.fastcollision = true;
+					pb.Z = -10.0f;
+				}
+				this.getSprite().PlaySound("CounterSpell.ogg", 0.8f, 1.0f);
+			}
+
+			map.getBlobsInRadius(castPos,effectRadius, @blobs);//get the blobs
+			for(s32 i = 0; i < blobs.length(); i++)//itterate through blobs
+			{
+				if(@blobs[i] is null){continue;}
+				CBlob@ other = @blobs[i];//setting other blob to a variable for readability
+				if(other.getTeamNum() == ownTeam){continue;}//Does nothing if same team
+				if(other.hasTag("barrier")){continue;} //do nothing if it's a barrier
+
+				Vec2f othVel = other.getVelocity(); //velocity of target shortcut
+
+				if(other.hasTag("flesh")) //only people
+				{
+					other.setVelocity( othVel + (castDev / 4)); //slight push using cast deviation for convenience
+				}
+
+				if(other.hasTag("counterable")) //set anything counterable to your own team, and reflect it.
+				{
+					if(!other.hasTag("flesh"))
+					{
+						other.server_setTeamNum(ownTeam);
+						other.SetDamageOwnerPlayer( this.getPlayer() );
+						other.setVelocity(-othVel);
+					}
+				}
+
+			}
+		}
+		break;
 		
 		case 2029285710://zombie_rain
 		case 1033042153://skeleton_rain
