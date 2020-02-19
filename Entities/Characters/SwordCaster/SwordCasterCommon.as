@@ -51,8 +51,8 @@ namespace SwordCasterParams
 		Spell("parry", "Parry", 46, "Reflect enemy attacks.",
 				SpellType::other, 25, 10, 0, 20.0f, true),
 			 
-		Spell("vectorial_dash", "Vectorial Dash", 46, "Movement Spell.",
-				SpellType::other, 1, 1, 0, 360.0f, true),
+		Spell("vectorial_dash", "Vectorial Dash", 47, "Movement Spell.",
+				SpellType::other, 0, 4, 3, 360.0f, true),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

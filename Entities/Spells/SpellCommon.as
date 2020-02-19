@@ -1313,9 +1313,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
 			Vec2f orbVel = (targetPos- orbPos) / 20;
 			orbVel *= orbspeed;
-			//6 -7
-			print("STARTER: " + orbVel );
-
+			
 			if(orbVel.x < 6 && orbVel.x > 0) //Minimum X velocity
 			{orbVel.x = 6;}
 			else if(orbVel.x > -6 && orbVel.x < 0)
@@ -1325,8 +1323,6 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			{orbVel.y = 7;}
 			else if(orbVel.y > -7 && orbVel.y < 0)
 			{orbVel.y = -7;}
-
-			print("FINAL: " + orbVel );
 
 			this.setVelocity( this.getVelocity() + orbVel );
 		}
