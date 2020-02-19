@@ -1236,7 +1236,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 				if(other.hasTag("zombie")) //only zombies
 				{
-					other.setVelocity( othVel + (castDev * 2)); //slight push using cast deviation for convenience
+					other.setVelocity( othVel + (castDev * 2)); //strong push using cast deviation for convenience
 				}
 
 				if(other.hasTag("counterable")) //set anything counterable to your own team, and reflect it.
@@ -1296,13 +1296,11 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 
-		/*
 		case 2065576553://vectorial_dash
 		{
 			this.getSprite().PlaySound("bunkercast.ogg", 100.0f);
 			
-			f32 orbspeed = NecromancerParams::shoot_max_vel*0.3f;
-            bool extraDamage = this.hasTag("extra_damage") ? true : false;
+			f32 orbspeed = 1.0f;
 
             if (charge_state == NecromancerParams::cast_3) {
 				orbspeed *= 1.0f;
@@ -1313,18 +1311,26 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
-			orbVel.Normalize();
+			Vec2f orbVel = (targetPos- orbPos) / 20;
 			orbVel *= orbspeed;
+			//6 -7
+			print("STARTER: " + orbVel );
 
-				orb.IgnoreCollisionWhileOverlapped( this );
-				orb.SetDamageOwnerPlayer( this.getPlayer() );
-				orb.server_setTeamNum( this.getTeamNum() );
-				orb.setPosition( orbPos );
-				orb.setVelocity( orbVel );
-			}
+			if(orbVel.x < 6 && orbVel.x > 0) //Minimum X velocity
+			{orbVel.x = 6;}
+			else if(orbVel.x > -6 && orbVel.x < 0)
+			{orbVel.x = -6;}
+
+			if(orbVel.y < 7 && orbVel.y > 0) //Minimum Y velocity
+			{orbVel.y = 7;}
+			else if(orbVel.y > -7 && orbVel.y < 0)
+			{orbVel.y = -7;}
+
+			print("FINAL: " + orbVel );
+
+			this.setVelocity( this.getVelocity() + orbVel );
 		}
-		break;*/
+		break;
 		
 		case 2029285710://zombie_rain
 		case 1033042153://skeleton_rain
