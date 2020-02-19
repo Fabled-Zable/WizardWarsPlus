@@ -8,6 +8,7 @@ void onTick(CBlob@ this)
 	{
 		this.set_u32("timeActive",(10*30) + getGameTime());//10 seconds from now
 		this.set_f32("effectRadius",8*2);// 2 block radius
+		this.set_u32("attackRate",15); // half a second
 		this.getSprite().AddScript("BladedShell.as");//need to do this to get the sprite hooks to run
 
 		this.set_bool("setupDone",true);
@@ -44,8 +45,9 @@ void onTick(CBlob@ this)
 		
 		if(!other.exists("BladedShellCooldown" + other.getNetworkID()) || (other.get_u32("BladedShellCooldown" + other.getNetworkID()) < getGameTime()))
 		{
+			u32 attackRate = this.get_u32("attackRate"); //gets hit delay
 			this.server_Hit(other, other.getPosition(), Vec2f(0,0),0.6f,Hitters::hits::sword);// hit em
-			other.set_u32("BladedShellCooldown" + other.getNetworkID(), getGameTime() + 15);//a second between hits
+			other.set_u32("BladedShellCooldown" + other.getNetworkID(), getGameTime() + attackRate);//a second between hits
 
 			Vec2f norm = (this.getPosition() - other.getPosition()) * -1;
 			norm.Normalize();

@@ -1111,6 +1111,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				{
 					this.Tag("doubleBlade");
 					this.set_f32("effectRadius",8*4);
+					this.set_u32("attackRate",10); //3 hits a second
 				}
 			}
 
@@ -1183,7 +1184,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			Vec2f userPos = this.getPosition() + Vec2f(0.0f,-2.0f);
 			Vec2f castDev = (targetPos- userPos);
 			castDev.Normalize();
-			castDev *= 20; //all of this to get position 2.5 blocks in front of caster
+			castDev *= 24; //all of this to get position 3 blocks in front of caster
 			Vec2f castPos = userPos + castDev;
 
 			if ( isClient() ) //temporary Counterspell effect
@@ -1230,7 +1231,12 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 				if(other.hasTag("flesh")) //only people
 				{
-					other.setVelocity( othVel + (castDev / 4)); //slight push using cast deviation for convenience
+					other.setVelocity( othVel + (castDev / 3)); //slight push using cast deviation for convenience
+				}
+
+				if(other.hasTag("zombie")) //only zombies
+				{
+					other.setVelocity( othVel + (castDev * 2)); //slight push using cast deviation for convenience
 				}
 
 				if(other.hasTag("counterable")) //set anything counterable to your own team, and reflect it.
@@ -1289,7 +1295,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 		}
 		break;
-		
+
 		/*
 		case 2065576553://vectorial_dash
 		{
