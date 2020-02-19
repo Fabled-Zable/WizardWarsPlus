@@ -233,15 +233,18 @@ void onTick( CBlob@ this)
 						{
 							if(hi.blob.hasScript("BladedShell.as")) //blows up the enemy if it's using Bladed Shell
 							{
-							CBlob@ self = this;
-							Vec2f selfPos = self.getPosition();
-							Vec2f othPos = hi.blob.getPosition();
-							Vec2f kickDir = selfPos - othPos;
-							kickDir.Normalize();
-							kickDir *= 3.0f;
-							kickDir += Vec2f(0,1);
-							CBlob@ bumb = server_CreateBlob("bomb",-1,( hi.blob.getPosition() + kickDir ));
-							bumb.server_Die();
+								if(isServer())
+								{
+									CBlob@ self = this;
+									Vec2f selfPos = self.getPosition();
+									Vec2f othPos = hi.blob.getPosition();
+									Vec2f kickDir = selfPos - othPos;
+									kickDir.Normalize();
+									kickDir *= 3.0f;
+									kickDir += Vec2f(0,1);
+									CBlob@ bumb = server_CreateBlob("bomb",-1,( hi.blob.getPosition() + kickDir ));
+									bumb.server_Die();
+								}
 							}
 						}
 
