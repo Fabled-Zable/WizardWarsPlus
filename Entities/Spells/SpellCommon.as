@@ -1111,6 +1111,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				{
 					this.Tag("doubleBlade");
 					this.set_f32("effectRadius",8*4);
+					this.set_u32("attackRate",10); //3 hits a second
 				}
 			}
 
@@ -1183,7 +1184,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			Vec2f userPos = this.getPosition() + Vec2f(0.0f,-2.0f);
 			Vec2f castDev = (targetPos- userPos);
 			castDev.Normalize();
-			castDev *= 20; //all of this to get position 2.5 blocks in front of caster
+			castDev *= 24; //all of this to get position 3 blocks in front of caster
 			Vec2f castPos = userPos + castDev;
 
 			if ( isClient() ) //temporary Counterspell effect
@@ -1230,7 +1231,12 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 				if(other.hasTag("flesh")) //only people
 				{
-					other.setVelocity( othVel + (castDev / 4)); //slight push using cast deviation for convenience
+					other.setVelocity( othVel + (castDev / 3)); //slight push using cast deviation for convenience
+				}
+
+				if(other.hasTag("zombie")) //only zombies
+				{
+					other.setVelocity( othVel + (castDev * 2)); //strong push using cast deviation for convenience
 				}
 
 				if(other.hasTag("counterable")) //set anything counterable to your own team, and reflect it.
@@ -1287,6 +1293,38 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orb.setPosition( orbPos );
 				orb.setVelocity( orbVel );
 			}
+		}
+		break;
+
+		case 2065576553://vectorial_dash
+		{
+			this.getSprite().PlaySound("bunkercast.ogg", 100.0f);
+			
+			f32 orbspeed = 1.0f;
+
+            if (charge_state == NecromancerParams::cast_3) {
+				orbspeed *= 1.0f;
+			}
+			else if (charge_state == NecromancerParams::extra_ready) {
+				orbspeed *= 1.2f;
+			}
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (targetPos- orbPos) / 20;
+			orbVel *= orbspeed;
+
+			if(orbVel.x < 6 && orbVel.x > 0) //Minimum X velocity
+			{orbVel.x = 6;}
+			else if(orbVel.x > -6 && orbVel.x < 0)
+			{orbVel.x = -6;}
+
+			if(orbVel.y < 7 && orbVel.y > 0) //Minimum Y velocity
+			{orbVel.y = 7;}
+			else if(orbVel.y > -7 && orbVel.y < 0)
+			{orbVel.y = -7;}
+
+			this.setVelocity( this.getVelocity() + orbVel ); //add velocity to caster's current velocity
 		}
 		break;
 		

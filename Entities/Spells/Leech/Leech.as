@@ -229,24 +229,7 @@ void onTick( CBlob@ this)
 
 						this.server_Hit(hi.blob, hi.hitpos, Vec2f(0,0), DAMAGE * extraDamage, Hitters::explosion, true);
 						
-						if(hi.blob !is null)
-						{
-							if(hi.blob.hasScript("BladedShell.as")) //blows up the enemy if it's using Bladed Shell
-							{
-								if(isServer())
-								{
-									CBlob@ self = this;
-									Vec2f selfPos = self.getPosition();
-									Vec2f othPos = hi.blob.getPosition();
-									Vec2f kickDir = selfPos - othPos;
-									kickDir.Normalize();
-									kickDir *= 3.0f;
-									kickDir += Vec2f(0,1);
-									CBlob@ bumb = server_CreateBlob("bomb",-1,( hi.blob.getPosition() + kickDir ));
-									bumb.server_Die();
-								}
-							}
-						}
+						
 
 						CPlayer@ ownerPlayer = this.getDamageOwnerPlayer();
 						if ( ownerPlayer !is null && hi.blob.getPlayer() !is null )
@@ -257,15 +240,35 @@ void onTick( CBlob@ this)
 						}
 						
 						damageDealt = true;
+						
+						if(hi.blob !is null)
+						{
+							if(hi.blob.hasScript("BladedShell.as") isServer()) //blows up the enemy if it's using Bladed Shell
+							{
+							CBlob@ self = this;
+							Vec2f selfPos = self.getPosition();
+							Vec2f othPos = hi.blob.getPosition();
+							Vec2f kickDir = selfPos - othPos;
+							kickDir.Normalize();
+							kickDir *= 3.0f;
+							kickDir += Vec2f(0,1);
+							CBlob@ bumb = server_CreateBlob("bomb",-1,( hi.blob.getPosition() + kickDir ));
+							bumb.server_Die();
+							this.Tag("bombed");
+							}
+						}
 					}
 				}
 				
-				Vec2f hitPos = hi.hitpos;
-				f32 distance = hi.distance;
-				if ( shortestHitDist > distance )
+				if(!this.hasTag("bombed"))
 				{
-					shortestHitDist = distance;
-					destination = hitPos;
+					Vec2f hitPos = hi.hitpos;
+					f32 distance = hi.distance;
+					if ( shortestHitDist > distance )
+					{
+						shortestHitDist = distance;
+						destination = hitPos;
+					}
 				}
 			}
 		}
