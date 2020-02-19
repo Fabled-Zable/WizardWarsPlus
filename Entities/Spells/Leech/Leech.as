@@ -243,7 +243,7 @@ void onTick( CBlob@ this)
 						
 						if(hi.blob !is null)
 						{
-							if(hi.blob.hasScript("BladedShell.as") isServer()) //blows up the enemy if it's using Bladed Shell
+							if(hi.blob.hasScript("BladedShell.as") && isServer()) //blows up the enemy if it's using Bladed Shell
 							{
 							CBlob@ self = this;
 							Vec2f selfPos = self.getPosition();
