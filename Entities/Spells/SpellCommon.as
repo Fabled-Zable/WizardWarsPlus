@@ -937,7 +937,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		
 		case 482205956://sword_cast
 		{
-		if (!isServer()){
+			this.getSprite().PlaySound("swordsummon.ogg");
+			if (!isServer()){
            		return;
 			}
 
@@ -969,11 +970,6 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orb.set_f32("speeddo", orbspeed);
 				orb.set_f32("damage", orbDamage);
 				orb.set_u32("shooTime", shooTime);
-
-				if (i == 1)
-				{
-					orb.Tag("soundProducer");
-				}
 
 				orb.IgnoreCollisionWhileOverlapped( this );
 				orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -1018,7 +1014,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					if (orb !is null)
 					{
 						orb.set_f32("damage", orbDamage);
-						u32 shooTime = getGameTime() + (XORRandom(16) +42);
+						u32 shooTime = getGameTime() + (XORRandom(16) +42); //half a second randomness for fall delay (makes it look cooler)
 						orb.set_u32("shooTime", shooTime);
 
 						orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -1244,7 +1240,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					if(!other.hasTag("flesh"))
 					{
 						other.server_setTeamNum(ownTeam);
-						other.SetDamageOwnerPlayer( this.getPlayer() );
+						other.SetDamageOwnerPlayer( this.getPlayer() ); //<<doesn't seem to work properly
 						other.setVelocity(-othVel);
 					}
 				}
@@ -1278,7 +1274,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			CBlob@ orb = server_CreateBlob( "bunker_buster" );
 			if (orb !is null)
 			{
-				if(extraDamage)
+				if(extraDamage)  //if buffed, more blast power
 				{
 					orb.set_f32("blastStr", 1.2f);
 				}
@@ -1291,7 +1287,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orb.SetDamageOwnerPlayer( this.getPlayer() );
 				orb.server_setTeamNum( this.getTeamNum() );
 				orb.setPosition( orbPos );
-				orb.setVelocity( orbVel );
+				orb.setVelocity( orbVel + Vec2f(0,-0.6f));
 			}
 		}
 		break;
@@ -1311,10 +1307,10 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos) / 20;
+			Vec2f orbVel = (targetPos- orbPos) / 10;
 			orbVel *= orbspeed;
 
-			if(orbVel.x < 6 && orbVel.x > 0) //Minimum X velocity
+			/*if(orbVel.x < 6 && orbVel.x > 0) //Minimum X velocity
 			{orbVel.x = 6;}
 			else if(orbVel.x > -6 && orbVel.x < 0)
 			{orbVel.x = -6;}
@@ -1322,7 +1318,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			if(orbVel.y < 7 && orbVel.y > 0) //Minimum Y velocity
 			{orbVel.y = 7;}
 			else if(orbVel.y > -7 && orbVel.y < 0)
-			{orbVel.y = -7;}
+			{orbVel.y = -7;}*/
 
 			this.setVelocity( this.getVelocity() + orbVel ); //add velocity to caster's current velocity
 		}

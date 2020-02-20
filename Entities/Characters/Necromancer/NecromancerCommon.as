@@ -69,7 +69,7 @@ namespace NecromancerParams
 			SpellType::other,55,40,10,360,true),
 							
 		Spell("bunker_buster", "Bunker Buster", 39, "Anti-Barrier spell.",
-				SpellType::other, 20, 30, 5, 360.0f, true),	
+				SpellType::other, 15, 30, 0, 360.0f, true),	
 				
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),	

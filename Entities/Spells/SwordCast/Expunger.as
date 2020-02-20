@@ -50,12 +50,6 @@ void onTick(CBlob@ this)
 	u32 shooTime = this.get_u32("shooTime"); 		//base for timer system
 	u32 lTime = getGameTime();						//clock
 
-		if (this.hasTag("soundProducer"))  //check if this is the sword assigned for the spawn sound
-	{
-		this.getSprite().PlaySound("swordsummon.ogg");
-		this.Untag("soundProducer");
-	}
-
 	if (!this.hasTag("canStickNow"))
 	{
 		u32 fTime = shooTime + 18;
@@ -116,7 +110,7 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 
 	Vec2f norm = velocity;
 	norm.Normalize();
-	norm *= (1.5f * radius);
+	norm *= 1.5f;
 	Vec2f lock = worldPoint - norm;
 	this.set_Vec2f("lock", lock);
 

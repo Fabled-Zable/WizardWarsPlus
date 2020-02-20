@@ -13,7 +13,7 @@ void onInit(CBlob@ this)
 	consts.bullet = false;
 	this.Tag("projectile");
 	this.Tag("counterable");
-	shape.SetGravityScale( 0.06f );
+	shape.SetGravityScale( 0.05f );
 
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
@@ -54,7 +54,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 				//Vec2f kickDir = othPos - selfPos;
 				Vec2f kickDir = this.getVelocity();
 				kickDir.Normalize();
-				kickDir *= (2200.0f * blastStr);
+				kickDir *= (2500.0f * blastStr);
 				kickDir += Vec2f(0,-1);
 				blob.AddForceAtPosition(kickDir, this.getPosition());
 				this.getSprite().PlaySound("bunkerbust.ogg", 100.0f);

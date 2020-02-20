@@ -19,7 +19,7 @@ void onInit(CBlob@ this)
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
 
-    this.server_SetTimeToDie(10);
+    this.server_SetTimeToDie(20);
 
 	this.setAngleDegrees(90);
 
@@ -59,7 +59,7 @@ void onTick(CBlob@ this)
 
 	if (!this.hasTag("canStickNow"))
 	{
-		u32 fTime = shooTime + 15;
+		u32 fTime = shooTime + 14;
 		if (lTime > fTime)  //timer system for collision with walls
 		{
 		this.Tag("canStickNow"); //stops
@@ -140,14 +140,15 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 	
 	if (blob !is null)
 	{
-		if (isEnemy(this, blob) && this.hasTag("collided"))
+		if (isEnemy(this, blob))
 		{
 			float expundamage = this.get_f32("damage");
 			if (!blob.hasTag("barrier"))
 			{
 				if(!blob.hasTag("zombie"))
 				{
-					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
+					if(this.hasTag("collided"))
+					{this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);}
 				}
 				else
 				{
@@ -157,7 +158,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 			}
 			else
 			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), (expundamage / 2) , Hitters::arrow, true);
+				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage , Hitters::arrow, true);
 				this.server_Die();
 			}
 		}
