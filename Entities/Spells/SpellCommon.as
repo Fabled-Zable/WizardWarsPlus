@@ -935,7 +935,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 		
-		case 482205956://sword_cast
+		case 482205956://sword_cast - also known as Expunger
 		{
 			this.getSprite().PlaySound("swordsummon.ogg");
 			if (!isServer()){

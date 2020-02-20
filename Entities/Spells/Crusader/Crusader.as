@@ -118,21 +118,9 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 
 	this.Tag("collided");
 
-	//kill any grain plants we shot the base of
-	CBlob@[] blobsInRadius;
-	if (this.getMap().getBlobsInRadius(worldPoint, this.getRadius() * 1.3f, @blobsInRadius))
-	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
-		{
-			CBlob @b = blobsInRadius[i];
-			if (b.getName() == "grain_plant")
-			{
-				this.server_Hit(b, worldPoint, Vec2f(0, 0), velocity.Length() / 7.0f, Hitters::arrow);
-				break;
-			}
-		}
-	}
 	this.getShape().SetStatic(true);
+	this.getCurrentScript().tickFrequency = 0;
+	
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )

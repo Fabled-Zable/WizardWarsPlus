@@ -2,9 +2,6 @@
 #include "ArcherCommon.as";
 #include "SpellCommon.as";
 
-const f32 arrowMediumSpeed = 8.0f;
-const f32 arrowFastSpeed = 13.0f;
-
 void onInit(CBlob@ this)
 {
 	CShape@ shape = this.getShape();
@@ -93,24 +90,17 @@ void Pierce(CBlob@ this, CBlob@ blob = null)
 
 void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 customData)
 {
-	if (velocity.Length() > arrowFastSpeed)
-	{
-		this.getSprite().PlaySound("ArrowHitGroundFast.ogg");
-	}
-	else
-	{
-		this.getSprite().PlaySound("ArrowHitGround.ogg");
-	}
 
-	f32 radius = this.getRadius();
+	this.getSprite().PlaySound("ArrowHitGroundFast.ogg");
+
+	//f32 radius = this.getRadius(); keeping this for future reference
 
 	f32 angle = velocity.Angle();
-
 	this.set_u8("angle", Maths::get256DegreesFrom360(angle));
 
 	Vec2f norm = velocity;
 	norm.Normalize();
-	norm *= 1.5f;
+	norm *= 1.5f; //norm *= (1.5f * radius); (same as above)
 	Vec2f lock = worldPoint - norm;
 	this.set_Vec2f("lock", lock);
 
@@ -123,20 +113,8 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 
 	this.Tag("collided");
 
-	//kill any grain plants we shot the base of
-	CBlob@[] blobsInRadius;
-	if (this.getMap().getBlobsInRadius(worldPoint, this.getRadius() * 1.3f, @blobsInRadius))
-	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
-		{
-			CBlob @b = blobsInRadius[i];
-			if (b.getName() == "grain_plant")
-			{
-				this.server_Hit(b, worldPoint, Vec2f(0, 0), velocity.Length() / 7.0f, Hitters::arrow);
-				break;
-			}
-		}
-	}
+	this.getShape().SetStatic(true);
+
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
