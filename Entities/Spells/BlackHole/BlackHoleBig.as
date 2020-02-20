@@ -101,14 +101,16 @@ void onTick(CBlob@ this)
 		for (uint i = 0; i < touching.size(); i++)
 		{
 			CBlob@ touchingBlob = touching[i];
-			if (touchingBlob is null || touchingBlob is this)
+			if (touchingBlob is null || touchingBlob is this )
 				continue;
 				
-			if ( touchingBlob.hasTag("black hole") )
+			if ( touchingBlob.hasTag("black hole"))
 			{
-				server_CreateBlob( "black_hole_big", this.getTeamNum(), thisPos );
 				touchingBlob.server_Die();
 				this.server_Die();
+
+				server_CreateBlob( "black_hole_big", this.getTeamNum(), thisPos ); // moved down here so we dont accidently make a blob before killing the last 2
+				break; // dont merge with the rest, we dont want more portals then what die off
 			}
 		}
 	}
