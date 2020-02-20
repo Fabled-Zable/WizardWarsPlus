@@ -40,7 +40,7 @@ namespace SwordCasterParams
 				SpellType::other, 25, 40, 0, 360.0f, true),
 			
 		Spell("sword_cast", "Expunger", 41, "Conjure your vast arsenal of magical daggers to attack the enemy.",
-				SpellType::other, 15, 30, 0, 360.0f, true),
+				SpellType::other, 20, 30, 0, 360.0f, true),
 			 
 		Spell("bladed_shell", "Bladed Shell", 44, "A circle of shear death... or at least it would be if you used the edge. This spell makes you weak to some magic attacks.",
 				SpellType::other, 40, 60, 0, 0.0f, true),
@@ -52,7 +52,7 @@ namespace SwordCasterParams
 				SpellType::other, 25, 10, 0, 20.0f, true),
 			 
 		Spell("vectorial_dash", "Vectorial Dash", 47, "Movement Spell.",
-				SpellType::other, 4, 6, 5, 180.0f, true),
+				SpellType::other, 3, 6, 5, 180.0f, true),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
