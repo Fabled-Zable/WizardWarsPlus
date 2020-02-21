@@ -241,34 +241,15 @@ void onTick( CBlob@ this)
 						
 						damageDealt = true;
 						
-						if(hi.blob !is null)
-						{
-							if(hi.blob.hasScript("BladedShell.as") && isServer()) //blows up the enemy if it's using Bladed Shell
-							{
-							CBlob@ self = this;
-							Vec2f selfPos = self.getPosition();
-							Vec2f othPos = hi.blob.getPosition();
-							Vec2f kickDir = selfPos - othPos;
-							kickDir.Normalize();
-							kickDir *= 3.0f;
-							kickDir += Vec2f(0,1);
-							CBlob@ bumb = server_CreateBlob("bomb",-1,( hi.blob.getPosition() + kickDir ));
-							bumb.server_Die();
-							this.Tag("bombed");
-							}
-						}
 					}
 				}
 				
-				if(!this.hasTag("bombed"))
+				Vec2f hitPos = hi.hitpos;
+				f32 distance = hi.distance;
+				if ( shortestHitDist > distance )
 				{
-					Vec2f hitPos = hi.hitpos;
-					f32 distance = hi.distance;
-					if ( shortestHitDist > distance )
-					{
-						shortestHitDist = distance;
-						destination = hitPos;
-					}
+					shortestHitDist = distance;
+					destination = hitPos;
 				}
 			}
 		}

@@ -118,13 +118,16 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 {
 	if(blob is null)
 		return;
-	if (/*isEnemy(this, blob) &&*/ blob.getVelocity().y > 0)
+	if (!blob.hasTag("counterable"))
 	{
-		this.server_Hit(blob, blob.getPosition(), Vec2f_zero, DAMAGE, 29, true);//29 is spikes damage type
-	}
-	else
-	{
-		this.server_Hit(blob, blob.getPosition(), Vec2f_zero, DAMAGE / 4, 41, true);
+		if (/*isEnemy(this, blob) &&*/ blob.getVelocity().y > 0)
+		{
+			this.server_Hit(blob, blob.getPosition(), Vec2f_zero, DAMAGE, 29, true);//29 is spikes damage type
+		}
+		else
+		{
+			this.server_Hit(blob, blob.getPosition(), Vec2f_zero, DAMAGE / 4, 41, true);
+		}
 	}
 }
 

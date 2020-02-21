@@ -143,15 +143,14 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			if (!isServer()){
            		return;
 			}
-			f32 orbspeed = NecromancerParams::shoot_max_vel;
-			f32 orbDamage = 4.0f;
+			f32 orbspeed = NecromancerParams::shoot_max_vel / 2;
 
 			if (charge_state == NecromancerParams::cast_1) {
 				orbspeed *= (2.0f/3.0f);
 
 			}
 			else if (charge_state == NecromancerParams::cast_2) {
-				orbspeed *= (4.0f/5.0f);
+				orbspeed *= 0.8f;
 
 			}
 			else if (charge_state == NecromancerParams::extra_ready) {
@@ -1566,10 +1565,13 @@ void counterSpell( CBlob@ blob )
 				bool sameTeam = b.getTeamNum() == blob.getTeamNum();
 			
 				bool countered = false;
+				bool retribution = false;
 				if ( b.hasTag("counterable") && (!sameTeam || b.hasTag("alwayscounter")) )
 				{
 					b.Untag("exploding");
 					b.server_Die();
+					if (b.getName() == "plant_aura")
+					{retribution = true;}
 					
 					countered = true;
 				}
@@ -1602,6 +1604,16 @@ void counterSpell( CBlob@ blob )
 					countered = true;
 				}
 				
+				if ( retribution == true )
+				{
+					/*ManaInfo@ manaInfo;
+					if (!blob.get( "manaInfo", @manaInfo )) {
+						return;
+					}
+					manaInfo.mana += 10;*/
+					Heal(blob, 0.5f);
+				}
+
 				if ( countered == true )
 				{
 					if ( isClient() )
