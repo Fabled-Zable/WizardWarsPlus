@@ -1351,6 +1351,31 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			this.setVelocity( this.getVelocity() + orbVel ); //add velocity to caster's current velocity
 		}
 		break;
+
+		case 39628416://no_teleport_barrier
+		{
+			u16 lifetime = 20;
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f dirNorm = (targetPos - this.getPosition());
+			dirNorm.Normalize();
+			Vec2f orbPos = aimpos;	
+			if(!isServer()){
+				return;
+			}
+			CBlob@ orb = server_CreateBlob( "no_teleport_barrier" ); 
+			if (orb !is null)
+			{	
+				orb.set_u16("lifetime", lifetime);
+
+				orb.SetDamageOwnerPlayer( this.getPlayer() );
+				orb.server_setTeamNum( this.getTeamNum() );
+				orb.setPosition( orbPos );
+				orb.setAngleDegrees(-dirNorm.Angle()+90.0f);
+				orb.getShape().SetStatic(true);
+			}
+		}
+		break;
 		
 		case 2029285710://zombie_rain
 		case 1033042153://skeleton_rain
