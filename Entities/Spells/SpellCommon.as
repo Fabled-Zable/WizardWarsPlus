@@ -679,13 +679,9 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			f32 orbspeed = 4.0f;
 
-			if (charge_state == WizardParams::cast_1) 
+			if (charge_state == WizardParams::cast_3) 
 			{
-				orbspeed *= (1.0f/2.0f);
-			}
-			else if (charge_state == WizardParams::cast_2) 
-			{
-				orbspeed *= (4.0f/5.0f);
+				orbspeed *= 0.8f;
 			}
 			else if (charge_state == WizardParams::extra_ready) 
 			{
@@ -704,6 +700,39 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				if (orb !is null)
 				{
 					orb.set_string("effect", "revive");
+
+					orb.IgnoreCollisionWhileOverlapped( this );
+					orb.SetDamageOwnerPlayer( this.getPlayer() );
+					orb.setVelocity( orbVel );
+				}
+			}
+		}
+		break;
+
+		case 571136820://mana_transfer
+		{
+			f32 orbspeed = 4.0f;
+			
+			u16 manaAmount = spell.mana;
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (targetPos- orbPos);
+			orbVel.Normalize();
+			orbVel *= orbspeed;
+
+			if (charge_state == NecromancerParams::extra_ready)
+			{
+				manaAmount += 1;
+			}
+
+			if (isServer())
+			{
+				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
+				if (orb !is null)
+				{
+					orb.set_string("effect", "mana");
+					orb.set_u16("mana_amount", manaAmount);
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -1376,7 +1405,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 		}
 		break;
-		
+
 		case 2029285710://zombie_rain
 		case 1033042153://skeleton_rain
 		case 1761466304://meteor_rain
@@ -1742,6 +1771,21 @@ void Haste( CBlob@ blob, u16 hasteTime )
 		blob.Sync("hastened", true);
 		blob.getSprite().PlaySound("HasteOn.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);
 	}
+}
+
+void manaShot( CBlob@ blob, u16 manaAmount )
+{	
+	ManaInfo@ manaInfo;
+	if (!blob.get( "manaInfo", @manaInfo )) {return;}
+	if( (manaInfo.mana + manaAmount) > manaInfo.maxMana)
+	{
+		manaInfo.mana = manaInfo.maxMana;
+	}
+	else
+	{
+		manaInfo.mana += manaAmount;
+	}
+	blob.getSprite().PlaySound("manaShot.ogg", 1.8f, 1.0f + XORRandom(1)/10.0f);
 }
 
 Random _sprk_r2(12345);
