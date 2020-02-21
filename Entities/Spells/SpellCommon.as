@@ -848,7 +848,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 							{continue;}
 							else 
 							{
-								aimpos = hi.blob.getPosition(); //sets both aimpos and aimVector to correspond with the teleport blocker
+								aimpos = hitInfos[i].hitpos; //sets both aimpos and aimVector to correspond with the teleport blocker
 								aimVector = aimpos - castPos; 
 								teleBlock = true; //no more blob checking
 							}
