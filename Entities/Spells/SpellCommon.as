@@ -815,28 +815,57 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 			else
 			{
+				Vec2f castPos = this.getPosition();
 				ParticleAnimated( "Flash3.png",
-								this.getPosition(),
+								castPos,
 								Vec2f(0,0),
 								float(XORRandom(360)),
 								1.0f, 
 								3, 
 								0.0f, true );
 				
-				Vec2f aimVector = aimpos - this.getPosition();
+				Vec2f aimVector = aimpos - castPos;
 				Vec2f aimNorm = aimVector;
 				aimNorm.Normalize();
+
+				
+				
+				HitInfo@[] hitInfos;
+				bool teleBlock = false;
+				bool hasHit = this.getMap().getHitInfosFromRay(castPos, -aimNorm.getAngle(), aimVector.Length(), this, @hitInfos);
+				if ( hasHit )
+				{
+					for (uint i = 0; i < hitInfos.length; i++)
+					{
+						if ( teleBlock == true ){continue;}
+
+						HitInfo@ hi = hitInfos[i];
+						if (hi.blob !is null) // check
+						{
+							if (hi.blob.getTeamNum() == this.getTeamNum())
+							{continue;}
+							if (!hi.blob.hasTag("TeleportBlocker"))
+							{continue;}
+							else 
+							{
+								aimpos = hi.blob.getPosition(); //sets both aimpos and aimVector to correspond with the teleport blocker
+								aimVector = aimpos - castPos; 
+								teleBlock = true; //no more blob checking
+							}
+						}
+					}
+				}
 				
 				for (uint step = 0; step < aimVector.Length(); step += 8)
 				{
-					teleSparks( this.getPosition() + aimNorm*step, 5, aimNorm*4.0f );
+					teleSparks( castPos + aimNorm*step, 5, aimNorm*4.0f );
 				}
 					
 				this.setPosition( aimpos );
 				this.setVelocity( Vec2f_zero );
 				
 				ParticleAnimated( "Flash3.png",
-								this.getPosition(),
+								castPos,
 								Vec2f(0,0),
 								float(XORRandom(360)),
 								1.0f, 
