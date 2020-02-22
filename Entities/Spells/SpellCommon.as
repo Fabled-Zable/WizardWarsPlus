@@ -713,7 +713,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			f32 orbspeed = 4.0f;
 			
-			u16 manaAmount = spell.mana;
+			u16 manaUsed = spell.mana;
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
@@ -723,8 +723,12 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 			if (charge_state == NecromancerParams::extra_ready)
 			{
-				manaAmount += 1;
+				manaUsed += 1;
 			}
+
+			ManaInfo@ manaInfo;
+			if (!this.get( "manaInfo", @manaInfo )) {return;}
+			u16 casterMana = manaInfo.manaRegen;
 
 			if (isServer())
 			{
@@ -732,7 +736,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				if (orb !is null)
 				{
 					orb.set_string("effect", "mana");
-					orb.set_u16("mana_amount", manaAmount);
+					orb.set_u16("mana_used", manaUsed);
+					orb.set_u16("caster_mana", casterMana);
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -1773,19 +1778,32 @@ void Haste( CBlob@ blob, u16 hasteTime )
 	}
 }
 
-void manaShot( CBlob@ blob, u16 manaAmount )
+void manaShot( CBlob@ blob, u16 manaUsed, float casterMana)
 {	
-	ManaInfo@ manaInfo;
-	if (!blob.get( "manaInfo", @manaInfo )) {return;}
-	if( (manaInfo.mana + manaAmount) > manaInfo.maxMana)
+	if(blob !is null)
 	{
-		manaInfo.mana = manaInfo.maxMana;
+		ManaInfo@ manaInfo;
+		if (!blob.get( "manaInfo", @manaInfo )) {return;}
+
+		u16 currentMana = manaInfo.mana;
+		print("currentMana: " + currentMana);
+		u16 maxMana = manaInfo.maxMana;
+		print("maxMana: " + maxMana);
+		float manaEquivalent = manaInfo.manaRegen / casterMana;
+		print("manaEquivalent: " + manaEquivalent);
+		u16 manaAmount = manaUsed * manaEquivalent;
+		print("manaAmount: " + manaAmount);
+
+		if( (currentMana + manaAmount) > maxMana)
+		{
+			currentMana = maxMana;
+		}
+		else
+		{
+			currentMana += manaAmount;
+		}
+		blob.getSprite().PlaySound("manaShot.ogg", 1.8f, 1.0f + XORRandom(1)/10.0f);
 	}
-	else
-	{
-		manaInfo.mana += manaAmount;
-	}
-	blob.getSprite().PlaySound("manaShot.ogg", 1.8f, 1.0f + XORRandom(1)/10.0f);
 }
 
 Random _sprk_r2(12345);

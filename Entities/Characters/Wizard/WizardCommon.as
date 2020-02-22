@@ -69,8 +69,8 @@ namespace WizardParams
 		Spell("mana_drain_circle", "Circle of disenchant", 33, "Those who stand inside this circle lose their mana and are slowed to a crawl",
 				SpellType::other,40,30,10,360, true),			
 
-		Spell("mana_transfer", "Mana Transfer", 48, "Transfers 3 mana to the target. Generates 1 extra mana if overcharged.",
-				SpellType::other, 3, 20, 1, 360.0f, true),
+		Spell("mana_transfer", "Mana Transfer", 48, "Transfers mana equivalent to the target's regen. Generates 1 extra mana if overcharged.",
+				SpellType::other, 10, 20, 1, 360.0f, true),
 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

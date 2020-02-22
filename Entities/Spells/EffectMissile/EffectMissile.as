@@ -187,7 +187,7 @@ void onTick( CBlob@ this)
 					else if ( effectType == "haste" )
 						Haste(blob, this.get_u16("haste_time"));
 					else if ( effectType == "mana" )
-						manaShot(blob, this.get_u16("mana_amount"));
+						manaShot(blob, this.get_u16("mana_used"), this.get_u16("caster_mana"));
 					Die( this );
 				}
 				else if ( isEnemy(this, blob) && followsEnemies( this ) )	//curse status effects
