@@ -1786,13 +1786,9 @@ void manaShot( CBlob@ blob, u16 manaUsed, float casterMana)
 		if (!blob.get( "manaInfo", @manaInfo )) {return;}
 
 		u16 currentMana = manaInfo.mana;
-		print("currentMana: " + currentMana);
 		u16 maxMana = manaInfo.maxMana;
-		print("maxMana: " + maxMana);
 		float manaEquivalent = manaInfo.manaRegen / casterMana;
-		print("manaEquivalent: " + manaEquivalent);
 		u16 manaAmount = manaUsed * manaEquivalent;
-		print("manaAmount: " + manaAmount);
 
 		if( (currentMana + manaAmount) > maxMana)
 		{
