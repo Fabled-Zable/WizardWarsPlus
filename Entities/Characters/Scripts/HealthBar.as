@@ -1,5 +1,6 @@
 // draws a health bar on mouse hover
 #include "TeamColour.as";
+#include "MagicCommon.as";
 
 void onRender(CSprite@ this)
 {
@@ -34,6 +35,33 @@ void onRender(CSprite@ this)
 					GUI::DrawRectangle(Vec2f(pos2d.x - dim.x + 2, pos2d.y + y + 2), Vec2f(pos2d.x - dim.x + perc * 2.0f * dim.x, pos2d.y + y + dim.y + 4), 
 						SColor(150, (perc < 0.5f ? 255 : 255 - 255*(perc-0.5f)*2), (perc < 0.5f ? 230*perc*2 : 230), 0));
 					GUI::DrawTextCentered(""+Maths::Round(health*10)+" / "+Maths::Round(initialHealth*10), Vec2f(pos2d.x - dim.x + 22, pos2d.y + y + 5), SColor(255, 255, 255, 255));
+				}
+			}
+		}
+
+		ManaInfo@ info;
+		if(blob.get("manaInfo",@info))
+		{
+			//show mana
+			if( (mouseOnBlob || getLocalPlayerBlob() is null) && ((blob.getTeamNum() == getLocalPlayer().getTeamNum()) || getLocalPlayer().getTeamNum() == getRules().getSpectatorTeamNum()))
+			{
+				Vec2f pos2d = blob.getScreenPos() + Vec2f(0, 40);
+				Vec2f dim = Vec2f(24, 8);
+				const f32 y = blob.getHeight() * 0.8f;
+				
+				//VV right here VV
+				const f32 maxMana = info.maxMana;
+				const f32 mana = info.mana;
+				if (maxMana > 0.0f)
+				{
+					const f32 perc = mana / maxMana;
+					if (perc >= 0.0f)
+					{
+						GUI::DrawRectangle(Vec2f(pos2d.x - dim.x, pos2d.y + y), Vec2f(pos2d.x + dim.x + 2, pos2d.y + y + dim.y + 6), SColor(100, 255, 255, 255));
+						GUI::DrawRectangle(Vec2f(pos2d.x - dim.x + 2, pos2d.y + y + 2), Vec2f(pos2d.x - dim.x + perc * 2.0f * dim.x, pos2d.y + y + dim.y + 4), 
+							SColor(150, (perc < 0.5f ? 127 : 127 - 127*(perc-0.5f)*2), 0, (perc < 0.5f ? 230*perc*2 : 230)));
+						GUI::DrawTextCentered(""+Maths::Round(mana)+" / "+Maths::Round(maxMana), Vec2f(pos2d.x - dim.x + 22, pos2d.y + y + 5), SColor(255, 255, 255, 255));
+					}
 				}
 			}
 		}
