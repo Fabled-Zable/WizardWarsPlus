@@ -23,16 +23,14 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-    CShape@ shape = this.getShape();
 
     f32 angle;
 	//prevent leaving the map
 	
 	Vec2f pos = this.getPosition();
-	if (
-		pos.x < 0.1f ||
-		pos.x > (getMap().tilemapwidth * getMap().tilesize) - 0.1f
-	) {
+	if ( pos.x < 0.1f ||
+	 pos.x > (getMap().tilemapwidth * getMap().tilesize) - 0.1f)
+	{
 		this.server_Die();
 		return;
 	}
