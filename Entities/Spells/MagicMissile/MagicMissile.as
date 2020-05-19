@@ -2,8 +2,8 @@
 #include "/Entities/Common/Attacks/LimitedAttacks.as";
 #include "SpellCommon.as";
 
-const int LIFETIME = 4;
-const int EXTENDED_LIFETIME = 6;
+const int LIFETIME = 8;
+const int EXTENDED_LIFETIME = 12;
 const f32 SEARCH_RADIUS = 128.0f;
 const f32 HOMING_FACTOR = 2.0f;
 const int HOMING_DELAY = 15;	
@@ -14,9 +14,6 @@ void onInit( CBlob @ this )
 
 	this.Tag("phase through spells");
 	this.Tag("counterable");
-	
-    //this.server_setTeamNum(1);
-	this.Tag("medium weight");
 
 	//dont collide with edge of the map
 	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath) );
@@ -127,10 +124,15 @@ void onTick( CBlob@ this)
 		Explode( this );
 		Die( this );
 	}
+
 	
+
 	//random motion
 	if ( (getGameTime() % 4 == 0) )
+	{
+		this.Sync("death triggered", true);
 		randomForce(this);
+	}
 	
 	//face towards target like a ballista bolt
 	f32 angle = thisVel.Angle();	
@@ -145,20 +147,13 @@ void onTick( CBlob@ this)
 		makeSmokePuff(this);
 }
 
-bool followsDeadAllies( CBlob@ this )
-{		
-	string effectType = this.get_string("effect");
-	
-	return ( effectType == "revive" );
-}
-
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
 	bool isDead = this.get_bool("dead");
 	if ( isDead )
 		return;
 
-	if ( solid && this.getTickSinceCreated() > HOMING_DELAY )
+	if ( solid && this.getTickSinceCreated() > (HOMING_DELAY*3) )
 	{
 		this.set_bool("death triggered", true);
 	}
@@ -177,6 +172,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 	this.Sync("death triggered", true);
 }
 
+/* unused
 bool isOwnerBlob(CBlob@ this, CBlob@ target)
 {
 	if ( target is null )
@@ -189,7 +185,7 @@ bool isOwnerBlob(CBlob@ this, CBlob@ target)
 	if (!this.exists("explosive_parent")) { return false; }
 
 	return (target.getNetworkID() == this.get_u16("explosive_parent"));
-}
+}*/
 
 bool isEnemy( CBlob@ this, CBlob@ target )
 {
@@ -245,10 +241,8 @@ void makeSmokePuff(CBlob@ this, const f32 velocity = 1.0f, const int smallpartic
 
 void randomForce( CBlob@ this )
 {
-	this.AddForce( this.get_Vec2f("rVel") );
-
 	f32 randomness = (XORRandom(32) + 32)*0.015625f * 0.5f + 0.75f;
-	Vec2f vel = getRandomVelocity( -90, randomness*4.0f, 360.0f );
+	Vec2f vel = getRandomVelocity( -90 , randomness*4.0f, 360.0f );
 	this.set_Vec2f("rVel", vel);
 	SyncMissile( this );
 }
@@ -259,6 +253,8 @@ void SyncMissile( CBlob@ this )
 	CBitStream bt;
 	bt.write_Vec2f( rVel );	
 	this.SendCommand( this.getCommandID("sync missile"), bt );
+
+	this.AddForce( this.get_Vec2f("rVel") );
 }
 
 void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
@@ -274,6 +270,8 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 void Explode( CBlob@ this )
 {
     CMap@ map = getMap();
+	if ( this is null )
+		return;
 	Vec2f thisPos = this.getPosition();
     if (map !is null)   
 	{
@@ -309,7 +307,7 @@ void Die(CBlob@ this)
 	this.getSprite().SetVisible(false);
 	this.getSprite().SetEmitSoundPaused(true);
 	
-	this.server_SetTimeToDie(3);	
+	this.server_SetTimeToDie(1);	
 	
 	this.set_bool("dead", true);
 }

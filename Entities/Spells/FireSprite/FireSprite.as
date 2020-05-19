@@ -76,9 +76,6 @@ void onTick( CBlob@ this )
 			dir.Normalize();
 			vel += dir * 1.4f;
 		}
-		else {
-
-		}		
 		
 		this.setVelocity(vel);
 	}

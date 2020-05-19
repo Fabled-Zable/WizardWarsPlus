@@ -19,7 +19,7 @@ void onInit(CBlob@ this)
 	this.getShape().SetGravityScale(0.0f);
 	this.getShape().SetStatic(true);
 	this.SetFacingLeft(XORRandom(2) == 0);
-	this.server_SetTimeToDie(30);
+	this.server_SetTimeToDie(25);
 	
 }
 
@@ -122,11 +122,11 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 	{
 		if (/*isEnemy(this, blob) &&*/ blob.getVelocity().y > 0)
 		{
-			this.server_Hit(blob, blob.getPosition(), Vec2f_zero, DAMAGE, 29, true);//29 is spikes damage type
+			this.server_Hit(blob, blob.getPosition(), Vec2f_zero, DAMAGE, 29, false);//29 is spikes damage type
 		}
 		else
 		{
-			this.server_Hit(blob, blob.getPosition(), Vec2f_zero, DAMAGE / 4, 41, true);
+			this.server_Hit(blob, blob.getPosition(), Vec2f_zero, DAMAGE / 4, 41, false);
 		}
 	}
 }

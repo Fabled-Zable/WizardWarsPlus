@@ -28,6 +28,7 @@ void onInit( CBlob@ this )
 	this.set_f32("gib health", -3.0f);
 	this.set_Vec2f("spell blocked pos", Vec2f(0.0f, 0.0f));
 	this.set_bool("casting", false);
+	//this.set_bool("shiftlaunch", false);
 	
 	this.Tag("player");
 	this.Tag("flesh");
@@ -43,7 +44,7 @@ void onInit( CBlob@ this )
 
 	//no spinning
 	this.getShape().SetRotationsAllowed(false);
-    this.addCommandID( "spell");
+    this.addCommandID( "spell" );
 	this.getShape().getConsts().net_threshold_multiplier = 0.5f;
 
     AddIconToken( "$Skeleton$", "SpellIcons.png", Vec2f(16,16), 0 );
@@ -186,7 +187,21 @@ void ManageSpell( CBlob@ this, WizardInfo@ wizard, PlayerPrefsInfo@ playerPrefsI
 			wizard.spells_cancelling = false;
 		}
 	}
-	
+	/*
+	if(this.getPlayer() is getLocalPlayer())
+		{
+			if(controls.isKeyJustPressed(KEY_LSHIFT))
+			{
+				this.set_bool("shiftlaunch", true);
+				print("hello");
+			}
+			if(controls.isKeyJustReleased(KEY_LSHIFT))
+			{
+				this.set_bool("shiftlaunch", false);
+				print("ohno");
+			}
+		}
+	*/
 	bool canCastSpell = wizMana >= spell.mana && playerPrefsInfo.spell_cooldowns[spellID] <= 0;
     if (is_pressed && canCastSpell) 
     {

@@ -46,13 +46,13 @@ namespace DruidParams
 				SpellType::other, 4, 10, 1, 360.0f),	
 				
 		Spell("rock_wall", "Rock Wall", 36, "Create a wall of ordinary rock in front of you that blocks most things both ways. Its not exactly durable though.",
-			SpellType::other, 12, 5, 3, 30.0f, true),
+			SpellType::other, 12, 5, 0, 30.0f, true),
 				
 		Spell("healing_plant", "Nature's Remedy", 37, "This blessing from nature will seal your wounds.",
-				SpellType::other, 12, 7, 4, 60.0f, true),
+			SpellType::other, 12, 7, 4, 60.0f, true),
 
 		Spell("mushroom", "Dancing Shroom", 34, "A happy mushroom that will create it's own cloud of spores for you.",
-				SpellType::other, 12, 7, 0, 60.0f),
+			SpellType::other, 12, 7, 0, 60.0f),
 				
 		Spell("slow", "Slow", 19, "Deprive a player of his speed and ability to teleport for a few moments.",
 			SpellType::other, 25, 20, 0, 360.0f, true), 
