@@ -31,10 +31,10 @@ void onTick( CBlob@ this )
 		if( p !is null)	{
 			CBlob@ b = p.getBlob();
 			if( b !is null)	{
-				this.set_bool("launch", b.isKeyPressed(key_down));
-				if(this.get_bool("launch"))
+				if(b.get_bool("shifting"))
 				{
 					this.set_Vec2f("target", b.getAimPos());
+					this.set_bool("launch", true);
 				}
 				else
 				{
@@ -70,7 +70,7 @@ void onTick( CBlob@ this )
 	}
 
 	Vec2f finaldir = this.get_Vec2f("dir");
-	float dirmult = this.hasTag("cruiseMode") ? 1.0f : 0.4;
+	float dirmult = this.hasTag("cruiseMode") ? 1.0f : 0.35;
 	vel += finaldir * dirmult;
 	this.setVelocity(vel);
 
@@ -109,7 +109,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 {
 		this.getSprite().PlaySound("SpriteFire3.ogg", 0.05f, 0.5f + XORRandom(10)/20.0f);
 		if(blob !is null)
-		if( this.getTeamNum() != blob.getTeamNum() && blob.hasTag("counterable"))
+		if( this.getTeamNum() != blob.getTeamNum() && blob.hasTag("counterable") )
 		{
 			if ( isClient() ) //temporary Counterspell effect
 			{

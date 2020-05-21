@@ -72,7 +72,7 @@ namespace WizardParams
 		Spell("mana_transfer", "Mana Transfer", 48, "Transfers mana equivalent to the target's regen. Generates 1 extra mana if overcharged.",
 				SpellType::other, 10, 20, 1, 360.0f, true),
 
-		Spell("negatisphere", "NegatiSphere", 50, "Moving magic field that negates other counterable spells. Press DOWN to launch them in the direction of your aim.",
+		Spell("negatisphere", "NegatiSphere", 50, "Moving magic field that negates other counterable spells. Press SHIFT to launch them in the direction of your aim.",
 				SpellType::other, 15, 10, 2, 360.0f, true),
 
 		Spell("", "", 0, "Empty spell.",

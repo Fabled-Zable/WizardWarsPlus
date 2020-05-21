@@ -144,6 +144,8 @@ void Explode(CBlob@ this, f32 radius, f32 damage)
 		//hit map if we're meant to
 		if (map_damage_radius > 0.1f)
 		{
+			if (map is null)
+			{return;}
 			int tile_rad = int(map_damage_radius / map.tilesize) + 1;
 			f32 rad_thresh = map_damage_radius * map_damage_ratio;
 			Vec2f m_pos = (pos / map.tilesize);
@@ -239,11 +241,18 @@ void Explode(CBlob@ this, f32 radius, f32 damage)
 
 		//hit blobs
 		CBlob@[] blobs;
+		if (map is null)
+		{return;}
 		map.getBlobsInRadius(pos, radius, @blobs);
+
+		if (blobs is null)
+		{return;}
 
 		for (uint i = 0; i < blobs.length; i++)
 		{
 			CBlob@ hit_blob = blobs[i];
+			if (hit_blob is null)
+			{continue;}
 			if (hit_blob is this)
 				continue;
 
@@ -271,6 +280,9 @@ void LinearExplosion(CBlob@ this, Vec2f _direction, f32 length, const f32 width,
 {
 	Vec2f pos = this.getPosition();
 	CMap@ map = this.getMap();
+
+	if (map is null)
+		{return;}
 
 	f32 tilesize = map.tilesize;
 
@@ -376,9 +388,14 @@ void LinearExplosion(CBlob@ this, Vec2f _direction, f32 length, const f32 width,
 		map.getBlobsInBox(pos - tolerance, pos + (direction * length) + tolerance, @blobs);
 	}
 
+	if (blobs is null)
+	{return;}
+
 	for (uint i = 0; i < blobs.length; i++)
 	{
 		CBlob@ hit_blob = blobs[i];
+		if (hit_blob is null)
+			continue;
 		if (hit_blob is this)
 			continue;
 
@@ -466,6 +483,8 @@ bool HitBlob(CBlob@ this, CBlob@ hit_blob, f32 radius, f32 damage, const u8 hitt
 			for (uint i = 0; i < hitInfos.length; i++)
 			{
 				HitInfo@ hi = hitInfos[i];
+				if (hi is null)
+				{continue;}
 
 				if (hi.blob !is null) // blob
 				{
