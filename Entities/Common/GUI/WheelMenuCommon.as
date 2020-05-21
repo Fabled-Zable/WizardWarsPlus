@@ -14,7 +14,6 @@ namespace WheelMenu
     const float default_item_distance = 0.4f;//0.4f
 
 	const float default_hover_distance = 0.07f;//0.7f
-
 	const float auto_selection_distance = 0.3f;
 
 	const Vec2f center_pane_padding(16.0f, 32);
@@ -90,6 +89,68 @@ class IconWheelMenuEntry : WheelMenuEntry
 			position + (offset - frame_size * 0.5f) * scale * 2.0f,
 			scale,
 			get_color()
+		);
+	}
+};
+
+class PickupWheelOption
+{
+	string name;
+
+	// If two options are available with a different priority, regardless of score, we pick the one with the highest priority.
+	uint priority;
+
+	PickupWheelOption(const string&in p_name, uint p_priority = 0)
+	{
+		name = p_name;
+		priority = p_priority;
+	}
+};
+
+class PickupWheelMenuEntry : WheelMenuEntry
+{
+	// Visual parameters
+	string icon_name;
+	float scale;
+	bool disabled;
+	PickupWheelOption[] options;
+	Vec2f offset;
+
+	PickupWheelMenuEntry(const string&in p_name, const string&in p_icon_name, const string&in p_option, Vec2f p_offset = Vec2f(0, 0))
+	{
+		this = PickupWheelMenuEntry(p_name, p_icon_name, PickupWheelOption[](1, PickupWheelOption(p_option)), p_offset);
+	}
+
+	PickupWheelMenuEntry(const string&in p_name, const string&in p_icon_name, PickupWheelOption[] p_options, Vec2f p_offset = Vec2f(0, 0))
+	{
+		super(p_name);
+		visible_name = p_name;
+		icon_name = p_icon_name;
+		options = p_options;
+		scale = 1.0f;
+		disabled = false;
+		offset = p_offset;
+	}
+
+	void render() override
+	{
+		if (disabled)
+		{
+			return;
+		}
+
+		GUI::DrawIcon(
+			"InteractionIconsBackground.png",
+			0,
+			Vec2f(32, 32),
+			position - Vec2f(32, 32),
+			1.5f
+		);
+
+		GUI::DrawIconByName(
+			icon_name,
+			position + offset,
+			scale
 		);
 	}
 };
