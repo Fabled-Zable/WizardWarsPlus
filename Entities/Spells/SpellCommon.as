@@ -1430,6 +1430,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			if (orb !is null)
 			{
 				orb.set_Vec2f("caster", this.getPosition());
+				orb.set_s8("lifepoints", 10);
 
 				orb.IgnoreCollisionWhileOverlapped( this );
 				orb.SetDamageOwnerPlayer( this.getPlayer() );

@@ -8,19 +8,24 @@ void onTick( CBlob@ this )
     if (!this.isMyPlayer()) { return; }
 
     CControls@ controls = getControls();
-
     CBitStream params;
 
     if (controls.isKeyPressed(KEY_LSHIFT))
     {
-        params.write_bool(true);
+        if(!this.get_bool("shifting"))
+        {
+            params.write_bool(true);
+            this.SendCommand(this.getCommandID("shiftpress"), params);
+        }
     }
     else
     {
-        params.write_bool(false);
+        if(this.get_bool("shifting"))
+        {
+            params.write_bool(false);
+            this.SendCommand(this.getCommandID("shiftpress"), params);
+        }
     }
-
-    this.SendCommand(this.getCommandID("shiftpress"), params);
 }
 
 void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
@@ -30,17 +35,11 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
         
         if(params.read_bool())
         {
-            if(!this.get_bool("shifting"))
-            {
-                this.set_bool("shifting", true);
-            }
+            this.set_bool("shifting", true);
         }
         else
         {
-            if(this.get_bool("shifting"))
-            {
-                this.set_bool("shifting", false);
-            }
+            this.set_bool("shifting", false);
         }
     }
 }

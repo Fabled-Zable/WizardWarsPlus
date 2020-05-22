@@ -38,7 +38,7 @@ void onTick( CBlob@ this )
 				}
 				else
 				{
-					this.set_Vec2f("caster", b.getPosition());
+					this.set_Vec2f("target", b.getPosition());
 				}
 			}
 			else
@@ -63,7 +63,7 @@ void onTick( CBlob@ this )
 
 	if(!this.get_bool("launch"))
 	{
-		Vec2f dir = this.get_Vec2f("caster")-this.getPosition();
+		Vec2f dir = this.get_Vec2f("target")-this.getPosition();
 		dir.RotateBy(30);
 		dir.Normalize();
 		this.set_Vec2f("dir", dir);
@@ -78,38 +78,32 @@ void onTick( CBlob@ this )
 
 bool isEnemy( CBlob@ this, CBlob@ target )
 {
-	CBlob@ friend = getBlobByNetworkID(target.get_netid("brain_friend_id"));
 	return 
 	(
-		( target.getTeamNum() != this.getTeamNum() && (target.hasTag("kill other spells") || target.hasTag("door") || target.getName() == "trap_block") || target.hasTag("barrier") )
-		||
-		(
-			target.hasTag("flesh") 
-			&& !target.hasTag("dead") 
-			&& target.getTeamNum() != this.getTeamNum() 
-			&& ( friend is null || friend.getTeamNum() != this.getTeamNum() )
-		)
+		target != null
+		&& target.hasTag("counterable") //all counterables
+		&& !target.hasTag("dead") 
+		&& target.getTeamNum() != this.getTeamNum() //as long as they're on the enemy side
+		&& !target.hasTag("black hole")  //as long as it's not a black hole, go as normal.
 	);
 }	
 
 bool doesCollideWithBlob( CBlob@ this, CBlob@ b )
 {
-	return (
-		isEnemy(this, b) 
-		|| b.hasTag("door") 
-		|| (b.getPlayer() !is null 
-			&& this.getDamageOwnerPlayer() !is null
-			&& b.getPlayer() is this.getDamageOwnerPlayer()
-		|| b.getName() == this.getName()
-		)
+	if(b is null){return false;}
+
+	return 
+	(
+		isEnemy(this, b)
+		|| b.getName() == this.getName()//collides with enemy counterable blobs and also itself.
 	); 
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 {
 		this.getSprite().PlaySound("SpriteFire3.ogg", 0.05f, 0.5f + XORRandom(10)/20.0f);
-		if(blob !is null)
-		if( this.getTeamNum() != blob.getTeamNum() && blob.hasTag("counterable") )
+		if(blob is null){return;}
+		if( isEnemy( this , blob ) ) //will not affect same team negatispheres
 		{
 			if ( isClient() ) //temporary Counterspell effect
 			{
@@ -143,9 +137,30 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 				}
 				this.getSprite().PlaySound("CounterSpell.ogg", 0.8f, 1.0f);
 			}
+			//decreaseLife( blob );
 
 			blob.Untag("exploding");
 			blob.server_Die();
-			this.server_Die();
+			//if (this.get_s8("lifepoints") <= 0)
+			//{
+				this.server_Die();
+			//}
 		} 
 }
+/*
+void decreaseLife ( CBlob@ this , CBlob@ b )
+{
+	switch(b.getName())
+	{
+		case "magic_missile":
+		{
+			asd
+		}
+		default:
+		{
+			print("yadonefuckup");
+		}
+	}
+	
+}
+*/
