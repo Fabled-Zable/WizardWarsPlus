@@ -30,7 +30,8 @@ void onTick( CBlob@ this )
 		CPlayer@ p = this.getDamageOwnerPlayer();
 		if( p !is null)	{
 			CBlob@ b = p.getBlob();
-			if( b !is null)	{
+			if( b !is null)	
+			{
 				if(b.get_bool("shifting"))
 				{
 					this.set_Vec2f("target", b.getAimPos());

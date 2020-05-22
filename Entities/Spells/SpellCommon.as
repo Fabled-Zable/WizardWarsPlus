@@ -533,15 +533,19 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 
-		case -1214504009://magic_missle
+		case -1214504009://magic_missile
 		{
 			f32 orbspeed = 2.0f;
+			u8 spreadarc = 5;
+			bool lowboid = false;
 
 			if (charge_state == NecromancerParams::cast_3) {
 				orbspeed *= 1.0f;
 			}
 			else if (charge_state == NecromancerParams::extra_ready) {
-				orbspeed *= 1.2f;
+				orbspeed *= 2.0f;
+				spreadarc = 4;
+				lowboid = true;
 			}
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
@@ -560,11 +564,13 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					{	
                         if(this.hasTag("extra_damage"))
                             orb.Tag("extra_damage");//Remember to change this in MagicMissile.as
-						
+						if(lowboid)
+							orb.Tag("lowboid"); //reduces intensity of random path variation.
+
                         orb.IgnoreCollisionWhileOverlapped( this );
 						orb.SetDamageOwnerPlayer( this.getPlayer() );
 						Vec2f newVel = orbVel;
-						newVel.RotateBy( -10 + 5*i, Vec2f());
+						newVel.RotateBy( -7 + spreadarc*i, Vec2f());
 						orb.setVelocity( newVel );
 					}
 				}

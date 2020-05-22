@@ -125,7 +125,13 @@ void onTick( CBlob@ this)
 		Die( this );
 	}
 
-	
+	if(isClient()) 
+	{
+		if ( deathTriggered == false && isDead )
+		{
+			ClientRevive( this );
+		}
+	}
 
 	//random motion
 	if ( (getGameTime() % 4 == 0) )
@@ -134,13 +140,14 @@ void onTick( CBlob@ this)
 		randomForce(this);
 	}
 	
+
 	//face towards target like a ballista bolt
 	f32 angle = thisVel.Angle();	
 	thisSprite.ResetTransform();
 	thisSprite.RotateBy( -angle, Vec2f(0,0) );
 	this.AddForce( Vec2f(1,0).RotateBy(-angle)*0.25f );
 	
-	if(!getNet().isClient()) 
+	if(!isClient()) 
 		return;	
 	//particle smoke
 	if ( getGameTime() % 2 == 0 )
@@ -227,22 +234,23 @@ void makeSmokeParticle(CBlob@ this, const Vec2f vel, const string filename = "Sm
 
 void makeSmokePuff(CBlob@ this, const f32 velocity = 1.0f, const int smallparticles = 10, const bool sound = true)
 {
-	if ( !getNet().isClient() )
+	if ( !isClient() )
 		return;
 		
 	//makeSmokeParticle(this, Vec2f(), "Smoke");
 	//for (int i = 0; i < smallparticles; i++)
-	{
+	
 		f32 randomness = (XORRandom(32) + 32)*0.015625f * 0.5f + 0.75f;
 		Vec2f vel = getRandomVelocity( -90, velocity * randomness, 360.0f );
 		makeSmokeParticle(this, vel);
-	}
+	
 }
 
 void randomForce( CBlob@ this )
 {
 	f32 randomness = (XORRandom(32) + 32)*0.015625f * 0.5f + 0.75f;
-	Vec2f vel = getRandomVelocity( -90 , randomness*4.0f, 360.0f );
+	u8 potency = this.hasTag("lowboid") ? 1 : 4;
+	Vec2f vel = getRandomVelocity( -90 , randomness*potency, 360.0f );
 	this.set_Vec2f("rVel", vel);
 	SyncMissile( this );
 }
@@ -310,6 +318,13 @@ void Die(CBlob@ this)
 	this.server_SetTimeToDie(1);	
 	
 	this.set_bool("dead", true);
+}
+
+void ClientRevive(CBlob@ this)
+{
+	this.shape.SetStatic(false);
+	this.getSprite().SetVisible(true);
+	this.getSprite().SetEmitSoundPaused(false);
 }
 
 Random _blast_r(0x10002);
