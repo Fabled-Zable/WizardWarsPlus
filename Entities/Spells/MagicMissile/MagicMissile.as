@@ -70,13 +70,15 @@ void onTick( CBlob@ this)
 		if ( target is null )
 		{
 			CBlob@[] blobs;
-			this.getMap().getBlobsInRadius( thisPos, SEARCH_RADIUS, @blobs );
+			CMap@ map = getMap();
+			if (map is null) {return;}
+			map.getBlobsInRadius( thisPos, SEARCH_RADIUS, @blobs );
 			f32 best_dist = 99999999;
 			for (uint step = 0; step < blobs.length; ++step)
 			{
 				//TODO: sort on proximity? done by engine?
 				CBlob@ other = blobs[step];
-
+				if (other is null) continue;
 				if (other is this) continue; //lets not run away from / try to eat ourselves...
 				
 				//TODO: flags for these...
@@ -156,8 +158,7 @@ void onTick( CBlob@ this)
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
-	bool isDead = this.get_bool("dead");
-	if ( isDead )
+	if ( this.get_bool("dead") )
 		return;
 
 	if ( solid && this.getTickSinceCreated() > (HOMING_DELAY*3) )
@@ -169,7 +170,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 	{
 		if ( ((blob.hasTag("player") || blob.hasTag("zombie") || blob.hasTag("kill other spells") || blob.hasTag("barrier")) && isEnemy(this, blob)))
 		{
-			f32 finalDamage = 0.25f;
+			f32 finalDamage = 1.0f;
 			if(blob.hasScript("BladedShell.as"))
 			{finalDamage = 0.0f;}
 			this.server_Hit(blob, blob.getPosition(), this.getVelocity(), finalDamage, Hitters::water, true);
@@ -280,6 +281,9 @@ void Explode( CBlob@ this )
     CMap@ map = getMap();
 	if ( this is null )
 		return;
+	if ( map is null )
+		return;
+	/*
 	Vec2f thisPos = this.getPosition();
     if (map !is null)   
 	{
@@ -304,7 +308,7 @@ void Explode( CBlob@ this )
 			}
 		}
 	}
-	
+	*/
 	blast(this.getPosition(), 5);		
 	this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
 }
@@ -325,12 +329,14 @@ void ClientRevive(CBlob@ this)
 	this.shape.SetStatic(false);
 	this.getSprite().SetVisible(true);
 	this.getSprite().SetEmitSoundPaused(false);
+
+	this.set_bool("dead", false);
 }
 
 Random _blast_r(0x10002);
 void blast(Vec2f pos, int amount)
 {
-	if ( !getNet().isClient() )
+	if ( !isClient() )
 		return;
 
 	for (int i = 0; i < amount; i++)

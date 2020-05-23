@@ -17,7 +17,7 @@ void onInit(CBlob@ this)
 
 	this.addCommandID("aimpos sync");
 	
-    this.server_SetTimeToDie(20);
+    this.server_SetTimeToDie(25);
 }
 
 void onTick(CBlob@ this)

@@ -46,29 +46,11 @@ void onInit( CBlob@ this )
 	this.getShape().SetRotationsAllowed(false);
     this.addCommandID( "spell" );
 	this.getShape().getConsts().net_threshold_multiplier = 0.5f;
-
-    AddIconToken( "$Skeleton$", "SpellIcons.png", Vec2f(16,16), 0 );
-    AddIconToken( "$Zombie$", "SpellIcons.png", Vec2f(16,16), 1 );
-    AddIconToken( "$Wraith$", "SpellIcons.png", Vec2f(16,16), 2 );
-    AddIconToken( "$Greg$", "SpellIcons.png", Vec2f(16,16), 3 );
-    AddIconToken( "$ZK$", "SpellIcons.png", Vec2f(16,16), 4 );
-    AddIconToken( "$Orb$", "SpellIcons.png", Vec2f(16,16), 5 );
-    AddIconToken( "$ZombieRain$", "SpellIcons.png", Vec2f(16,16), 6 );
-    AddIconToken( "$Teleport$", "SpellIcons.png", Vec2f(16,16), 7 );
-    AddIconToken( "$MeteorRain$", "SpellIcons.png", Vec2f(16,16), 8 );
-    AddIconToken( "$SkeletonRain$", "SpellIcons.png", Vec2f(16,16), 9 );
-	AddIconToken( "$Firebomb$", "SpellIcons.png", Vec2f(16,16), 10 );
-	AddIconToken( "$FireSprite$", "SpellIcons.png", Vec2f(16,16), 11 );
-	AddIconToken( "$FrostBall$", "SpellIcons.png", Vec2f(16,16), 12 );
-	AddIconToken( "$Heal$", "SpellIcons.png", Vec2f(16,16), 13 );
-	AddIconToken( "$Revive$", "SpellIcons.png", Vec2f(16,16), 14 );
-	AddIconToken( "$CounterSpell$", "SpellIcons.png", Vec2f(16,16), 15 );
-	AddIconToken( "$MagicMissile$", "SpellIcons.png", Vec2f(16,16), 16 );
 	
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right | CBlob::map_collide_nodeath);
 	this.getCurrentScript().removeIfTag = "dead";
 
-	if(getNet().isServer())
+	if(isServer())
 		this.set_u8("spell_count", 0);
 }
 
