@@ -14,6 +14,8 @@ void onInit(CBlob@ this)
 	
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
+
+	this.addCommandID("aimpos sync");
 	
     this.server_SetTimeToDie(20);
 }
@@ -46,15 +48,14 @@ void onTick(CBlob@ this)
     }
 	//start of sword launch logic
 	this.Sync("shooTime", true);
-	this.Sync("stopTime", true);
+	this.Sync("lifetime", true);
 
 	u32 shooTime = this.get_u32("shooTime"); 		//base for timer system
-	u32 stopTime = this.get_u32("stopTime");
-	u32 lTime = getGameTime();						//clock
+	u32 lifetime = this.get_u32("lifetime");		
 
 	if (!this.hasTag("aimMode") && !this.hasTag("cruiseMode"))
 	{
-		if (lTime > stopTime)  //timer system for sentry mode
+		if (this.getTickSinceCreated() >= lifetime)  //timer system for sentry mode
 		{
 			this.setVelocity(Vec2f(0,0));
 			this.Tag("aimMode"); //stops
@@ -68,11 +69,18 @@ void onTick(CBlob@ this)
 		if( p !is null) {
 			CBlob@ caster = p.getBlob();
 			if( caster !is null) {
-				Vec2f aimPos = caster.getAimPos() + Vec2f(0.0f,-2.0f);
-				Vec2f aimDir = aimPos - this.getPosition();
+				if( p.isMyPlayer() )
+				{
+					Vec2f aimPos1 = caster.getAimPos() + Vec2f(0.0f,-2.0f);
+					CBitStream params;
+					params.write_Vec2f(aimPos1);
+					this.SendCommand(this.getCommandID("aimpos sync"), params);
+				}
+				Vec2f aimPos2 = this.get_Vec2f("aimpos");
+				Vec2f aimDir = aimPos2 - this.getPosition();
 				angle = aimDir.Angle();
 				this.setAngleDegrees(-angle);
-				if (lTime > shooTime)  //timer system for roboteching
+				if (caster.get_bool("shifting"))  //shift system for roboteching
 				{
 					aimDir.Normalize();
 					Vec2f swordSpeed = aimDir * 15;
@@ -170,4 +178,12 @@ bool isEnemy( CBlob@ this, CBlob@ target )
 		)
 		&& target.getTeamNum() != this.getTeamNum() 
 	);
+}
+
+void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+{
+    if (cmd == this.getCommandID("aimpos sync"))
+    {
+        this.set_Vec2f("aimpos", params.read_Vec2f());
+    }
 }
