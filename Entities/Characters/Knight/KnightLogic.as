@@ -56,7 +56,7 @@ void onInit(CBlob@ this)
 
 	this.set("knightInfo", @knight);
 
-	this.set_f32("gib health", -3.0f);
+	this.set_f32("gib health", -1.5f);
 	addShieldVars(this, SHIELD_BLOCK_ANGLE, 2.0f, 5.0f);
 	knight_actorlimit_setup(this);
 	this.getShape().SetRotationsAllowed(false);
@@ -67,7 +67,6 @@ void onInit(CBlob@ this)
 	this.addCommandID("get bomb");
 
 	this.push("names to activate", "keg");
-	this.push("names to activate", "nuke");
 
 	this.set_u8("bomb type", 255);
 	for (uint i = 0; i < bombTypeNames.length; i++)
@@ -89,8 +88,8 @@ void onInit(CBlob@ this)
 	//centered on inventory
 	this.set_Vec2f("inventory offset", Vec2f(0.0f, 0.0f));
 
-	SetHelp(this, "help self action", "knight", "$Jab$Jab        $LMB$", "", 4);
-	SetHelp(this, "help self action2", "knight", "$Shield$Shield    $KEY_HOLD$$RMB$", "", 4);
+	SetHelp(this, "help self action", "knight", getTranslatedString("$Jab$Jab        $LMB$"), "", 4);
+	SetHelp(this, "help self action2", "knight", getTranslatedString("$Shield$Shield    $KEY_HOLD$$RMB$"), "", 4);
 
 	this.getCurrentScript().runFlags |= Script::tick_not_attached;
 	this.getCurrentScript().removeIfTag = "dead";
@@ -108,9 +107,7 @@ void onSetPlayer(CBlob@ this, CPlayer@ player)
 void onTick(CBlob@ this)
 {
 	u8 knocked = getKnocked(this);
-
-	if (this.isInInventory())
-		return;
+	CHUD@ hud = getHUD();
 
 	//knight logic stuff
 	//get the vars to turn various other scripts on/off
@@ -126,6 +123,18 @@ void onTick(CBlob@ this)
 		return;
 	}
 
+	if (this.isInInventory())
+	{
+		//prevent players from insta-slashing when exiting crates
+		knight.state = 0;
+		knight.swordTimer = 0;
+		knight.shieldTimer = 0;
+		knight.slideTime = 0;
+		knight.doubleslash = false;
+		hud.SetCursorFrame(0);
+		return;
+	}
+
 	Vec2f pos = this.getPosition();
 	Vec2f vel = this.getVelocity();
 	Vec2f aimpos = this.getAimPos();
@@ -135,7 +144,6 @@ void onTick(CBlob@ this)
 
 	const int direction = this.getAimDirection(vec);
 	const f32 side = (this.isFacingLeft() ? 1.0f : -1.0f);
-
 	bool shieldState = isShieldState(knight.state);
 	bool specialShieldState = isSpecialShieldState(knight.state);
 	bool swordState = isSwordState(knight.state);
@@ -144,6 +152,7 @@ void onTick(CBlob@ this)
 	bool walking = (this.isKeyPressed(key_left) || this.isKeyPressed(key_right));
 
 	const bool myplayer = this.isMyPlayer();
+
 
 	//with the code about menus and myplayer you can slash-cancel;
 	//we'll see if knights dmging stuff while in menus is a real issue and go from there
@@ -302,9 +311,9 @@ void onTick(CBlob@ this)
 			}
 		}
 
-		if (knight.swordTimer > KnightVars::slash_charge_limit)
+		if (knight.swordTimer >= KnightVars::slash_charge_limit)
 		{
-			Sound::Play("/Stun", pos, 1.0f, this.getSexNum() == 0 ? 1.0f : 2.0f);
+			Sound::Play("/Stun", pos, 1.0f, this.getSexNum() == 0 ? 1.0f : 1.5f);
 			SetKnocked(this, 15);
 		}
 
@@ -391,6 +400,8 @@ void onTick(CBlob@ this)
 		else if (knight.state >= KnightStates::sword_cut_mid &&
 		         knight.state <= KnightStates::sword_cut_down) // cut state
 		{
+			this.Tag("prevent crouch");
+
 			if (delta == DELTA_BEGIN_ATTACK)
 			{
 				Sound::Play("/SwordSlash", this.getPosition());
@@ -417,6 +428,8 @@ void onTick(CBlob@ this)
 		else if (knight.state == KnightStates::sword_power ||
 		         knight.state == KnightStates::sword_power_super)
 		{
+			this.Tag("prevent crouch");
+
 			//setting double
 			if (knight.state == KnightStates::sword_power_super &&
 			        this.isKeyJustPressed(key_action1))
@@ -531,7 +544,7 @@ void onTick(CBlob@ this)
 
 		if (this.isKeyJustPressed(key_action1) && getGameTime() > 150)
 		{
-			SetHelp(this, "help self action", "knight", "$Slash$ Slash!    $KEY_HOLD$$LMB$", "", 13);
+			SetHelp(this, "help self action", "knight", getTranslatedString("$Slash$ Slash!    $KEY_HOLD$$LMB$"), "", 13);
 		}
 	}
 
@@ -555,6 +568,7 @@ void onTick(CBlob@ this)
 				setShieldDirection(this, Vec2f(horiz, 2));
 				setShieldAngle(this, SHIELD_BLOCK_ANGLE_SLIDING);
 			}
+			this.Tag("prevent crouch");
 		}
 		else if (walking)
 		{
@@ -570,6 +584,8 @@ void onTick(CBlob@ this)
 			{
 				setShieldDirection(this, Vec2f(horiz, -3));
 			}
+
+			this.Tag("prevent crouch");
 		}
 		else
 		{
@@ -629,7 +645,10 @@ void onTick(CBlob@ this)
 	{
 		knight_clear_actor_limits(this);
 	}
+
+
 }
+
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
@@ -719,33 +738,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			}
 		}
 	}
-}
-
-
-f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
-{
-	// play cling sound if other knight attacked us
-	// dmg could be taken out here if we ever want to
-
-	if (hitterBlob.getPosition().x < this.getPosition().x && hitterBlob.getName() == "knight") // knight and the left one (to play only once)
-	{
-		CSprite@ sprite = this.getSprite();
-		CSprite@ hsprite = hitterBlob.getSprite();
-
-		if (hsprite.isAnimation("strike_power_ready") || hsprite.isAnimation("strike_mid") ||
-		        hsprite.isAnimation("strike_mid_down") || hsprite.isAnimation("strike_up") ||
-		        hsprite.isAnimation("strike_down") || hsprite.isAnimation("strike_up"))
-		{
-			if (sprite.isAnimation("strike_power_ready") || sprite.isAnimation("strike_mid") ||
-			        sprite.isAnimation("strike_mid_down") || sprite.isAnimation("strike_up") ||
-			        sprite.isAnimation("strike_down") || sprite.isAnimation("strike_up"))
-			{
-				this.getSprite().PlaySound("SwordCling");
-			}
-		}
-	}
-
-	return damage; //no block, damage goes through
 }
 
 /////////////////////////////////////////////////
@@ -880,6 +872,21 @@ void DoAttack(CBlob@ this, f32 damage, f32 aimangle, f32 arcdegrees, u8 type, in
 							if (canhit)
 							{
 								map.server_DestroyTile(hi.hitpos, 0.1f, this);
+								if (gold)
+								{
+									// Note: 0.1f damage doesn't harvest anything I guess
+									// This puts it in inventory - include MaterialCommon
+									//Material::fromTile(this, hi.tile, 1.f);
+
+									CBlob@ ore = server_CreateBlobNoInit("mat_gold");
+									if (ore !is null)
+									{
+										ore.Tag('custom quantity');
+	     								ore.Init();
+	     								ore.setPosition(pos);
+	     								ore.server_SetQuantity(4);
+	     							}
+								}
 							}
 						}
 					}
@@ -1058,14 +1065,14 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	        )
 	        && blockAttack(hitBlob, velocity, 0.0f))
 	{
-		this.getSprite().PlaySound("/Stun", 1.0f, this.getSexNum() == 0 ? 1.0f : 2.0f);
+		this.getSprite().PlaySound("/Stun", 1.0f, this.getSexNum() == 0 ? 1.0f : 1.5f);
 		SetKnocked(this, 30);
 	}
 
 	if (customData == Hitters::shield)
 	{
 		SetKnocked(hitBlob, 20);
-		this.getSprite().PlaySound("/Stun", 1.0f, this.getSexNum() == 0 ? 1.0f : 2.0f);
+		this.getSprite().PlaySound("/Stun", 1.0f, this.getSexNum() == 0 ? 1.0f : 1.5f);
 	}
 }
 
@@ -1083,7 +1090,7 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu @gridmenu)
 	this.ClearGridMenusExceptInventory();
 	Vec2f pos(gridmenu.getUpperLeftPosition().x + 0.5f * (gridmenu.getLowerRightPosition().x - gridmenu.getUpperLeftPosition().x),
 	          gridmenu.getUpperLeftPosition().y - 32 * 1 - 2 * 24);
-	CGridMenu@ menu = CreateGridMenu(pos, this, Vec2f(bombTypeNames.length, 2), "Current bomb");
+	CGridMenu@ menu = CreateGridMenu(pos, this, Vec2f(bombTypeNames.length, 2), getTranslatedString("Current bomb"));
 	u8 weaponSel = this.get_u8("bomb type");
 
 	if (menu !is null)
@@ -1093,7 +1100,7 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu @gridmenu)
 		for (uint i = 0; i < bombTypeNames.length; i++)
 		{
 			string matname = bombTypeNames[i];
-			CGridButton @button = menu.AddButton(bombIcons[i], bombNames[i], this.getCommandID("pick " + matname));
+			CGridButton @button = menu.AddButton(bombIcons[i], getTranslatedString(bombNames[i]), this.getCommandID("pick " + matname));
 
 			if (button !is null)
 			{
@@ -1110,7 +1117,7 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu @gridmenu)
 }
 
 
-void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
+void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @ap)
 {
 	for (uint i = 0; i < bombTypeNames.length; i++)
 	{
@@ -1119,6 +1126,18 @@ void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
 			this.set_u8("bomb type", i);
 			break;
 		}
+	}
+
+	if (!ap.socket) {
+		KnightInfo@ knight;
+		if (!this.get("knightInfo", @knight))
+		{
+			return;
+		}
+
+		knight.state = KnightStates::normal; //cancel any attacks or shielding
+		knight.swordTimer = 0;
+		knight.doubleslash = false;
 	}
 }
 
