@@ -3,7 +3,7 @@
 #include "WizardCommon.as";
 #include "PlayerPrefsCommon.as";
 #include "MagicCommon.as";
-#include "WizardHUDStartPos.as";
+#include "HUDStartPos.as";
 
 const string iconsFilename = "SpellIcons.png";
 const int slotsSize = 6;

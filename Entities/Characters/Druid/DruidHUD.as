@@ -3,7 +3,7 @@
 #include "DruidCommon.as";
 #include "PlayerPrefsCommon.as";
 #include "MagicCommon.as";
-#include "DruidHUDStartPos.as";
+#include "HUDStartPos.as";
 
 const string iconsFilename = "SpellIcons.png";
 const int slotsSize = 6;
