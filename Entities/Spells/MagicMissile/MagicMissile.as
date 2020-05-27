@@ -158,6 +158,9 @@ void onTick( CBlob@ this)
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
+	if ( this is null )
+		return;
+
 	if ( this.get_bool("dead") )
 		return;
 
@@ -197,7 +200,9 @@ bool isOwnerBlob(CBlob@ this, CBlob@ target)
 
 bool isEnemy( CBlob@ this, CBlob@ target )
 {
-	CBlob@ friend = getBlobByNetworkID(target.get_netid("brain_friend_id"));
+	if (target is null)
+	{ return false; }
+
 	return 
 	(
 		(
@@ -205,9 +210,6 @@ bool isEnemy( CBlob@ this, CBlob@ target )
 			(
 				target.hasTag("flesh") 
 				&& !target.hasTag("dead") 
-				&& (friend is null
-					|| friend.getTeamNum() != this.getTeamNum()
-					)
 			)
 		)
 		&& target.getTeamNum() != this.getTeamNum() 
