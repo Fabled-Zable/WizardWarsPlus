@@ -47,15 +47,12 @@ void onTick(CBlob@ this)
 		}
     }
 	//start of sword launch logic
-	this.Sync("shooTime", true);
 	this.Sync("lifetime", true);
-
-	u32 shooTime = this.get_u32("shooTime"); 		//base for timer system
-	u32 lifetime = this.get_u32("lifetime");		
+	u32 lifetime = this.get_u32("lifetime");		//base for timer system
 
 	if (!this.hasTag("aimMode") && !this.hasTag("cruiseMode"))
 	{
-		if (this.getTickSinceCreated() >= lifetime)  //timer system for sentry mode
+		if (this.getTickSinceCreated() > lifetime)  //timer system for sentry mode
 		{
 			this.setVelocity(Vec2f(0,0));
 			this.Tag("aimMode"); //stops

@@ -1128,14 +1128,12 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			//distance between you and the target
 			float stopLength = (targetPos - orbPos).Length() / 128;
 			u32 lifetime = stopLength *15;
-			u32 shooTime = lifetime + 45;
 
 			CBlob@ orb = server_CreateBlob("executioner",this.getTeamNum(),orbPos);
 			if (orb !is null)
 			{
 				orb.set_f32("damage", orbDamage);
 				orb.set_u32("lifetime", lifetime);
-				orb.set_u32("shooTime", shooTime);
 
 				orb.SetDamageOwnerPlayer( this.getPlayer() );
 				orb.getShape().SetGravityScale(0);
