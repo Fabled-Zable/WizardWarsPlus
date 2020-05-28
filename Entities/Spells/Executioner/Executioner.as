@@ -77,7 +77,7 @@ void onTick(CBlob@ this)
 				Vec2f aimDir = aimPos2 - this.getPosition();
 				angle = aimDir.Angle();
 				this.setAngleDegrees(-angle);
-				if (caster.get_bool("shifting"))  //shift system for roboteching
+				if (caster.get_bool("shifting") && this.getTickSinceCreated() > (lifetime + 30) )  //shift system for roboteching
 				{
 					aimDir.Normalize();
 					Vec2f swordSpeed = aimDir * 15;

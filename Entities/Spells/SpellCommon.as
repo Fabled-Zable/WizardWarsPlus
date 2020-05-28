@@ -1296,14 +1296,28 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 				if(other.hasTag("counterable")) //set anything counterable to your own team, and reflect it.
 				{
-					if(!other.hasTag("flesh"))
+					if (other.getName() == "executioner")
+					{
+						float orbDamage = other.get_f32("damage");
+						CBlob@ newExe = server_CreateBlob("executioner",this.getTeamNum(),other.getPosition());
+						if (newExe !is null)
+						{
+							newExe.set_f32("damage", orbDamage);
+							newExe.set_u32("lifetime", 0);
+
+							newExe.SetDamageOwnerPlayer( this.getPlayer() );
+							newExe.getShape().SetGravityScale(0);
+						}
+
+						other.server_Die();
+					}
+					else if(!other.hasTag("flesh"))
 					{
 						other.server_setTeamNum(ownTeam);
 						other.SetDamageOwnerPlayer( this.getPlayer() ); //<<doesn't seem to work properly
 						other.setVelocity(-othVel);
 					}
 				}
-
 			}
 		}
 		break;
