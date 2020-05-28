@@ -76,6 +76,17 @@ int closestBlobIndex(CBlob@ this, CBlob@[] blobs, CPlayer@ caster)
     return bestIndex;
 }
 
+bool doesCollideWithBlob( CBlob@ this, CBlob@ b )
+{
+	if(b is null){return false;}
+
+	return 
+	(
+		b.getTeamNum() != this.getTeamNum()
+		&& b.hasTag("barrier")//collides with enemy barriers
+	); 
+}
+
 // Vec2f lerp(Vec2f start,Vec2f end, f32 percent){
 //     Vec2f x = end - start;
 //     x *= percent;
