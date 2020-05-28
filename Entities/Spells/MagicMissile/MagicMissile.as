@@ -33,23 +33,18 @@ void onInit( CBlob @ this )
 	this.addCommandID("sync missile");
 	
 	this.set_bool("initialized", false);
-	this.set_bool("segments updating", false);
-	this.set_u32("dead segment", 0);
 	
 	this.set_bool("target found", false);
-	
-	this.set_bool("death triggered", false);
-	this.set_bool("dead", false);
 }
 
 void onTick( CBlob@ this)
 {
+	if(this is null)
+	{return;}
+
 	CSprite@ thisSprite = this.getSprite();
 	Vec2f thisPos = this.getPosition();
 	Vec2f thisVel = this.getVelocity();
-	
-	bool deathTriggered = this.get_bool("death triggered");	//used to sync server and client onCollision 
-	bool isDead = this.get_bool("dead");
 	
 	if ( this.get_bool("initialized") == false && this.getTickSinceCreated() > 1 )
 	{
@@ -60,6 +55,18 @@ void onTick( CBlob@ this)
 		thisSprite.SetZ(500.0f);
 		
 		this.set_bool("initialized", true);
+	}
+
+	//face towards target like a ballista bolt
+	f32 angle = thisVel.Angle();	
+	thisSprite.ResetTransform();
+	thisSprite.RotateBy( -angle, Vec2f(0,0) );
+	this.AddForce( Vec2f(1,0).RotateBy(-angle)*0.25f );
+	
+	if(isClient()) 
+	{	//particle smoke
+		if ( getGameTime() % 2 == 0 )
+		makeSmokePuff(this);
 	}
 	
 	//targetting 
@@ -73,7 +80,6 @@ void onTick( CBlob@ this)
 			CMap@ map = getMap();
 			if (map is null) {return;}
 			map.getBlobsInRadius( thisPos, SEARCH_RADIUS, @blobs );
-			f32 best_dist = 99999999;
 			for (uint step = 0; step < blobs.length; ++step)
 			{
 				//TODO: sort on proximity? done by engine?
@@ -82,16 +88,10 @@ void onTick( CBlob@ this)
 				if (other is this) continue; //lets not run away from / try to eat ourselves...
 				
 				//TODO: flags for these...
-				if (other.getTeamNum() != this.getTeamNum() && (other.hasTag("player") || other.hasTag("zombie")) && !other.hasTag("dead")) //home in on enemies
+				if (other.getTeamNum() != this.getTeamNum() && other.hasTag("flesh") && !other.hasTag("dead")) //home in on enemies
 				{
-					Vec2f tpos = other.getPosition();									  
-					f32 dist = (tpos - thisPos).getLength();
-					if (dist < best_dist)
-					{
-						this.set_netid("target", other.getNetworkID());
-						best_dist=dist;
-						this.getShape().setDrag(1.0f);
-					}
+					this.set_netid("target", other.getNetworkID());
+					this.getShape().setDrag(1.0f);
 				}
 			}
 		}
@@ -108,79 +108,45 @@ void onTick( CBlob@ this)
 	}
 		
 	//delayed death
-	if ( !isDead )
+	if ( this !is null )
 	{
 		if ( this.get_bool("target found") && this.getTickSinceCreated() > (LIFETIME + EXTENDED_LIFETIME)*30 )
 		{
-			Die( this );
+			this.server_Die();
 		}
 		else if ( !this.get_bool("target found") && this.getTickSinceCreated() > LIFETIME*30 )
 		{
-			Die( this );
+			this.server_Die();
 		}
 	}
-	
-	//activate death event if triggered
-	if ( deathTriggered == true && !isDead )
-	{
-		Explode( this );
-		Die( this );
-	}
-
-	if(isClient()) 
-	{
-		if ( deathTriggered == false && isDead )
-		{
-			ClientRevive( this );
-		}
-	}
-
-	//random motion
-	if ( (getGameTime() % 4 == 0) )
-	{
-		this.Sync("death triggered", true);
-		randomForce(this);
-	}
-	
-
-	//face towards target like a ballista bolt
-	f32 angle = thisVel.Angle();	
-	thisSprite.ResetTransform();
-	thisSprite.RotateBy( -angle, Vec2f(0,0) );
-	this.AddForce( Vec2f(1,0).RotateBy(-angle)*0.25f );
-	
-	if(!isClient()) 
-		return;	
-	//particle smoke
-	if ( getGameTime() % 2 == 0 )
-		makeSmokePuff(this);
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
 	if ( this is null )
-		return;
-
-	if ( this.get_bool("dead") )
-		return;
+	{return;}
 
 	if ( solid && this.getTickSinceCreated() > (HOMING_DELAY*3) )
 	{
-		this.set_bool("death triggered", true);
+		Explode( this );
+		this.server_Die();
 	}
 	
 	if (blob !is null)
 	{
-		if ( ((blob.hasTag("player") || blob.hasTag("zombie") || blob.hasTag("kill other spells") || blob.hasTag("barrier")) && isEnemy(this, blob)))
+		if ( (blob.hasTag("flesh") || blob.hasTag("kill other spells") || blob.hasTag("barrier")) && isEnemy(this, blob) )
 		{
 			f32 finalDamage = 1.0f;
+			f32 extraDamage = 0.0f;
 			if(blob.hasScript("BladedShell.as"))
 			{finalDamage = 0.0f;}
-			this.server_Hit(blob, blob.getPosition(), this.getVelocity(), finalDamage, Hitters::water, true);
-			this.set_bool("death triggered", true);
+			if(this.hasTag("extra_damage"))
+			{extraDamage = 0.4f;}
+			this.server_Hit(blob, blob.getPosition(), this.getVelocity(), (finalDamage + extraDamage) , Hitters::water, true);
+			Explode( this );
+			this.server_Die();
 		}
 	}
-	this.Sync("death triggered", true);
 }
 
 /* unused
@@ -202,6 +168,8 @@ bool isEnemy( CBlob@ this, CBlob@ target )
 {
 	if (target is null)
 	{ return false; }
+	if (this is null)
+	{ return false; }
 
 	return 
 	(
@@ -218,8 +186,9 @@ bool isEnemy( CBlob@ this, CBlob@ target )
 
 void makeSmokeParticle(CBlob@ this, const Vec2f vel, const string filename = "Smoke")
 {
-	if(!getNet().isClient()) return;
-	//warn("making smoke");
+	if (this is null)
+	{ return; }
+	if(!isClient()) return;
 
 	const f32 rad = 1.0f;
 	Vec2f random = Vec2f( XORRandom(128)-64, XORRandom(128)-64 ) * 0.015625f * rad;
@@ -231,108 +200,25 @@ void makeSmokeParticle(CBlob@ this, const Vec2f vel, const string filename = "Sm
 		p.Z = 300.0f;
 		p.growth = -0.01f;
 	}
-	
-	//warn("smoke made");
 }
 
 void makeSmokePuff(CBlob@ this, const f32 velocity = 1.0f, const int smallparticles = 10, const bool sound = true)
 {
+	if (this is null)
+	{ return; }
 	if ( !isClient() )
 		return;
-		
-	//makeSmokeParticle(this, Vec2f(), "Smoke");
-	//for (int i = 0; i < smallparticles; i++)
 	
 		f32 randomness = (XORRandom(32) + 32)*0.015625f * 0.5f + 0.75f;
 		Vec2f vel = getRandomVelocity( -90, velocity * randomness, 360.0f );
 		makeSmokeParticle(this, vel);
-	
-}
-
-void randomForce( CBlob@ this )
-{
-	f32 randomness = (XORRandom(32) + 32)*0.015625f * 0.5f + 0.75f;
-	u8 potency = this.hasTag("lowboid") ? 1 : 4;
-	Vec2f vel = getRandomVelocity( -90 , randomness*potency, 360.0f );
-	this.set_Vec2f("rVel", vel);
-	SyncMissile( this );
-}
-
-void SyncMissile( CBlob@ this )
-{
-	Vec2f rVel = this.get_Vec2f("rVel");	
-	CBitStream bt;
-	bt.write_Vec2f( rVel );	
-	this.SendCommand( this.getCommandID("sync missile"), bt );
-
-	this.AddForce( this.get_Vec2f("rVel") );
-}
-
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
-{
-	if( cmd == this.getCommandID("sync missile") )
-    {
-		Vec2f rVel;	
-		rVel = params.read_Vec2f();	
-		this.set_Vec2f( "rVel", rVel );
-	}
 }
 
 void Explode( CBlob@ this )
 {
-    CMap@ map = getMap();
-	if ( this is null )
-		return;
-	if ( map is null )
-		return;
-	/*
-	Vec2f thisPos = this.getPosition();
-    if (map !is null)   
-	{
-		CBlob@[] blobsInRadius;
-		if (map.getBlobsInRadius(thisPos, 24.0f, @blobsInRadius))
-		{
-			for (uint i = 0; i < blobsInRadius.length; i++)
-			{
-				CBlob @b = blobsInRadius[i];
-				if (b !is null)
-				{
-					Vec2f bPos = b.getPosition();
-					
-					if ( !map.rayCastSolid(thisPos, bPos) )
-                    {
-                        float extraDamage = this.hasTag("extra_damage") ? 1.2f : 1.0f;
-						if(b.hasScript("BladedShell.as"))
-						{extraDamage = 0.0f;}
-						this.server_Hit(b, bPos, bPos-thisPos, 0.75f * extraDamage, Hitters::water, false);
-                    }
-                }
-			}
-		}
-	}
-	*/
+	if (this is null) {return;}
 	blast(this.getPosition(), 5);		
 	this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
-}
-
-void Die(CBlob@ this)
-{
-	this.shape.SetStatic(true);
-	this.getSprite().SetVisible(false);
-	this.getSprite().SetEmitSoundPaused(true);
-	
-	this.server_SetTimeToDie(1);	
-	
-	this.set_bool("dead", true);
-}
-
-void ClientRevive(CBlob@ this)
-{
-	this.shape.SetStatic(false);
-	this.getSprite().SetVisible(true);
-	this.getSprite().SetEmitSoundPaused(false);
-
-	this.set_bool("dead", false);
 }
 
 Random _blast_r(0x10002);

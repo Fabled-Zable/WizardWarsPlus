@@ -537,7 +537,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			f32 orbspeed = 2.0f;
 			u8 spreadarc = 5;
-			bool lowboid = false;
+			//bool lowboid = false;
 
 			if (charge_state == NecromancerParams::cast_3) {
 				orbspeed *= 1.0f;
@@ -545,7 +545,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			else if (charge_state == NecromancerParams::extra_ready) {
 				orbspeed *= 2.0f;
 				spreadarc = 4;
-				lowboid = true;
+				//lowboid = true;
 			}
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
@@ -564,8 +564,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					{	
                         if(this.hasTag("extra_damage"))
                             orb.Tag("extra_damage");//Remember to change this in MagicMissile.as
-						if(lowboid)
-							orb.Tag("lowboid"); //reduces intensity of random path variation.
+						//if(lowboid)
+						//	orb.Tag("lowboid"); //reduces intensity of random path variation.
 
                         orb.IgnoreCollisionWhileOverlapped( this );
 						orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -1237,10 +1237,10 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f userPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f castDev = (targetPos- userPos);
-			castDev.Normalize();
-			castDev *= 24; //all of this to get position 3 blocks in front of caster
-			Vec2f castPos = userPos + castDev;
+			Vec2f castDir = (targetPos- userPos);
+			castDir.Normalize();
+			castDir *= 24; //all of this to get deviation 3 blocks in front of caster
+			Vec2f castPos = userPos + castDir;  //exact position of effect
 
 			if ( isClient() ) //temporary Counterspell effect
 			{
@@ -1284,20 +1284,21 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 				Vec2f othVel = other.getVelocity(); //velocity of target shortcut
 
-				if(other.hasTag("flesh")) //only people
+				if(other.hasTag("flesh")) //only people and zombies
 				{
-					other.setVelocity( othVel + (castDev / 3)); //slight push using cast deviation for convenience
+					other.setVelocity( othVel + (castDir / 3)); //slight push using cast direction for convenience
 				}
 
-				if(other.hasTag("zombie")) //only zombies
+				if(other.hasTag("zombie")) //only zombies (extra)
 				{
-					other.setVelocity( othVel + (castDev * 2)); //strong push using cast deviation for convenience
+					other.setVelocity( othVel + (castDir * 2)); //strong push using cast direction for convenience
 				}
 
 				if(other.hasTag("counterable")) //set anything counterable to your own team, and reflect it.
 				{
-					if (other.getName() == "executioner")
+					if (other.getName() == "executioner") //IF it's an executioner, since damageownerplayer doesn't work, delet and replace with a new projectile in the same place.
 					{
+
 						float orbDamage = other.get_f32("damage");
 						CBlob@ newExe = server_CreateBlob("executioner",this.getTeamNum(),other.getPosition());
 						if (newExe !is null)
@@ -1308,10 +1309,10 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 							newExe.SetDamageOwnerPlayer( this.getPlayer() );
 							newExe.getShape().SetGravityScale(0);
 						}
+						other.server_Die(); //this destroys the existing executioner
 
-						other.server_Die();
 					}
-					else if(!other.hasTag("flesh"))
+					else if(!other.hasTag("flesh")) //anything that's not an executioner, or not actually made out of flesh, do as usual.
 					{
 						other.server_setTeamNum(ownTeam);
 						other.SetDamageOwnerPlayer( this.getPlayer() ); //<<doesn't seem to work properly
