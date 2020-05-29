@@ -1683,22 +1683,22 @@ void makeReviveParticles(CBlob@ this, const f32 velocity = 1.0f, const int small
 	}
 }
 
-void counterSpell( CBlob@ blob )
+void counterSpell( CBlob@ caster )
 {		
-	CMap@ map = blob.getMap();
+	CMap@ map = caster.getMap();
 	
 	if (map is null)
 		return;
 
 	CBlob@[] blobsInRadius;
-	if (map.getBlobsInRadius(blob.getPosition(), 64.0f, @blobsInRadius))
+	if (map.getBlobsInRadius(caster.getPosition(), 64.0f, @blobsInRadius))
 	{
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
 			CBlob @b = blobsInRadius[i];
 			if (b !is null)
 			{
-				bool sameTeam = b.getTeamNum() == blob.getTeamNum();
+				bool sameTeam = b.getTeamNum() == caster.getTeamNum();
 			
 				bool countered = false;
 				bool retribution = false;
@@ -1728,9 +1728,9 @@ void counterSpell( CBlob@ blob )
 				else if ( b.hasTag("zombie") && !sameTeam )
 				{					
 					if ( b.hasTag("Greg") )
-						blob.server_Hit(b, blob.getPosition(), Vec2f(0, 0), 0.25f, Hitters::fire, true);
+						caster.server_Hit(b, caster.getPosition(), Vec2f(0, 0), 0.25f, Hitters::fire, true);
 					else
-						blob.server_Hit(b, blob.getPosition(), Vec2f(0, 0), 4.0f, Hitters::fire, true);
+						caster.server_Hit(b, caster.getPosition(), Vec2f(0, 0), 4.0f, Hitters::fire, true);
 					
 					countered = true;
 				}
@@ -1743,12 +1743,12 @@ void counterSpell( CBlob@ blob )
 				if ( retribution == true )
 				{
 					/*ManaInfo@ manaInfo;
-					if (!blob.get( "manaInfo", @manaInfo )) {
+					if (!caster.get( "manaInfo", @manaInfo )) {
 						return;
 					}
 					manaInfo.mana += 10;*/
-					if(blob !is null)
-					{Heal(blob, 1.0f);}
+					if(caster !is null)
+					{Heal(caster, 1.0f);}
 				}
 
 				if ( countered == true )
@@ -1779,7 +1779,7 @@ void counterSpell( CBlob@ blob )
 	if ( isClient() )
 	{
 		CParticle@ p = ParticleAnimated( "Shockwave2.png",
-						blob.getPosition(),
+						caster.getPosition(),
 						Vec2f(0,0),
 						float(XORRandom(360)),
 						1.0f, 
@@ -1792,7 +1792,7 @@ void counterSpell( CBlob@ blob )
 			p.Z = -10.0f;
 		}
 		
-		blob.getSprite().PlaySound("CounterSpell.ogg", 0.8f, 1.0f);
+		caster.getSprite().PlaySound("CounterSpell.ogg", 0.8f, 1.0f);
 	}
 	
 }
