@@ -11,6 +11,8 @@ void onInit(CBlob@ this){
     //this.set_netid("caster",0);
     if(!isServer()){return;}
     this.server_SetTimeToDie(5);
+
+    this.set_u8("stunTimer", 0); //stun setup
 }
 
 void onTick(CBlob@ this){
@@ -26,7 +28,9 @@ void onTick(CBlob@ this){
 
     CBlob@ target = blobs[index];
 
-    if(this.getTickSinceCreated() >= 15)//wait a bit before homing
+    int stun = this.get_u8("stunTimer");
+    int creaTicks = this.getTickSinceCreated();
+    if(creaTicks >= 15 && creaTicks >= stun)//wait a bit before homing - don't home if stunned
     {
         Vec2f thisPos = this.getPosition();
         Vec2f targetPos = target.getPosition();
@@ -38,7 +42,7 @@ void onTick(CBlob@ this){
         this.setVelocity(newVelocity * this.get_u8("speed"));
     }
 
-    if(this.getDistanceTo(target) <= 2)
+    if(this.getDistanceTo(target) <= 2) //hit detection
     {
         if(target.getTeamNum() == this.getTeamNum())
         {
@@ -47,10 +51,16 @@ void onTick(CBlob@ this){
         }
         else
         {
-            float damage = 0.2f;
-            if (other.getName() == "knight")
+            float damage = 0.3f;
+            if (target.getName() == "knight")
             {
-                damage = 0.1f;
+                damage = 0.2f;
+                if (target.hasTag("shielded"))
+                {
+                    if(isClient())
+                    {this.getSprite().PlaySound("ShieldHit.ogg");}
+                    damage = 0;
+                }
             }
             target.server_Hit(target,this.getPosition(), Vec2f_zero,damage,41);
             this.server_Die();
@@ -80,6 +90,17 @@ int closestBlobIndex(CBlob@ this, CBlob@[] blobs, CPlayer@ caster)
         }
     }
     return bestIndex;
+}
+
+void onCollision( CBlob@ this, CBlob@ blob, bool solid )
+{
+    if (blob is null)
+	{return;}
+
+    if (blob.hasTag("barrier") || solid)
+    {
+        this.set_u8("stunTimer", this.getTickSinceCreated() + 15);
+    }
 }
 
 bool doesCollideWithBlob( CBlob@ this, CBlob@ b )

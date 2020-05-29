@@ -56,7 +56,8 @@ void onTick(CBlob@ this)
 		{
 			this.setVelocity(Vec2f(0,0));
 			this.Tag("aimMode"); //stops
-			this.getSprite().PlaySound("exepause.ogg");
+			if(isClient())
+			{this.getSprite().PlaySound("exepause.ogg");}
 		}
 	}
 
