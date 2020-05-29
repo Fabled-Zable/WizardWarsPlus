@@ -2,6 +2,7 @@
 #include "LimitedAttacks.as";
 #include "SpellCommon.as";
 #include "TextureCreation.as";
+#include "ShieldCommon.as";
 
 const f32 RANGE = 180.0f;
 const f32 DAMAGE = 2.0f;
@@ -207,7 +208,8 @@ void onTick( CBlob@ this)
 		CMap@ map = this.getMap();
 		f32 shortestHitDist = 9999.9f;
 		HitInfo@[] hitInfos;
-		bool hasHit = map.getHitInfosFromRay(thisPos, -aimNorm.getAngle(), RANGE, this, @hitInfos);
+		int attackAngle = -aimNorm.getAngle();
+		bool hasHit = map.getHitInfosFromRay(thisPos, attackAngle, RANGE, this, @hitInfos);
 		if ( hasHit )
 		{
 			bool damageDealt = false;
@@ -217,7 +219,8 @@ void onTick( CBlob@ this)
 				
 				if (hi.blob !is null) // blob
 				{
-					if (hi.blob is this || hi.blob.getTeamNum() == this.getTeamNum() || !hi.blob.isCollidable())
+					CBlob@ target = hi.blob;
+					if (target is this || target.getTeamNum() == this.getTeamNum() || !target.isCollidable())
 					{
 						continue;
 					}
@@ -225,14 +228,20 @@ void onTick( CBlob@ this)
 					{
                         f32 extraDamage = 1.0f;
                         if(this.hasTag("extra_damage"))
-                            extraDamage += 0.2f;//Keep 10 percent lower then normal
+                    	{extraDamage += 0.2f;}
+						Vec2f attackVector = Vec2f(1,0).RotateBy(attackAngle);
+						if (target.hasTag("shielded") && blockAttack(target, attackVector, 0.0f)) //knight blocks with shield
+						{
+							extraDamage = 0;
+							if(isClient())
+                    		{target.getSprite().PlaySound("ShieldHit.ogg");}
+						}
 
-						this.server_Hit(hi.blob, hi.hitpos, Vec2f(0,0), DAMAGE * extraDamage, Hitters::explosion, true);
-						
+						this.server_Hit(target, hi.hitpos, Vec2f(0,0), DAMAGE * extraDamage, Hitters::explosion, true);
 						
 
 						CPlayer@ ownerPlayer = this.getDamageOwnerPlayer();
-						if ( ownerPlayer !is null && hi.blob.getPlayer() !is null )
+						if ( ownerPlayer !is null && target.getPlayer() !is null )
 						{
 							CBlob@ ownerBlob = ownerPlayer.getBlob();
 							if ( ownerBlob !is null )

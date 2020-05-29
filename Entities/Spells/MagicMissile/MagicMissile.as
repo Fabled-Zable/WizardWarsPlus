@@ -130,6 +130,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 	{
 		Explode( this );
 		this.server_Die();
+		return;
 	}
 	
 	if (blob !is null)

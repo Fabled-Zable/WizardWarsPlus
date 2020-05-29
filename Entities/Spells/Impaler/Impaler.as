@@ -14,6 +14,7 @@ void onInit(CBlob@ this)
 	consts.net_threshold_multiplier = 4.0f;
 	this.Tag("projectile");
 	this.Tag("counterable");
+	this.set_bool("following", false);
 	shape.SetGravityScale( 0.0f );
 
     //dont collide with top of the map
@@ -27,7 +28,6 @@ void onTick(CBlob@ this)
     CShape@ shape = this.getShape();
 
     f32 angle;
-    bool processSticking = true;
 	if (!this.hasTag("collided")) //we haven't hit anything yet!
 	{
 		//prevent leaving the map
@@ -47,7 +47,9 @@ void onTick(CBlob@ this)
 			Pierce(this);   //Pierce call
 			this.setAngleDegrees(-angle);
 		}
-		else
+		
+		this.Sync("following", true);
+		if(this.get_bool("following"))
 		{
 			u16 targtid = this.get_u16("attached"); //finds target ID
 			CBlob@ targt = getBlobByNetworkID(targtid);
@@ -57,6 +59,10 @@ void onTick(CBlob@ this)
 				{this.server_Die();}
 				this.setVelocity(Vec2f(0,0));
 				this.setPosition(targt.getPosition());
+			}
+			else
+			{
+				this.server_Die();
 			}
 		}
     }
@@ -119,16 +125,12 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 		{
 			if (blob.hasTag("barrier"))
 			{
-			this.server_Die();
+				this.server_Die();
 			}
 			else
 			{
-				if (blob.hasTag("collided"))
-				{
-					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.2f , Hitters::arrow, true);
-					this.server_Die();
-				}
 				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
+
 				if(this.hasTag("primed"))
 				{
 					if(blob !is null)
@@ -138,6 +140,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 					this.server_SetTimeToDie(15);
 					u16 netid = blob.getNetworkID();
 					this.set_u16("attached",netid);
+					this.set_bool("following", true);
 					this.Untag("primed");
 					}
 				}
