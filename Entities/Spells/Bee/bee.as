@@ -38,15 +38,21 @@ void onTick(CBlob@ this){
         this.setVelocity(newVelocity * this.get_u8("speed"));
     }
 
-    if(this.getDistanceTo(target) <= 8)
+    if(this.getDistanceTo(target) <= 2)
     {
         if(target.getTeamNum() == this.getTeamNum())
         {
             Heal(target,this.get_f32("heal_amount"));
             this.server_Die();
         }
-        else{
-            target.server_Hit(target,this.getPosition(), Vec2f_zero,0.3,41);
+        else
+        {
+            float damage = 0.2f;
+            if (other.getName() == "knight")
+            {
+                damage = 0.1f;
+            }
+            target.server_Hit(target,this.getPosition(), Vec2f_zero,damage,41);
             this.server_Die();
         }
     }

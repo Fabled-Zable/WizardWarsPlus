@@ -88,7 +88,7 @@ void onTick( CBlob@ this)
 				if (other is this) continue; //lets not run away from / try to eat ourselves...
 				
 				//TODO: flags for these...
-				if (other.getTeamNum() != this.getTeamNum() && other.hasTag("flesh") && !other.hasTag("dead")) //home in on enemies
+				if (other.getTeamNum() != this.getTeamNum() && other.getPlayer() !is null) //home in on enemy players
 				{
 					this.set_netid("target", other.getNetworkID());
 					this.getShape().setDrag(1.0f);

@@ -1747,7 +1747,8 @@ void counterSpell( CBlob@ blob )
 						return;
 					}
 					manaInfo.mana += 10;*/
-					Heal(blob, 0.5f);
+					if(blob !is null)
+					{Heal(blob, 1.0f);}
 				}
 
 				if ( countered == true )
