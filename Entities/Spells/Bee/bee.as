@@ -12,7 +12,7 @@ void onInit(CBlob@ this){
     if(!isServer()){return;}
     this.server_SetTimeToDie(5);
 
-    this.set_u8("stunTimer", 0); //stun setup
+    this.set_u16("stunTimer", 0); //stun setup
 }
 
 void onTick(CBlob@ this){
@@ -28,7 +28,7 @@ void onTick(CBlob@ this){
 
     CBlob@ target = blobs[index];
 
-    int stun = this.get_u8("stunTimer");
+    int stun = this.get_u16("stunTimer");
     int creaTicks = this.getTickSinceCreated();
     if(creaTicks >= 15 && creaTicks >= stun)//wait a bit before homing - don't home if stunned
     {
@@ -39,7 +39,7 @@ void onTick(CBlob@ this){
 
         Vec2f newVelocity = this.getVelocity() + norm;
         newVelocity.Normalize(); 
-        this.setVelocity(newVelocity * this.get_u8("speed"));
+        this.setVelocity(newVelocity * this.get_u16("speed"));
     }
 
     if(this.getDistanceTo(target) <= 2) //hit detection
@@ -99,7 +99,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 
     if (blob.hasTag("barrier") || solid)
     {
-        this.set_u8("stunTimer", this.getTickSinceCreated() + 15);
+        this.set_u16("stunTimer", this.getTickSinceCreated() + 15);
     }
 }
 
