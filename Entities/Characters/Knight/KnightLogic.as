@@ -71,6 +71,8 @@ void onInit(CBlob@ this)
 	this.Tag("flesh");
 
 	this.addCommandID("get bomb");
+	this.addCommandID("sync charge");
+	this.set_s32("charge", 0);
 
 	this.push("names to activate", "keg");
 
@@ -135,14 +137,20 @@ void onTick(CBlob@ this)
 		return;
 	}
 
-	s32 charge = chargeInfo.charge; //gets current charge
-
+	
 	if(this.get_bool("shifting")) //gets shifting from ShiftTrigger.as
 	{
-		if (!this.hasTag("materializing") && charge > 0) //if no shield is active and available charge, do what's below
+		if(this.isMyPlayer())
+		{
+			CBitStream params1;
+			params1.write_s32(chargeInfo.charge); //gets current charge
+			this.SendCommand(this.getCommandID("sync charge"), params1);
+		}
+		if (!this.hasTag("materializing") && this.get_s32("charge") > 0) //if no shield is active and available charge, do what's below
 		{
 			this.Tag("materializing");
 			this.set_u16("cooldown", getGameTime() + 25); //starts a timer where you can't remove your shield
+			//this.SendCommand(this.getCommandID("spawn shield"), params);
 			if( isServer() )
 			{
 				Vec2f targetPos = this.getAimPos() + Vec2f(0.0f,-2.0f);
@@ -173,10 +181,11 @@ void onTick(CBlob@ this)
 
 	if(this.hasTag("materializing")) //while shield active, reduce 2 charge per tick
 	{
+		s32 charge = this.get_s32("charge");
 		if (charge <= 0)
 		this.Untag("materializing");
 
-		if ( isClient() )
+		if ( this.isMyPlayer() )
 		{
 			s32 maxCharge = chargeInfo.maxCharge;
 			if (charge >= 1) //if the charge reaches 0, there's a -20 charge penalty.
@@ -802,6 +811,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	else if (cmd == this.getCommandID("activate/throw"))
 	{
 		SetFirstAvailableBomb(this);
+	}
+	else if (cmd == this.getCommandID("sync charge"))
+	{
+		this.set_s32("charge", params.read_s32());
 	}
 	else
 	{
