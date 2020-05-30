@@ -43,7 +43,7 @@ namespace DruidParams
 				SpellType::other, 4, 5, 0, 360.0f),			
 				
 		Spell("sporeshot", "SporeShot", 31, "A foul fungus that is painful to the touch, lighter than air",
-				SpellType::other, 4, 10, 1, 360.0f),	
+				SpellType::other, 4, 10, 0, 360.0f, true),	
 				
 		Spell("rock_wall", "Rock Wall", 36, "Create a wall of ordinary rock in front of you that blocks most things both ways. Its not exactly durable though.",
 			SpellType::other, 12, 5, 0, 30.0f, true),

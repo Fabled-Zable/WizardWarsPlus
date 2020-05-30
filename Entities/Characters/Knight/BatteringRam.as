@@ -11,6 +11,7 @@ void onInit(CBlob@ this)
 	shape.getConsts().mapCollisions = false;
 	
 	this.Tag("barrier");
+	this.addCommandID("remove shield");
 }
 
 void onTick( CBlob@ this )
@@ -34,10 +35,12 @@ void onTick( CBlob@ this )
 		return;
 	}
 
-	if (!owner.hasTag("materializing"))
+	if (p.isMyPlayer())
 	{
-		this.server_Die();
-		return;
+		if (!owner.hasTag("materializing"))
+		{
+			this.SendCommand(this.getCommandID("remove shield"));
+		}
 	}
 	
 	Vec2f targetPos = owner.getAimPos() + Vec2f(0.0f,-2.0f);
@@ -47,7 +50,11 @@ void onTick( CBlob@ this )
 	castDir *= 20; //all of this to get deviation 3 blocks in front of caster
 	Vec2f castPos = userPos + castDir; //exact position of effect
 
+	if(this is null)
+	{return;}
+
 	this.setPosition( castPos );
+	this.setVelocity(Vec2f_zero);
 	this.setAngleDegrees(-castDir.Angle()+90.0f);
 
 }
@@ -130,4 +137,12 @@ void shieldSparks(Vec2f pos, int amountPerFan, f32 orientation, int teamNum)
 		p.collides = false;
 		p.Z = 510.0f;
     }
+}
+
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
+{
+	if (cmd == this.getCommandID("remove shield"))
+	{
+		this.server_Die();
+	}
 }

@@ -8,7 +8,6 @@
 #include "Knocked.as"
 #include "Help.as";
 #include "Requirements.as"
-#include "ChargeCommon.as"
 
 
 //attacks limited to the one time per-actor before reset.
@@ -57,9 +56,6 @@ void onInit(CBlob@ this)
 
 	this.set("knightInfo", @knight);
 
-	ChargeInfo chargeInfo;
-	this.set("chargeInfo", @chargeInfo);
-
 	this.set_f32("gib health", -1.5f);
 	addShieldVars(this, SHIELD_BLOCK_ANGLE, 2.0f, 5.0f);
 	knight_actorlimit_setup(this);
@@ -69,7 +65,6 @@ void onInit(CBlob@ this)
 	this.Tag("flesh");
 
 	this.addCommandID("get bomb");
-	this.set_s32("charge", 0);
 
 	this.push("names to activate", "keg");
 
