@@ -3,6 +3,7 @@
 #include "NecromancerCommon.as";
 #include "DruidCommon.as";
 #include "SwordCasterCommon.as";
+#include "EntropistCommon.as";
 #include "MagicCommon.as";
 
 const u8 MAX_SPELLS = 20;
@@ -11,6 +12,7 @@ const u8 WIZARD_TOTAL_HOTKEYS = 18;
 const u8 DRUID_TOTAL_HOTKEYS = 18;
 const u8 NECROMANCER_TOTAL_HOTKEYS = 18;
 const u8 SWORDCASTER_TOTAL_HOTKEYS = 18;
+const u8 ENTROPIST_TOTAL_HOTKEYS = 18;
 
 shared class PlayerPrefsInfo
 {
@@ -25,6 +27,7 @@ shared class PlayerPrefsInfo
 	u8[] hotbarAssignments_Druid;
 	u8[] hotbarAssignments_Necromancer;
 	u8[] hotbarAssignments_SwordCaster;
+	u8[] hotbarAssignments_Entropist;
 	
 	s32[] spell_cooldowns;
 
@@ -86,6 +89,12 @@ void assignHotkey( CPlayer@ this, const u8 hotkeyID, const u8 spellID, string pl
 		int hotbarLength = playerPrefsInfo.hotbarAssignments_SwordCaster.length;
 		playerPrefsInfo.hotbarAssignments_SwordCaster[Maths::Min(hotkeyID,hotbarLength-1)] = spellID;
 		playerPrefsInfo.primarySpellID = playerPrefsInfo.hotbarAssignments_SwordCaster[Maths::Min(playerPrefsInfo.primaryHotkeyID,hotbarLength-1)];
+	}
+	else if ( playerClass == "entropist" )
+	{
+		int hotbarLength = playerPrefsInfo.hotbarAssignments_Entropist.length;
+		playerPrefsInfo.hotbarAssignments_Entropist[Maths::Min(hotkeyID,hotbarLength-1)] = spellID;
+		playerPrefsInfo.primarySpellID = playerPrefsInfo.hotbarAssignments_Entropist[Maths::Min(playerPrefsInfo.primaryHotkeyID,hotbarLength-1)];
 	}
 	
 	saveHotbarAssignments( this );
@@ -191,6 +200,29 @@ void defaultHotbarAssignments( CPlayer@ this, string playerClass )
 				playerPrefsInfo.hotbarAssignments_SwordCaster.push_back(3);	//assign aux2 to something
 		}	
 	}
+	else if ( playerClass == "entropist" )
+	{
+		playerPrefsInfo.hotbarAssignments_Entropist.clear();
+		
+		int spellsLength = EntropistParams::spells.length;
+		for (uint i = 0; i < ENTROPIST_TOTAL_HOTKEYS; i++)
+		{
+			if ( i > spellsLength )
+			{
+				playerPrefsInfo.hotbarAssignments_Entropist.push_back(0);
+				continue;
+			}
+				
+			if ( i < 15 )
+				playerPrefsInfo.hotbarAssignments_Entropist.push_back(i);
+			else if ( i == 15 )
+				playerPrefsInfo.hotbarAssignments_Entropist.push_back(1);	//assign secondary to teleport
+			else if ( i == 16 )
+				playerPrefsInfo.hotbarAssignments_Entropist.push_back(2);	//assign aux1 to counter spell
+			else if ( i == 17 )
+				playerPrefsInfo.hotbarAssignments_Entropist.push_back(3);	//assign aux2 to something
+		}	
+	}
 }
 
 void saveHotbarAssignments( CPlayer@ this )
@@ -224,6 +256,12 @@ void saveHotbarAssignments( CPlayer@ this )
 		{		
 			cfg.add_u32("swordcaster hotkey" + i, playerPrefsInfo.hotbarAssignments_SwordCaster[i]);
 		}
+
+		for (uint i = 0; i < playerPrefsInfo.hotbarAssignments_Entropist.length; i++)
+		{	
+			cfg.add_u32("entropist hotkey" + i, playerPrefsInfo.hotbarAssignments_Entropist[i]);
+		}
+
 		cfg.saveFile( "WW_PlayerPrefs.cfg" );
 	}	
 }
@@ -419,5 +457,51 @@ void loadHotbarAssignments( CPlayer@ this, string playerClass )
 		}
 		
 		playerPrefsInfo.primarySpellID = playerPrefsInfo.hotbarAssignments_SwordCaster[Maths::Min(0,hotbarLength-1)];
+	}
+	else if ( playerClass == "entropist" )
+	{
+		playerPrefsInfo.hotbarAssignments_Entropist.clear();
+		
+		int spellsLength = EntropistParams::spells.length;
+		for (uint i = 0; i < ENTROPIST_TOTAL_HOTKEYS; i++)
+		{
+			if ( i == 15 )
+				playerPrefsInfo.hotbarAssignments_Entropist.push_back(1);	//assign secondary to teleport
+			else if ( i == 16 )
+				playerPrefsInfo.hotbarAssignments_Entropist.push_back(2);	//assign aux1 to counter spell
+			else if ( i == 17 )
+				playerPrefsInfo.hotbarAssignments_Entropist.push_back(3);	//assign aux2 to something
+			else if ( i >= spellsLength )
+			{
+				playerPrefsInfo.hotbarAssignments_Entropist.push_back(0);
+				continue;
+			}	
+			else if ( i < 15 )
+				playerPrefsInfo.hotbarAssignments_Entropist.push_back(i);
+		}
+		
+		int hotbarLength = playerPrefsInfo.hotbarAssignments_Entropist.length;
+		if (isClient()) 
+		{	
+			u8[] loadedHotkeys;
+			ConfigFile cfg;
+			if ( cfg.loadFile("../Cache/WW_PlayerPrefs.cfg") )
+			{
+				for (uint i = 0; i < playerPrefsInfo.hotbarAssignments_Entropist.length; i++)
+				{		
+					if ( cfg.exists( "entropist hotkey" + i ) )
+					{
+						u32 iHotkeyAssignment = cfg.read_u32("entropist hotkey" + i);
+						loadedHotkeys.push_back( Maths::Min(iHotkeyAssignment, spellsLength-1) );
+					}
+					else
+						loadedHotkeys.push_back(0);
+				}
+				playerPrefsInfo.hotbarAssignments_Entropist = loadedHotkeys;
+				print("Hotkey config file loaded.");
+			}
+		}
+		
+		playerPrefsInfo.primarySpellID = playerPrefsInfo.hotbarAssignments_Entropist[Maths::Min(0,hotbarLength-1)];
 	}
 }
