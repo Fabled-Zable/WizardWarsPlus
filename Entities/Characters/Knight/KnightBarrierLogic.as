@@ -23,7 +23,7 @@ void onTick(CBlob@ this)
 		if(this.isMyPlayer())
 		{
 			CBitStream params1;
-			params1.write_s32(chargeInfo.charge); //gets current charge
+			params1.write_s32(chargeInfo.charge); //gets current ch<arge
 			this.SendCommand(this.getCommandID("sync charge"), params1);
 		}
 
@@ -38,7 +38,7 @@ void onTick(CBlob@ this)
 				Vec2f userPos = this.getPosition() + Vec2f(0.0f,-2.0f);
 				Vec2f castDir = (targetPos- userPos);
 				castDir.Normalize();
-				castDir *= 20; //all of this to get deviation 3 blocks in front of caster
+				castDir *= 20; //all of this to get deviation 2.5 blocks in front of caster
 				Vec2f castPos = userPos + castDir; //exact position of effect
 
 				CBlob@ barrier = server_CreateBlob( "battering_ram" ); //creates "supershield"
@@ -63,7 +63,7 @@ void onTick(CBlob@ this)
 	if(this.hasTag("materializing")) //while shield active, reduce 2 charge per tick
 	{
 		s32 charge = this.get_s32("charge");
-		if (charge <= 0)
+		if (charge < 0)
 		this.Untag("materializing");
 
 		if ( this.isMyPlayer() )
@@ -72,7 +72,7 @@ void onTick(CBlob@ this)
 			if (charge >= 1) //if the charge reaches 0, there's a -20 charge penalty.
 			chargeInfo.charge -= 1;
             else
-            chargeInfo.charge = -20;
+            chargeInfo.charge = -25;
 		}
 	}
 

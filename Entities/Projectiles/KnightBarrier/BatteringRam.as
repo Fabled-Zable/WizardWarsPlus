@@ -39,7 +39,10 @@ void onTick( CBlob@ this )
 		this.server_Die();
 		return;
 	}
-	
+
+	if (this is null || owner is null)
+	{return;}
+
 	Vec2f targetPos = owner.getAimPos() + Vec2f(0.0f,-2.0f);
 	Vec2f userPos = owner.getPosition() + Vec2f(0.0f,-2.0f);
 	Vec2f castDir = (targetPos- userPos);
@@ -48,6 +51,7 @@ void onTick( CBlob@ this )
 	Vec2f castPos = userPos + castDir; //exact position of effect
 
 	this.setPosition( castPos );
+	this.setVelocity(Vec2f_zero);
 	this.setAngleDegrees(-castDir.Angle()+90.0f);
 
 }
