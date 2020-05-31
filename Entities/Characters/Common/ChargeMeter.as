@@ -2,9 +2,6 @@
 
 void onInit(CBlob@ this)
 {
-	ChargeInfo chargeInfo;
-	this.set("chargeInfo", @chargeInfo);
-    this.set_s32("charge", 0);
 	this.getCurrentScript().removeIfTag = "dead";
 }
 
