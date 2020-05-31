@@ -364,13 +364,13 @@ void intitializeClasses()
 													"\n\n     Health: 75" +
 													"\n     Mana: 100" +
 													"\n     Mana Regen: 3 mana/sec",
-													"swordcaster", 4, 0, 0, 0, "WizardWars");
-	playerClassButtons.registerWWPlayerClassButton("Entropist", 
-													"     \"There is no better feeling than giving the enemy a taste of their own medicine.\" " +
+													"swordcaster", 4, 0, 5, 0, "WizardWars");
+	playerClassButtons.registerWWPlayerClassButton("WIP", 
+													"     There is no better feeling than giving the enemy a taste of their own medicine." +
 													"\n\n     Health: 75" +
 													"\n     Mana: 200" +
-													"\n     Mana is obtained by absorving the enemy's spells",
-													"entropist", 5, 0, 0, 0, "WizardWars");
+													"\n     Mana is obtained by [REDACTED] spells.",
+													"entropist", 5, 0, 6, 0, "WizardWars");
 													
 	/*playerClassButtons.registerWWPlayerClassButton("Archer", 
 													"     The most powerful class ever with over 1000 mana fit for taking on the Gods. Too bad they skipped magic class. " +
