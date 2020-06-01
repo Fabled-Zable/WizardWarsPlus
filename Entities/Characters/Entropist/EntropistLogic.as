@@ -28,6 +28,7 @@ void onInit( CBlob@ this )
 	this.set_f32("gib health", -3.0f);
 	this.set_Vec2f("spell blocked pos", Vec2f(0.0f, 0.0f));
 	this.set_bool("casting", false);
+	this.set_bool("shifted", false);
 	
 	this.Tag("player");
 	this.Tag("flesh");
@@ -43,7 +44,8 @@ void onInit( CBlob@ this )
 
 	//no spinning
 	this.getShape().SetRotationsAllowed(false);
-    this.addCommandID( "spell");
+    this.addCommandID( "spell" );
+	this.addCommandID( "pulsed" );
 	this.getShape().getConsts().net_threshold_multiplier = 0.5f;
 
     AddIconToken( "$Skeleton$", "SpellIcons.png", Vec2f(16,16), 0 );
@@ -238,6 +240,19 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
         charge_time = 0;
     }
 
+	if(this.get_bool("shifting") && !this.get_bool("shifted"))
+	{
+		this.set_bool("shifted", true);
+		if(entropist.pulse_amount > 0)
+		{
+			this.SendCommand(this.getCommandID("pulsed"));
+		}
+	}
+	else if(!this.get_bool("shifting") && this.get_bool("shifted"))
+	{
+		this.set_bool("shifted", false);
+	}
+
     entropist.charge_time = charge_time;
     entropist.charge_state = charge_state;
 
@@ -275,7 +290,9 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
 			else if (entropist.charge_time > 0) {
 				frame = entropist.charge_time * 12 /spell.cast_period; 
 			}
-			getHUD().SetCursorFrame( frame );
+			u8 pulses = entropist.pulse_amount;
+			u8 frameoffset = 16 * pulses;
+			getHUD().SetCursorFrame( frame + frameoffset);
 		}
 
         if (this.isKeyJustPressed(key_action3))
@@ -450,6 +467,19 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		
 		this.Sync("manaInfo", true);
     }
+	if (cmd == this.getCommandID("pulsed"))
+	{
+		EntropistInfo@ entropist;
+		if (!this.get( "entropistInfo", @entropist )) 
+		{
+			return;
+		}
+
+		CastNegentropy(this);
+
+		entropist.pulse_amount -= 1;
+		this.Sync("entropistInfo", true);
+	}
 }
 
 f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData )

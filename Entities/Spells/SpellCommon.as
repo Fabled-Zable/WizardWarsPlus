@@ -7,6 +7,7 @@
 #include "EntropistCommon.as";
 #include "Hitters.as";
 #include "PlayerPrefsCommon.as";
+#include "SpellHashDecoder.as";
 
 void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimpos )
 {	//To get a spell hash to add more spells type this in the console (press home in game)
@@ -964,7 +965,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 
-		case -401411067://lighting
+		case -401411067://lightning
 		{
             Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
 		
@@ -1532,6 +1533,77 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 	}
 }
+
+void CastNegentropy( CBlob@ this )
+{
+	ManaInfo@ manaInfo;
+	if (!this.get( "manaInfo", @manaInfo ))
+	{return;}
+
+	CMap@ map = this.getMap();
+	if (map is null)
+	{return;}
+
+	u32 gatheredMana = 0;
+			
+	CBlob@[] blobsInRadius;
+	if (map.getBlobsInRadius(this.getPosition(), 64.0f, @blobsInRadius))
+	for (uint i = 0; i < blobsInRadius.length; i++)
+	{
+		CBlob @b = blobsInRadius[i];
+		if (b is null)
+		{continue;}
+		if (b.hasTag("flesh") || this.getTeamNum() == b.getTeamNum())
+		{continue;}
+		
+		bool incompatible = false;
+		s8 absorbed = negentropyDecoder(b);
+		print(""+absorbed);
+
+		if (absorbed == -1)
+		{continue;}
+		if (absorbed == -2)
+		{
+			incompatible = true;
+		}
+
+		if (isServer())
+		{
+			CBlob@ orb = server_CreateBlob( "lightning2", this.getTeamNum(), this.getPosition() ); 
+			if (orb !is null)
+			{
+				orb.set_Vec2f("aim pos", b.getPosition());
+				if(incompatible)
+				{
+					orb.set_bool("repelled", true);
+				}
+				orb.IgnoreCollisionWhileOverlapped( this );
+				orb.SetDamageOwnerPlayer( this.getPlayer() );
+			}
+		}
+				
+		if (b is null || this is null)
+		{continue;}
+
+		if(incompatible)
+		{
+			Vec2f velocity = this.getPosition() - b.getPosition();
+			velocity.Normalize();
+			velocity *= 5;
+			b.server_Hit(this, this.getPosition(), velocity, 1.0f, Hitters::water, true);
+			continue;
+		}
+		else
+		{
+			b.Untag("exploding");
+			b.server_Die();
+			gatheredMana += absorbed;
+		}
+	}
+	print("gathered: "+gatheredMana);
+	manaInfo.mana += gatheredMana;
+}
+
 
 void SummonZombie(CBlob@ this, string name, Vec2f pos, int team)
 {

@@ -20,6 +20,7 @@ Random@ _laser_r = Random(0x10001);
 void onInit( CBlob @ this )
 {
 	this.Tag("phase through spells");
+	this.Tag("counterable");
 
 	//dont collide with edge of the map
 	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath) );

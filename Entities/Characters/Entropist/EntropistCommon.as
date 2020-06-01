@@ -41,9 +41,6 @@ namespace EntropistParams
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
 			 
-		//Spell("greg", "Greg", 4, "Testing",
-			//SpellType::summoning, 20, 50, 15, 64.0f, true),
-			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
 			
@@ -93,12 +90,14 @@ class EntropistInfo
 	s32 charge_time;
 	u8 charge_state;
 	bool spells_cancelling;
+	u8 pulse_amount;
 
 	EntropistInfo()
 	{
 		charge_time = 0;
 		charge_state = 0;
 		spells_cancelling = false;
+		pulse_amount = 3;
 	}
 }; 
 

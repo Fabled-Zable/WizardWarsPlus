@@ -30,7 +30,7 @@ void onTick(CBlob@ this)
 		if (!this.hasTag("materializing") && this.get_s32("charge") > 0) //if no shield is active and available charge, do what's below
 		{
 			this.Tag("materializing");
-			this.set_u16("cooldown", getGameTime() + 25); //starts a timer where you can't remove your shield
+			this.set_u16("cooldown", getGameTime() + 30); //starts a timer where you can't remove your shield
 			//this.SendCommand(this.getCommandID("spawn shield"), params);
 			if( isServer() )
 			{
@@ -72,7 +72,7 @@ void onTick(CBlob@ this)
 			if (charge >= 1) //if the charge reaches 0, there's a -20 charge penalty.
 			chargeInfo.charge -= 1;
             else
-            chargeInfo.charge = -25;
+            chargeInfo.charge = -30;
 		}
 	}
 

@@ -1,5 +1,6 @@
 #include "Hitters.as";
 #include "MakeDustParticle.as";
+#include "SpellHashDecoder.as";
 
 void onInit( CBlob@ this )
 {
@@ -140,7 +141,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 				this.getSprite().PlaySound("CounterSpell.ogg", 0.8f, 1.0f);
 			}
 
-			decreaseLife( this , blob );
+			decreaseNegatisphereLife( this , blob );
 
 			blob.Untag("exploding");
 			blob.server_Die();
@@ -149,70 +150,4 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 				this.server_Die();
 			}
 		} 
-}
-
-void decreaseLife ( CBlob@ this , CBlob@ b )
-{
-	if(this is null){return;}
-	if(b is null){return;}
-	string blobname = b.getName();
-	s8 life = this.get_s8("lifepoints");
-
-	switch(blobname.getHash())
-	{
-		case 1370376319: //bees
-		{
-			this.set_s8("lifepoints", (life - 1));
-		}
-		break;
-		case 829656850: //spores
-		{
-			this.set_s8("lifepoints", (life - 2));
-		}
-		break;
-		case 1463630946: //spikeballs
-		{
-			this.set_s8("lifepoints", (life - 2));
-		}
-		break;
-		case 1843332075: //ground rock spikes
-		{
-			this.set_s8("lifepoints", (life - 3));
-		}
-		break;
-		case -825046729: //mushroom
-		{
-			this.set_s8("lifepoints", (life - 8));
-		}
-		break;
-		case 131361395: //expunger
-		{
-			this.set_s8("lifepoints", (life - 2));
-		}
-		break;
-		case -1661937901: //impaler
-		{
-			this.set_s8("lifepoints", (life - 5));
-		}
-		break;
-		case -32608566: //crusader
-		{
-			this.set_s8("lifepoints", (life - 7));
-		}
-		break;
-		case -1625426670: //orb
-		{
-			this.set_s8("lifepoints", (life - 4));
-		}
-		break;
-		case -1214504009: //magic missile
-		{
-			this.set_s8("lifepoints", (life - 6));
-		}
-		break;
-		default: //anything that one-shots it
-		{
-			this.set_s8("lifepoints", 0);
-		}
-	}
 }

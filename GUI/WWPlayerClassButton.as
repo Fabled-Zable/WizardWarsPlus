@@ -346,24 +346,24 @@ void intitializeClasses()
 													"necromancer", 1, 0, 3, 5, "WizardWars");
 	
 	playerClassButtons.registerWWPlayerClassButton("Knight", 
-													"     A shit class really... All he can do is hack and slash. His shield is surprisingly quite ineffective. Maybe one day he will prove to be as great as the mighty wizard." +
-													"\n\n     Health: 60" +
+													"     A shit class really... All he can do is hack and slash. His shield is surprisingly effective. Maybe one day he will prove to be as great as the mighty wizard." +
+													"\n\n     Health: 90" +
 													"\n     Mana: 0" +
 													"\n     Mana Regen: 0 mana/sec",
 													"knight", 2, 10, 0, 0, "WizardWars");
 
 	playerClassButtons.registerWWPlayerClassButton("Druid", 
-													"     Work In Progress. " +
-													"\n\n     Health: 70" +
-													"\n     Mana: 100" +
-													"\n     Mana Regen: 3 mana/sec",
+													"     A healing bastard. Druids claim to be in tune with nature, but they fail to mention how annoying bees can be. " +
+													"\n\n     Health: 75" +
+													"\n     Mana: 150" +
+													"\n     Mana Regen: 4 mana/sec",
 													"druid", 3, 20, 4, 0, "WizardWars");
 													
 	playerClassButtons.registerWWPlayerClassButton("SwordCaster", 
 													"     \"This is a good day for SwordCasters all around the world.\" " +
-													"\n\n     Health: 75" +
-													"\n     Mana: 100" +
-													"\n     Mana Regen: 3 mana/sec",
+													"\n\n     Health: 70" +
+													"\n     Mana: 120" +
+													"\n     Mana Regen: 5 mana/sec",
 													"swordcaster", 4, 0, 5, 0, "WizardWars");
 	playerClassButtons.registerWWPlayerClassButton("WIP", 
 													"     There is no better feeling than giving the enemy a taste of their own medicine." +
