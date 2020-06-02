@@ -135,14 +135,6 @@ void onTick(CSprite@ this)
 	}
 }
 
-void onDie(CBlob@ this)
-{
-	//counterSpell( this );
-	
-	
-	//this.getSprite().PlaySound("rocks_explode2.ogg", 1.0f, 1.0f);
-}
-
 void onSetStatic(CBlob@ this, const bool isStatic)
 {
 	if (!isStatic) return;

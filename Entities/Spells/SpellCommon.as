@@ -1558,7 +1558,6 @@ void CastNegentropy( CBlob@ this )
 		
 		bool incompatible = false;
 		s8 absorbed = negentropyDecoder(b);
-		print(""+absorbed);
 
 		if (absorbed == -1)
 		{continue;}
@@ -1600,8 +1599,45 @@ void CastNegentropy( CBlob@ this )
 			gatheredMana += absorbed;
 		}
 	}
-	print("gathered: "+gatheredMana);
-	manaInfo.mana += gatheredMana;
+	u8 maxMana = manaInfo.maxMana;
+	if (manaInfo.mana + gatheredMana >= maxMana)
+	{manaInfo.mana = maxMana;}
+	else
+	{manaInfo.mana += gatheredMana;}
+
+	if ( !isClient() )
+	{return;}
+
+	CSprite@ sprite = this.getSprite();
+	if (gatheredMana == 0)
+	{
+		sprite.PlaySound("no_discharge.ogg", 3.0f);
+	}
+	else if (gatheredMana < 40)
+	{
+		sprite.PlaySound("discharge1.ogg", 3.0f);
+	}
+	else
+	{
+		sprite.PlaySound("discharge2.ogg", 3.0f);
+	}
+
+	SColor color = SColor(255,255,255,XORRandom(191));
+	for(int i = 0; i < 360; i ++)
+	{
+		Vec2f particlePos = Vec2f(XORRandom(4) + 62,0).RotateByDegrees(XORRandom(360));
+		Vec2f particleVel = Vec2f( 0.5f ,0).RotateByDegrees(XORRandom(360));
+		CParticle@ p = ParticlePixel( this.getPosition() + particlePos , particleVel , color , false , XORRandom(15) + 15 );
+		if(p !is null)
+		{
+			p.gravity = Vec2f_zero;
+			p.damping = 0.9;
+			p.collides = false;
+			p.fastcollision = true;
+			p.bounce = 0;
+			p.lighting = false;
+		}
+	}
 }
 
 

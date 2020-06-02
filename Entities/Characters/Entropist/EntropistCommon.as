@@ -24,13 +24,13 @@ namespace EntropistParams
 	const ::Spell[] spells = 
 	{
 		Spell("orb", "Orb", 6, "Fire a basic orb which ricochets off of most surfaces until impacting an enemy and exploding, dealing minor damage.",
-			SpellType::other, 3, 40, 0, 360.0f),
+			SpellType::other, 3, 20, 0, 360.0f),
 			
 		Spell("teleport", "Teleport to Target", 40, "Point to any visible position and teleport there.",
-			SpellType::other, 20, 6, 0, 270.0f, true),
+			SpellType::other, 15, 6, 0, 270.0f, true),
 			
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("haste", "Haste", 20, "Give your allies some added speed and maneuverability. Fully charge to hasten yourself.",
+			SpellType::other, 5, 15, 0, 360.0f, true),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

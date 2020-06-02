@@ -34,7 +34,6 @@ void onInit( CBlob @ this )
 	  
 	CSprite@ thisSprite = this.getSprite();
 	thisSprite.getConsts().accurateLighting = false;
-	thisSprite.PlaySound("lightning_impact.ogg", 5.0f, 1.0f + XORRandom(5)/10.0f);
 	
 	this.set_bool("initialized", false);
 	
@@ -77,7 +76,7 @@ void onTick( CBlob@ this)
 		Vec2f normal = (Vec2f(aimVec.y, -aimVec.x));
 		normal.Normalize();
 		
-		Sound::Play("lightning1.ogg", aimPos, 1.0f, 1.0f + XORRandom(5)/10.0f);
+		Sound::Play("lightning1.ogg", aimPos, 0.3f, 1.0f + XORRandom(5)/10.0f);
 		
 		this.set_bool("initialized", true);
 	}

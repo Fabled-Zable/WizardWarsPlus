@@ -72,7 +72,7 @@ namespace NecromancerParams
 				SpellType::other, 15, 30, 0, 360.0f, true),	
 				
 		Spell("no_teleport_barrier", "Teleport Block", 49, "Prevents enemies from teleporting past this barrier.",
-				SpellType::other, 25, 10, 2, 80.0f, true),	
+				SpellType::other, 15, 10, 0, 80.0f, true),	
 							
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),	

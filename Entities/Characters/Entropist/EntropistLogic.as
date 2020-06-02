@@ -12,6 +12,8 @@
 #include "BombCommon.as";
 #include "SpellCommon.as";
 
+const u8 rechargeSeconds = 6; //seconds for recharge
+
 void onInit( CBlob@ this )
 {
 	EntropistInfo entropist;
@@ -424,6 +426,16 @@ void onTick( CBlob@ this )
 	{
 		return;
 	}
+
+	if (getGameTime() % (30*rechargeSeconds) == 0) //Pulse regeneration
+	{
+		s8 pulses = entropist.pulse_amount;
+        
+		if (pulses < 3)
+		{
+			entropist.pulse_amount += 1;
+        }
+    }
 
 	/*if(getKnocked(this) > 0)
 	{
