@@ -32,8 +32,8 @@ namespace EntropistParams
 		Spell("haste", "Haste", 20, "Give your allies some added speed and maneuverability. Fully charge to hasten yourself.",
 			SpellType::other, 5, 15, 0, 360.0f, true),
 			 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("disruption_wave", "Disruption Wave", 20, "Empty spell.",
+				SpellType::other, 30, 30, 2, 360.0f),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

@@ -1461,6 +1461,20 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 
+		case 1324044072://disruption_wave
+		{
+			int castTime = getGameTime();
+		
+			this.set_Vec2f("spell aim vec", aimpos - this.getPosition());
+			
+			this.Tag("in spell sequence");
+			this.set_u16("DW cast moment", castTime);
+			this.Sync("DW cast moment", true);
+			
+			this.getSprite().PlaySound("dw_cast_sequence.ogg", 3.0f, 1.5f);
+		}
+		break;
+
 		case 2029285710://zombie_rain
 		case 1033042153://skeleton_rain
 		case 1761466304://meteor_rain
@@ -1625,8 +1639,8 @@ void CastNegentropy( CBlob@ this )
 	SColor color = SColor(255,255,255,XORRandom(191));
 	for(int i = 0; i < 360; i ++)
 	{
-		Vec2f particlePos = Vec2f(XORRandom(4) + 62,0).RotateByDegrees(XORRandom(360));
-		Vec2f particleVel = Vec2f( 0.5f ,0).RotateByDegrees(XORRandom(360));
+		Vec2f particlePos = Vec2f(XORRandom(4)+62 , 0).RotateByDegrees(XORRandom(360));
+		Vec2f particleVel = Vec2f( 0.4f ,0).RotateByDegrees(XORRandom(360));
 		CParticle@ p = ParticlePixel( this.getPosition() + particlePos , particleVel , color , false , XORRandom(15) + 15 );
 		if(p !is null)
 		{

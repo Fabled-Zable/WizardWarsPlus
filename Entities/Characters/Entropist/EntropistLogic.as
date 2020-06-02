@@ -12,7 +12,7 @@
 #include "BombCommon.as";
 #include "SpellCommon.as";
 
-const u8 rechargeSeconds = 6; //seconds for recharge
+const u8 rechargeSeconds = 8; //seconds for recharge
 
 void onInit( CBlob@ this )
 {
