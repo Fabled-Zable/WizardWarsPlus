@@ -62,10 +62,10 @@ void makeDWParticle(CBlob@ this, Vec2f pos )
 	if (isClient())
 	{
 	
-		Vec2f random = Vec2f( XORRandom(4)-2, XORRandom(4)-2 );
+		Vec2f random = Vec2f( XORRandom(5)-2, XORRandom(5)-2 );
 		Vec2f newPos = pos + random;
 	
-		CParticle@ p = ParticleAnimated( "caster_disruption.png", newPos, Vec2f_zero, XORRandom(360), 1.0f, 1, 0.0f, true );
+		CParticle@ p = ParticleAnimated( "caster_disruption.png", newPos, Vec2f_zero, XORRandom(361), 1.0f, 1, 0.0f, true );
 		if(p !is null)
 		{
 			p.Z = 1.0f;

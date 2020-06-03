@@ -1263,7 +1263,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CParticle@ pb = ParticleAnimated( "Shockwave2.png",
 						castPos,
 						Vec2f(0,0),
-						float(XORRandom(360)),
+						float(XORRandom(361)),
 						scale, 
 						2, 
 						0.0f, true );    
@@ -1470,8 +1470,9 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			this.Tag("in spell sequence");
 			this.set_u16("DW cast moment", castTime);
 			this.Sync("DW cast moment", true);
-			
-			this.getSprite().PlaySound("dw_cast_sequence.ogg", 3.0f, 1.5f);
+
+			if (isClient())
+			{this.getSprite().PlaySound("dw_cast_sequence.ogg", 3.0f, 1.5f);}
 		}
 		break;
 
@@ -1639,9 +1640,9 @@ void CastNegentropy( CBlob@ this )
 	SColor color = SColor(255,255,255,XORRandom(191));
 	for(int i = 0; i < 360; i ++)
 	{
-		Vec2f particlePos = Vec2f(XORRandom(4)+62 , 0).RotateByDegrees(XORRandom(360));
-		Vec2f particleVel = Vec2f( 0.4f ,0).RotateByDegrees(XORRandom(360));
-		CParticle@ p = ParticlePixel( this.getPosition() + particlePos , particleVel , color , false , XORRandom(15) + 15 );
+		Vec2f particlePos = Vec2f(XORRandom(5)+62 , 0).RotateByDegrees(XORRandom(361));
+		Vec2f particleVel = Vec2f( 0.4f ,0).RotateByDegrees(XORRandom(361));
+		CParticle@ p = ParticlePixel( this.getPosition() + particlePos , particleVel , color , false , XORRandom(16) + 15 );
 		if(p !is null)
 		{
 			p.gravity = Vec2f_zero;
@@ -1683,7 +1684,7 @@ void Heal( CBlob@ blob, f32 healAmount )
         SetScreenFlash( 100, 0, 225, 0 );
     }
 		
-	blob.getSprite().PlaySound("Heal.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);
+	blob.getSprite().PlaySound("Heal.ogg", 0.8f, 1.0f + XORRandom(2)/10.0f);
 	makeHealParticles(blob);
 }
 
@@ -1696,12 +1697,12 @@ void makeHealParticles(CBlob@ this, const f32 velocity = 1.0f, const int smallpa
 	//makeSmokeParticle(this, Vec2f(), "Smoke");
 	for (int i = 0; i < smallparticles; i++)
 	{	
-		f32 randomness = (XORRandom(32) + 32)*0.015625f * 0.5f + 0.75f;
+		f32 randomness = (XORRandom(33) + 32)*0.015625f * 0.5f + 0.75f;
 		Vec2f vel = getRandomVelocity( -90, velocity * randomness, 360.0f );
 		
 		const f32 rad = 12.0f;
-		Vec2f random = Vec2f( XORRandom(128)-64, XORRandom(128)-64 ) * 0.015625f * rad;
-		CParticle@ p = ParticleAnimated( "HealParticle.png", this.getPosition() + random, Vec2f(0,0), float(XORRandom(360)), 1.0f, 2 + XORRandom(3), 0.0f, false );
+		Vec2f random = Vec2f( XORRandom(129)-64, XORRandom(129)-64 ) * 0.015625f * rad;
+		CParticle@ p = ParticleAnimated( "HealParticle.png", this.getPosition() + random, Vec2f(0,0), float(XORRandom(361)), 1.0f, 2 + XORRandom(3), 0.0f, false );
 		if ( p !is null)
 		{
 			p.bounce = 0;
