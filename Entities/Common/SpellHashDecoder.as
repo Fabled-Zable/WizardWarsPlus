@@ -74,32 +74,32 @@ s8 negentropyDecoder( CBlob@ b )
 	{
 		case 1370376319: //bees
 		{
-			return 4;
+			return 5;
 		}
 		break;
 		case 829656850: //spores
 		{
-			return 3;
+			return 5;
 		}
 		break;
 		case 1463630946: //spikeballs
 		{
-			return 3;
+			return 4;
 		}
 		break;
 		case 1843332075: //ground rock spikes
 		{
-			return 2;
+			return 3;
 		}
 		break;
 		case -825046729: //mushroom
 		{
-			return 15;
+			return 20;
 		}
 		break;
 		case 131361395: //expunger
 		{
-			return 3;
+			return 4;
 		}
 		break;
 		case -1661937901: //impaler
@@ -109,7 +109,7 @@ s8 negentropyDecoder( CBlob@ b )
 		break;
 		case -32608566: //crusader
 		{
-			return 8;
+			return 10;
 		}
 		break;
 		case 603057094: //executioner
@@ -119,12 +119,12 @@ s8 negentropyDecoder( CBlob@ b )
 		break;
 		case -1625426670: //orb
 		{
-			return 5;
+			return 10;
 		}
 		break;
 		case -1214504009: //magic missile
 		{
-			return 8;
+			return 10;
 		}
 		break;
 		case -2014033180: //magic_barrier
@@ -139,27 +139,27 @@ s8 negentropyDecoder( CBlob@ b )
 		break;
 		case 39628416: //no_teleport_barrier
 		{
-			return 20;
+			return 25;
 		}
 		break;
 		case -445081510: //negatisphere
 		{
-			return 15;
+			return 20;
 		}
 		break;
 		case 2016613317: //firebomb
 		{
-			return 25;
+			return 30;
 		}
 		break;
 		case -1418908460: //bunker_buster
 		{
-			return 25;
+			return 30;
 		}
 		break;
 		case 1174066691: //fire_sprite
 		{
-			return 15;
+			return 20;
 		}
 		break;
 		case -401411067: //lightning
@@ -174,12 +174,12 @@ s8 negentropyDecoder( CBlob@ b )
 		break;
 		case 18140583: //frost_ball
 		{
-			return 15;
+			return 20;
 		}
 		break;
 		case -286128466: //ice_prison
 		{
-			return 2;
+			return 3;
 		}
 		break;
 		case -824473937: //effect_missile
@@ -189,12 +189,12 @@ s8 negentropyDecoder( CBlob@ b )
 		break;
 		case 452290988: //plant_aura
 		{
-			return 10;
+			return 15;
 		}
 		break;
 		case 1238003545: //meteor
 		{
-			return 40;
+			return 50;
 		}
 		break;
 		case 750462252: //mana_drain_circle
