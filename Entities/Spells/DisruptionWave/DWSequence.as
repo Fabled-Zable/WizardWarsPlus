@@ -1,5 +1,5 @@
 //Disruption Wave Spell Event Sequence
-const int CAST_TIME = 30;
+const int CAST_TIME = 25;
 
 void onInit( CBlob@ this)
 {
