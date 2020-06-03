@@ -37,7 +37,7 @@ namespace WizardParams
 			SpellType::other, 100, 100, 100, 360.0f, true),
 			
 		Spell("frost_ball", "Ball of Frost", 13, "Send forth a slow travelling ball of pure cold essence to freeze your enemies in place and deal a small amount of damage. Freeze duration increases as the health of your enemy declines.",
-			SpellType::other, 18, 25, 0, 360.0f, true),
+			SpellType::other, 15, 25, 0, 360.0f, true),
 			
 		Spell("heal", "Lesser Heal", 14, "Salves the least of your allies' wounds to restore a moderate portion of their health. Fully charge in order to heal yourself with less efficiency.",
 			SpellType::other, 20, 40, 0, 360.0f, true), 
@@ -46,7 +46,7 @@ namespace WizardParams
 			SpellType::other, 25, 25, 0, 360.0f, true),
 			 
 		Spell("fire_sprite", "Fire Sprites", 12, "Create long-ranged explosive balls of energy which follow your aim for an extended period of time.",
-			SpellType::other, 15, 10, 0, 360.0f, true),	
+			SpellType::other, 10, 10, 0, 360.0f, true),	
 			 
 		Spell("meteor_strike", "Meteor Strike", 9, "Bring flaming meteors crashing down wherever you desire.",
 			SpellType::other, 50, 40, 0, 360.0f, true),
@@ -55,25 +55,25 @@ namespace WizardParams
 			SpellType::other, 50, 40, 0, 360.0f, true),
 			 
 		Spell("magic_barrier", "Magic Barrier", 21, "Create a wall of pure magical energy in front of you that blocks most small projectiles.",
-			SpellType::other, 20, 7, 0, 32.0f, true),
+			SpellType::other, 18, 7, 0, 32.0f, true),
 			
 		Spell("slow", "Slow", 19, "Deprive a player of his speed and ability to teleport for a few moments.",
 			SpellType::other, 20, 10, 0, 360.0f, true), 
 			 
 		Spell("haste", "Haste", 20, "Give your allies some added speed and maneuverability. Fully charge to hasten yourself.",
-			SpellType::other, 10, 15, 0, 360.0f, true),
+			SpellType::other, 10, 10, 0, 360.0f, true),
 			
 		Spell("lightning", "Lightning", 26, "Call down the blazing wrath of heaven upon the heads of those who oppose you. .",
-				SpellType::other, 40, 10, 0, 180.0f, true),
+				SpellType::other, 35, 10, 0, 180.0f, true),
 
 		Spell("mana_drain_circle", "Circle of disenchant", 33, "Those who stand inside this circle lose their mana and are slowed to a crawl",
-				SpellType::other,40,30,10,360, true),			
+				SpellType::other,40,30,7,360, true),			
 
 		Spell("mana_transfer", "Mana Transfer", 48, "Transfers mana equivalent to the target's regen. Generates 1 extra mana if overcharged.",
 				SpellType::other, 10, 10, 0, 360.0f, true),
 
 		Spell("negatisphere", "NegatiSphere", 50, "Moving magic field that negates other counterable spells. Press SHIFT to launch them in the direction of your aim.",
-				SpellType::other, 15, 10, 2, 360.0f, true),
+				SpellType::other, 15, 10, 0, 360.0f, true),
 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
