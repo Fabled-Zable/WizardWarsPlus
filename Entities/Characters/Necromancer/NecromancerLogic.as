@@ -447,8 +447,6 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
         CastSpell(this, charge_state, spell, aimpos);
 		
 		manaInfo.mana -= spell.mana;
-		
-		this.Sync("manaInfo", true);
     }
 }
 

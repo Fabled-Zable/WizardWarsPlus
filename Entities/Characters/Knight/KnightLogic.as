@@ -79,14 +79,17 @@ void onInit(CBlob@ this)
 		this.addCommandID("pick " + bombTypeNames[i]);
 	}
 
-    for(int i = 0; i < 2; i++)
-    {
-        CBlob @blob = server_CreateBlob("mat_bombs", this.getTeamNum(), this.getPosition());
-        if (blob != null)
-        {
-            this.server_PutInInventory(blob);
-        }
-    }
+	if(isServer())
+	{
+    	for(int i = 0; i < 2; i++)
+    	{
+        	CBlob @blob = server_CreateBlob("mat_bombs", this.getTeamNum(), this.getPosition());
+       		if (blob != null)
+        	{
+            	this.server_PutInInventory(blob);
+        	}
+    	}
+	}
 
 	//centered on bomb select
 	//this.set_Vec2f("inventory offset", Vec2f(0.0f, 122.0f));
@@ -140,17 +143,20 @@ void onTick(CBlob@ this)
 		return;
 	}
 	
-	if ( (getGameTime() % 240 == 0) )
+	if(isServer())
 	{
-		CInventory@ kninv = this.getInventory();
-		if (!kninv.isFull())
+		if ( (getGameTime() % 240 == 0) )
 		{
-        	CBlob@ blub = server_CreateBlob("mat_bombs", this.getTeamNum(), this.getPosition());
-        	if (blub != null)
-       		{
-        	    this.server_PutInInventory(blub);
-       		}
-    	}
+			CInventory@ kninv = this.getInventory();
+			if (!kninv.isFull())
+			{
+    	    	CBlob@ blub = server_CreateBlob("mat_bombs", this.getTeamNum(), this.getPosition());
+    	    	if (blub != null)
+    	   		{
+    	    	    this.server_PutInInventory(blub);
+    	   		}
+    		}
+		}
 	}
 
 	Vec2f pos = this.getPosition();

@@ -38,7 +38,7 @@ void onTick( CBlob@ this)
 		{return;}
 
 		CBlob@[] blobsInRadius;
-		if (map.getBlobsInRadius(hitPos, dist_const/2, @blobsInRadius))
+		if (map.getBlobsInRadius(hitPos, dist_const/1.5f, @blobsInRadius))
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
 			CBlob @b = blobsInRadius[i];
@@ -53,7 +53,7 @@ void onTick( CBlob@ this)
 			float damage = 1.4f;
 			if(b.hasTag("counterable"))
 			{damage = 3.0f;}
-			this.server_Hit(b, b.getPosition(), hitVec*5, damage, Hitters::water, true);
+			this.server_Hit(b, b.getPosition(), hitVec*6, damage, Hitters::water, true);
 		}
 
 		this.set_u8("boomNum", boomNum+1);
@@ -63,14 +63,14 @@ void onTick( CBlob@ this)
 	{
 		for (uint i = 0; i < 2; i++)
 		{
-			Vec2f random = Vec2f( XORRandom(dist_const/2)+1 , 0 ).RotateByDegrees(XORRandom(361));
+			Vec2f random = Vec2f( XORRandom(dist_const/1.5f)+1 , 0 ).RotateByDegrees(XORRandom(361));
 			Vec2f particlePos = hitPos + random;
 			makeElectricParticle( this , particlePos );
 		}
 
 		if (XORRandom(3) == 2)
 		{
-			Vec2f random = Vec2f( XORRandom(dist_const/2)+1 , 0 ).RotateByDegrees(XORRandom(361));
+			Vec2f random = Vec2f( XORRandom(dist_const/1.5f)+1 , 0 ).RotateByDegrees(XORRandom(361));
 			Vec2f particlePos = hitPos + random;
 			makeBoomParticle( this, particlePos );
 			this.getSprite().PlaySound("individual_boom.ogg", 3.0f);

@@ -35,8 +35,8 @@ namespace EntropistParams
 		Spell("disruption_wave", "Disruption Wave", 51, "Empty spell.",
 				SpellType::other, 30, 30, 2, 360.0f),
 			 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
+			SpellType::other, 10, 10, 0, 8.0f, true),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
