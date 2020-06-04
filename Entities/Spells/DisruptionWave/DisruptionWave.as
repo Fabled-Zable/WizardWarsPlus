@@ -13,7 +13,7 @@ void onTick( CBlob@ this)
 	int currentTime = this.getTickSinceCreated();
 
 	u8 boomNum = this.get_u8("boomNum");
-	if (boomNum >= 10)
+	if (boomNum >= 11)
 	{
 		this.server_Die();
 		return;
@@ -31,7 +31,7 @@ void onTick( CBlob@ this)
 	Vec2f distance = this.get_Vec2f("boomDir")*(dist_const*1.5f);
 	Vec2f hitPos = thisPos+distance;
 
-	if ( currentTime % 5 == 0 && boomNum <= 9)
+	if ( currentTime % 4 == 0 && boomNum <= 10)
 	{
 		CMap@ map = this.getMap();
 		if (map is null)
@@ -49,7 +49,11 @@ void onTick( CBlob@ this)
 
 			Vec2f hitVec = b.getPosition() - thisPos;
 			hitVec.Normalize();
-			this.server_Hit(b, b.getPosition(), hitVec*5, 1.6f, Hitters::water, true);
+
+			float damage = 1.4f;
+			if(b.hasTag("counterable"))
+			{damage = 3.0f;}
+			this.server_Hit(b, b.getPosition(), hitVec*5, damage, Hitters::water, true);
 		}
 
 		this.set_u8("boomNum", boomNum+1);

@@ -537,7 +537,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -1214504009://magic_missile
 		{
-			f32 orbspeed = 2.0f;
+			f32 orbspeed = 1.0f;
 			u8 spreadarc = 5;
 			//bool lowboid = false;
 
@@ -546,7 +546,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 			else if (charge_state == NecromancerParams::extra_ready) {
 				orbspeed *= 2.0f;
-				spreadarc = 4;
+				spreadarc = 3;
 				//lowboid = true;
 			}
 
@@ -572,7 +572,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
                         orb.IgnoreCollisionWhileOverlapped( this );
 						orb.SetDamageOwnerPlayer( this.getPlayer() );
 						Vec2f newVel = orbVel;
-						newVel.RotateBy( -7 + spreadarc*i, Vec2f());
+						newVel.RotateBy( -(spreadarc+3) + spreadarc*i, Vec2f());
 						orb.setVelocity( newVel );
 					}
 				}
@@ -1568,17 +1568,24 @@ void CastNegentropy( CBlob@ this )
 		CBlob @b = blobsInRadius[i];
 		if (b is null)
 		{continue;}
-		if (b.hasTag("flesh") || this.getTeamNum() == b.getTeamNum())
+		if (this.getTeamNum() == b.getTeamNum())
 		{continue;}
 		
 		bool incompatible = false;
+		bool zombie = false;
 		s8 absorbed = negentropyDecoder(b);
 
-		if (absorbed == -1)
+		if ( absorbed == -1 && !b.hasTag("zombie") )
 		{continue;}
-		if (absorbed == -2)
+		if ( absorbed == -2 )
 		{
 			incompatible = true;
+		}
+
+		if ( b.hasTag("zombie") )
+		{
+			absorbed = 3;
+			zombie = true;
 		}
 
 		if (isServer())
@@ -1609,8 +1616,11 @@ void CastNegentropy( CBlob@ this )
 		}
 		else
 		{
-			b.Untag("exploding");
-			b.server_Die();
+			if(!zombie)
+			{
+				b.Untag("exploding");
+				b.server_Die();
+			}
 			gatheredMana += absorbed;
 		}
 	}

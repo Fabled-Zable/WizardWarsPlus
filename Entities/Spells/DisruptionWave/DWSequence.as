@@ -40,15 +40,18 @@ void onTick( CBlob@ this)
 	}
 	else if ( timeElapsed >= CAST_TIME )
 	{
-		CBlob@ orb = server_CreateBlob( "disruption_point" );
-		if (orb !is null)
+		if(isServer())
 		{
-			orb.IgnoreCollisionWhileOverlapped( this );
-			orb.SetDamageOwnerPlayer( this.getPlayer() );
-			orb.setPosition( thisPos );
-			orb.setVelocity( Vec2f_zero );
-			orb.server_setTeamNum(this.getTeamNum());
-			orb.set_Vec2f("boomDir", aimNorm);
+			CBlob@ orb = server_CreateBlob( "disruption_point" );
+			if (orb !is null)
+			{
+				orb.IgnoreCollisionWhileOverlapped( this );
+				orb.SetDamageOwnerPlayer( this.getPlayer() );
+				orb.setPosition( thisPos );
+				orb.setVelocity( Vec2f_zero );
+				orb.server_setTeamNum(this.getTeamNum());
+				orb.set_Vec2f("boomDir", aimNorm);
+			}
 		}
 
 		this.Untag("in spell sequence");
