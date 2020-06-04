@@ -182,6 +182,8 @@ void Slam(CBlob @this, f32 angle, Vec2f vel, f32 vellen)
 			}
 			else if (team != u8(hi.blob.getTeamNum()))
 			{
+				if(hi.blob.getName() == "knight") //less damage for knights
+				{dmg *= 0.1f;}
 				this.server_Hit(hi.blob, pos, vel, dmg, Hitters::crush, true);
 				this.setVelocity(vel * 0.9f); //damp
 			}
@@ -297,6 +299,8 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		}
 
 		//hurt
+		if(blob.getName() == "knight") //less damage for knights
+		{dmg *= 0.1f;}
 		this.server_Hit(blob, point1, hitvel, dmg, Hitters::crush, true);
 		this.server_Hit(this, point1, -hitvel, dmg*8.0f, Hitters::crush, true);
 
