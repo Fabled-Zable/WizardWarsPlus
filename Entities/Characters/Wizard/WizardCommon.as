@@ -33,8 +33,8 @@ namespace WizardParams
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
 			SpellType::other, 15, 10, 0, 8.0f, true),
 			
-		Spell("magic_missile", "MAGIC MISSILES DOESNT WORK", 17, "Barrage your nearest foes with deadly homing missiles. Does minor damage, is slow moving and easily countered.",
-			SpellType::other, 1, 1, 0, 360.0f, true),
+		Spell("magic_missile", "Magic Missiles", 17, "Barrage your nearest foes with deadly homing missiles. Does minor damage, is slow moving and easily countered.",
+			SpellType::other, 25, 10, 3, 360.0f, true),
 			
 		Spell("frost_ball", "Ball of Frost", 13, "Send forth a slow travelling ball of pure cold essence to freeze your enemies in place and deal a small amount of damage. Freeze duration increases as the health of your enemy declines.",
 			SpellType::other, 18, 25, 0, 360.0f, true),

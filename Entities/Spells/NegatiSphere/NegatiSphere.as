@@ -50,9 +50,6 @@ void onTick( CBlob@ this )
 		}
 	}
 	
-	
-	Vec2f vel = this.getVelocity();
-	
 	if(this.get_bool("launch") && !this.hasTag("cruiseMode"))
 	{
 		Vec2f dir = this.get_Vec2f("target")-this.getPosition();
@@ -71,6 +68,7 @@ void onTick( CBlob@ this )
 		this.set_Vec2f("dir", dir);
 	}
 
+	Vec2f vel = this.getVelocity();
 	Vec2f finaldir = this.get_Vec2f("dir");
 	float dirmult = this.hasTag("cruiseMode") ? 1.0f : 0.35;
 	vel += finaldir * dirmult;
