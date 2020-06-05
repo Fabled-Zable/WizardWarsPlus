@@ -365,11 +365,11 @@ void intitializeClasses()
 													"\n     Mana: 120" +
 													"\n     Mana Regen: 5 mana/sec",
 													"swordcaster", 4, 0, 5, 0, "WizardWars");
-	playerClassButtons.registerWWPlayerClassButton("WIP", 
+	playerClassButtons.registerWWPlayerClassButton("Entropist", 
 													"     There is no better feeling than giving the enemy a taste of their own medicine." +
 													"\n\n     Health: 75" +
 													"\n     Mana: 200" +
-													"\n     Mana is obtained by [REDACTED] spells.",
+													"\n     Mana is obtained by absorbing enemy spells.",
 													"entropist", 5, 0, 6, 0, "WizardWars");
 													
 	/*playerClassButtons.registerWWPlayerClassButton("Archer", 

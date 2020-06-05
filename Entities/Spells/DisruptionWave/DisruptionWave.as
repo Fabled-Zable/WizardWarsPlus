@@ -63,14 +63,14 @@ void onTick( CBlob@ this)
 	{
 		for (uint i = 0; i < 2; i++)
 		{
-			Vec2f random = Vec2f( XORRandom(dist_const/1.5f)+1 , 0 ).RotateByDegrees(XORRandom(361));
+			Vec2f random = Vec2f( XORRandom(dist_const/1.7f)+1 , 0 ).RotateByDegrees(XORRandom(361));
 			Vec2f particlePos = hitPos + random;
 			makeElectricParticle( this , particlePos );
 		}
 
 		if (XORRandom(3) == 2)
 		{
-			Vec2f random = Vec2f( XORRandom(dist_const/1.5f)+1 , 0 ).RotateByDegrees(XORRandom(361));
+			Vec2f random = Vec2f( XORRandom(dist_const/1.7f)+1 , 0 ).RotateByDegrees(XORRandom(361));
 			Vec2f particlePos = hitPos + random;
 			makeBoomParticle( this, particlePos );
 			this.getSprite().PlaySound("individual_boom.ogg", 3.0f);

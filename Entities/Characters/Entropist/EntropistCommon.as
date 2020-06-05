@@ -32,14 +32,14 @@ namespace EntropistParams
 		Spell("haste", "Haste", 20, "Give your allies some added speed and maneuverability. Fully charge to hasten yourself.",
 			SpellType::other, 5, 15, 0, 360.0f, true),
 			 
-		Spell("disruption_wave", "Disruption Wave", 51, "Empty spell.",
-				SpellType::other, 30, 30, 2, 360.0f),
+		Spell("disruption_wave", "Disruption Wave", 51, "Unleash a destructive burst of warping energy, tearing apart anything in its path.",
+				SpellType::other, 30, 30, 2, 360.0f, true),
 			 
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
 			SpellType::other, 10, 10, 0, 8.0f, true),
 			 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("sidewind", "Sidewind", 52, "Temporarily accelerate your own time by transporting yourself to another dimension for a few moments. Immune to damage while in this dimension.",
+				SpellType::other, 20, 60, 3, 1.0f, true),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

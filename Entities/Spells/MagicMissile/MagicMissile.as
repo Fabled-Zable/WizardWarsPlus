@@ -5,7 +5,7 @@
 const int LIFETIME = 10;
 const f32 SEARCH_RADIUS = 128.0f;
 const f32 HOMING_FACTOR = 3.0f;
-const f32 CORRECTION_FACTOR = 1.0f;
+const f32 CORRECTION_FACTOR = 0.1f;
 const int HOMING_DELAY = 15;	
 
 

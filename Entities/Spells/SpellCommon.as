@@ -749,6 +749,19 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 
+		case -4956908://sidewind
+		{
+			u16 windTime = 40;
+
+			if (charge_state == NecromancerParams::extra_ready)
+			{
+				windTime = 50;
+			}
+
+			Sidewind(this, windTime);
+		}
+		break;
+
 		case -2014033180://magic_barrier
 		{
 			u16 lifetime = 20;
@@ -1572,10 +1585,10 @@ void CastNegentropy( CBlob@ this )
 		{continue;}
 		
 		bool incompatible = false;
-		bool zombie = false;
+		bool kill = true;
 		s8 absorbed = negentropyDecoder(b);
 
-		if ( absorbed == -1 && !b.hasTag("zombie") )
+		if ( absorbed == -1 && !b.hasTag("zombie") && !b.hasScript("BladedShell.as") )
 		{continue;}
 		if ( absorbed == -2 )
 		{
@@ -1585,7 +1598,13 @@ void CastNegentropy( CBlob@ this )
 		if ( b.hasTag("zombie") )
 		{
 			absorbed = 3;
-			zombie = true;
+			kill = false;
+		}
+
+		if ( b.hasScript("BladedShell.as") )
+		{
+			absorbed = 8;
+			kill = false;
 		}
 
 		if (isServer())
@@ -1616,7 +1635,7 @@ void CastNegentropy( CBlob@ this )
 		}
 		else
 		{
-			if(!zombie)
+			if(kill)
 			{
 				b.Untag("exploding");
 				b.server_Die();
@@ -1959,6 +1978,14 @@ void Haste( CBlob@ blob, u16 hasteTime )
 		blob.Sync("hastened", true);
 		blob.getSprite().PlaySound("HasteOn.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);
 	}
+}
+
+void Sidewind( CBlob@ blob, u16 windTime )
+{	
+	blob.set_u16("sidewinding", windTime);
+	blob.Sync("sidewinding", true);
+	if(isClient())
+	{blob.getSprite().PlaySound("sidewind_init.ogg", 3.0f, 1.0f + XORRandom(1)/10.0f);}
 }
 
 void manaShot( CBlob@ blob, u8 manaUsed, u8 casterMana)
