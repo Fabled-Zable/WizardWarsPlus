@@ -6,7 +6,7 @@
 #include "FireParticle.as"
 #include "RunnerAnimCommon.as";
 #include "RunnerCommon.as";
-#include "Knocked.as";
+#include "KnockedCommon.as";
 #include "PixelOffsets.as"
 #include "RunnerTextures.as"
 
@@ -162,7 +162,7 @@ void onTick( CSprite@ this )
 	needs_damageboost = blob.hasTag("extra_damage");
     bool crouch = false;
 
-	const u8 knocked = getKnocked(blob);
+	const u8 knocked = getKnockedRemaining(blob);
 	const bool frozen = blob.get_bool("frozen");
 	Vec2f pos = blob.getPosition();
 	Vec2f aimpos = blob.getAimPos();

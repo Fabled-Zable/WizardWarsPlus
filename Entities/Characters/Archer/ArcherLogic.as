@@ -2,7 +2,7 @@
 
 #include "ArcherCommon.as"
 #include "ThrowCommon.as"
-#include "Knocked.as"
+#include "KnockedCommon.as"
 #include "Hitters.as"
 #include "RunnerCommon.as"
 #include "ShieldCommon.as";
@@ -329,7 +329,7 @@ void ManageBow(CBlob@ this, ArcherInfo@ archer, RunnerMoveVars@ moveVars)
 			if (archer.legolas_arrows == ArcherParams::legolas_arrows_count)
 			{
 				Sound::Play("/Stun", pos, 1.0f, this.getSexNum() == 0 ? 1.0f : 2.0f);
-				SetKnocked(this, 15);
+				setKnocked(this, 15);
 			}
 			else if (pressed)
 			{
@@ -582,7 +582,7 @@ void onTick(CBlob@ this)
 		return;
 	}
 
-	if (getKnocked(this) > 0)
+	if (getKnockedRemaining(this) > 0)
 	{
 		archer.grappling = false;
 		archer.charge_state = 0;
@@ -1063,7 +1063,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 		if (blockAttack(hitBlob, velocity, 0.0f))
 		{
 			this.getSprite().PlaySound("/Stun", 1.0f, this.getSexNum() == 0 ? 1.0f : 2.0f);
-			SetKnocked(this, 30);
+			setKnocked(this, 30);
 		}
 	}
 }

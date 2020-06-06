@@ -1,5 +1,5 @@
 #include "EmotesCommon.as"
-#include "Knocked.as"
+#include "KnockedCommon.as"
 
 Random gregRand(Time());
 
@@ -479,7 +479,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 
         }
 
-        SetKnocked(blob, 60); //knock the player when we first pick them up so they can't fight back
+        setKnocked(blob, 60); //knock the player when we first pick them up so they can't fight back
         blob.Tag("dazzled");
 
         //make player play the stunned sound

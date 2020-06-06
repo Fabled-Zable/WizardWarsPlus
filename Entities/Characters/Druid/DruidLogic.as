@@ -4,7 +4,7 @@
 #include "PlayerPrefsCommon.as"
 #include "MagicCommon.as";
 #include "ThrowCommon.as"
-#include "Knocked.as"
+#include "KnockedCommon.as"
 #include "Hitters.as"
 #include "RunnerCommon.as"
 #include "ShieldCommon.as";
@@ -389,7 +389,7 @@ void onTick( CBlob@ this )
 		return;
 	}
 
-	/*if(getKnocked(this) > 0)
+	/*if(getKnockedRemaining(this) > 0)
 	{
 		druid.charge_state = 0;
 		druid.charge_time = 0;
@@ -467,7 +467,7 @@ void onHitBlob( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob
 		if (blockAttack(hitBlob, velocity, 0.0f))
 		{
 			this.getSprite().PlaySound("/Stun", 1.0f, this.getSexNum() == 0 ? 1.0f : 2.0f);
-			SetKnocked( this, 30 );
+			setKnocked( this, 30 );
 		}
 	}
 }

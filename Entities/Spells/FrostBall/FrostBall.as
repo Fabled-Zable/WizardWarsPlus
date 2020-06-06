@@ -1,6 +1,6 @@
 #include "/Entities/Common/Attacks/Hitters.as";	   
 #include "/Entities/Common/Attacks/LimitedAttacks.as";
-#include "Knocked.as";
+#include "KnockedCommon.as";
 
 const int pierce_amount = 8;
 

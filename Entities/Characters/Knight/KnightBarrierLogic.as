@@ -23,8 +23,9 @@ void onTick(CBlob@ this)
 		if(this.isMyPlayer())
 		{
 			CBitStream params1;
-			params1.write_s32(chargeInfo.charge); //gets current ch<arge
+			params1.write_s32(chargeInfo.charge); //gets current charge
 			this.SendCommand(this.getCommandID("sync charge"), params1);
+			this.set_s32("charge",chargeInfo.charge);
 		}
 
 		if (!this.hasTag("materializing") && this.get_s32("charge") > 0) //if no shield is active and available charge, do what's below
@@ -60,19 +61,17 @@ void onTick(CBlob@ this)
 		}
 	}
 
-	if(this.hasTag("materializing")) //while shield active, reduce 2 charge per tick
+	if(this.hasTag("materializing")) //while shield active, reduce 1 charge per tick
 	{
 		s32 charge = this.get_s32("charge");
-		if (charge < 0)
+		if (charge <= 0)
 		this.Untag("materializing");
 
 		if ( this.isMyPlayer() )
 		{
-			s32 maxCharge = chargeInfo.maxCharge;
-			if (charge >= 1) //if the charge reaches 0, there's a -20 charge penalty.
 			chargeInfo.charge -= 1;
-            else
-            chargeInfo.charge = -30;
+            if(chargeInfo.charge < 1)//if the charge reaches 0, there's a -20 charge penalty.
+            chargeInfo.charge = -40;
 		}
 	}
 
