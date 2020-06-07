@@ -1588,14 +1588,19 @@ void CastNegentropy( CBlob@ this )
 		bool kill = true;
 		s8 absorbed = negentropyDecoder(b);
 
-		if ( absorbed == -1 && !b.hasTag("zombie") && !b.hasScript("BladedShell.as") )
+		if ( absorbed == -1 && !b.hasTag("flesh") && !b.hasScript("BladedShell.as") )
 		{continue;}
 		if ( absorbed == -2 )
 		{
 			incompatible = true;
 		}
+		if ( absorbed == -3 )
+		{
+			absorbed = 5;
+			kill = false;
+		}
 
-		if ( b.hasTag("zombie") )
+		if ( b.hasTag("flesh") )
 		{
 			absorbed = 3;
 			kill = false;
@@ -1985,7 +1990,7 @@ void Sidewind( CBlob@ blob, u16 windTime )
 	blob.set_u16("sidewinding", windTime);
 	blob.Sync("sidewinding", true);
 	if(isClient())
-	{blob.getSprite().PlaySound("sidewind_init.ogg", 3.0f, 1.0f + XORRandom(1)/10.0f);}
+	{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + XORRandom(1)/10.0f);}
 }
 
 void manaShot( CBlob@ blob, u8 manaUsed, u8 casterMana)

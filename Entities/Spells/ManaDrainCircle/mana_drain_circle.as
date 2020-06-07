@@ -42,7 +42,7 @@ void onTick(CBlob@ this)
         Vec2f vel = b.getVelocity();
         b.setVelocity(Vec2f(vel.x * 0.5,vel.y * 0.9));
 
-        if(getGameTime() % 30 != 0) return;
+        if(getGameTime() % 20 != 0) return;
 
         ManaInfo@ manaInfo;
         if (!b.get( "manaInfo", @manaInfo )) {
@@ -58,9 +58,9 @@ void onTick(CBlob@ this)
 
         if(isClient())
         {
-            for(int i = 0; i < manaInfo.manaRegen*5; i++)
+            for(int i = 0; i < manaInfo.manaRegen*10; i++)
             {
-                CParticle@ p = ParticlePixelUnlimited(b.getPosition(), b.getVelocity() + Vec2f(XORRandom(8) - 4, XORRandom(8) - 4), randomManaColor(), true);
+                CParticle@ p = ParticlePixelUnlimited(b.getPosition(), b.getVelocity() + Vec2f(XORRandom(12) - 6, XORRandom(12) - 6), randomManaColor(), true);
                 if(p !is null)
                 {
                     p.gravity = Vec2f(0,0);

@@ -1,4 +1,5 @@
 //Disruption Wave Spell Event Sequence
+#include "Hitters.as";
 const int CAST_TIME = 25;
 
 void onInit( CBlob@ this)
@@ -33,7 +34,7 @@ void onTick( CBlob@ this)
 
 		this.DisableKeys(takekeys);
 		this.DisableMouse(true);
-		
+
 		//effects
 		if ( isClient() && currentTime % 8 == 0 )
 			makeDWParticle( this, this.getPosition() );
@@ -52,6 +53,29 @@ void onTick( CBlob@ this)
 				orb.server_setTeamNum(this.getTeamNum());
 				orb.set_Vec2f("boomDir", aimNorm);
 			}
+		}
+
+		CMap@ map = this.getMap();
+		if (map is null)
+		{return;}
+
+		CBlob@[] blobsInRadius;
+		if (map.getBlobsInRadius((thisPos + (aimNorm*4)), 8, @blobsInRadius))
+		for (uint i = 0; i < blobsInRadius.length; i++)
+		{
+			CBlob @b = blobsInRadius[i];
+			if (b is null)
+			{continue;}
+			if (this.getTeamNum() == b.getTeamNum())
+			{continue;}
+
+			Vec2f hitVec = b.getPosition() - thisPos;
+			hitVec.Normalize();
+
+			float damage = 2.0f;
+			if(b.hasTag("counterable"))
+			{damage = 4.0f;}
+			this.server_Hit(b, b.getPosition(), hitVec*8, damage, Hitters::water, true);
 		}
 
 		this.Untag("in spell sequence");

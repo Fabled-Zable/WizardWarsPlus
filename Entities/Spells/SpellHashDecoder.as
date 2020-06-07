@@ -217,6 +217,11 @@ s8 negentropyDecoder( CBlob@ b )
 			return -2;
 		}
 		break;
+		case -1760442616: //mana_obelisk
+		{
+			return -3;
+		}
+		break;
 
 		default: //unabsorvable
 		{

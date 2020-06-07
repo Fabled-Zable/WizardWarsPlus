@@ -606,7 +606,7 @@ class ShieldGlideState : KnightState
 			Vec2f vel = this.getVelocity();
 
 			moveVars.stoppingFactor *= 0.5f;
-			f32 glide_amount = 1.0f - (moveVars.fallCount / f32(KnightVars::glide_down_time * 2));
+			f32 glide_amount = 1.3f - (moveVars.fallCount / f32(KnightVars::glide_down_time * 2));
 
 			if (vel.y > -1.0f)
 			{

@@ -4,8 +4,8 @@
 
 const int LIFETIME = 10;
 const f32 SEARCH_RADIUS = 128.0f;
-const f32 HOMING_FACTOR = 3.0f;
-const f32 CORRECTION_FACTOR = 0.1f;
+const f32 HOMING_FACTOR = 2.2f;
+const f32 CORRECTION_FACTOR = 0.2f;
 const int HOMING_DELAY = 15;	
 
 
@@ -49,7 +49,7 @@ void onTick( CBlob@ this)
 	{
 		Vec2f accel = this.getVelocity();
 		accel.Normalize();
-		this.AddForce(accel*0.2f);
+		this.AddForce(accel*0.4f);
 		return;
 	}
 

@@ -24,7 +24,7 @@ namespace EntropistParams
 	const ::Spell[] spells = 
 	{
 		Spell("orb", "Orb", 6, "Fire a basic orb which ricochets off of most surfaces until impacting an enemy and exploding, dealing minor damage.",
-			SpellType::other, 3, 20, 0, 360.0f),
+			SpellType::other, 1, 20, 0, 360.0f),
 			
 		Spell("teleport", "Teleport to Target", 40, "Point to any visible position and teleport there.",
 			SpellType::other, 15, 6, 0, 270.0f, true),
@@ -38,8 +38,8 @@ namespace EntropistParams
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
 			SpellType::other, 10, 10, 0, 8.0f, true),
 			 
-		Spell("sidewind", "Sidewind", 52, "Temporarily accelerate your own time by transporting yourself to another dimension for a few moments. Immune to damage while in this dimension.",
-				SpellType::other, 20, 60, 3, 1.0f, true),
+		Spell("sidewind", "Sidewind", 52, "Temporarily accelerate your own time by transporting yourself to another dimension for a few moments. Harder to damage while in this dimension.",
+				SpellType::other, 15, 10, 3, 1.0f, true),
 			 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
