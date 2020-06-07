@@ -1592,7 +1592,9 @@ void CastNegentropy( CBlob@ this )
 		{continue;}
 		if ( absorbed == -2 )
 		{
+			absorbed = 10;
 			incompatible = true;
+			kill = false;
 		}
 		if ( absorbed == -3 )
 		{
@@ -1638,15 +1640,14 @@ void CastNegentropy( CBlob@ this )
 			b.server_Hit(this, this.getPosition(), velocity, 1.0f, Hitters::water, true);
 			continue;
 		}
-		else
+		
+		if(kill)
 		{
-			if(kill)
-			{
-				b.Untag("exploding");
-				b.server_Die();
-			}
-			gatheredMana += absorbed;
+			b.Untag("exploding");
+			b.server_Die();
 		}
+		gatheredMana += absorbed;
+		
 	}
 	u8 maxMana = manaInfo.maxMana;
 	if (manaInfo.mana + gatheredMana >= maxMana)

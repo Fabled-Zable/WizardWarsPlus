@@ -222,6 +222,11 @@ s8 negentropyDecoder( CBlob@ b )
 			return -3;
 		}
 		break;
+		case -1612772378: //force_of_nature
+		{
+			return -3;
+		}
+		break;
 
 		default: //unabsorvable
 		{

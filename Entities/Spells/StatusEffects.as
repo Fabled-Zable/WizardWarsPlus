@@ -126,7 +126,7 @@ void onTick( CBlob@ this)
 		
 		Vec2f thisVel = this.getVelocity();
 		moveVars.walkFactor *= 2.5f;
-		moveVars.jumpFactor *= 2.0f;		
+		moveVars.jumpFactor *= 2.5f;		
 
 		//makeSmokeParticle(this, Vec2f(), "Smoke");
 		if ( sidewinding % 2 == 0 )
