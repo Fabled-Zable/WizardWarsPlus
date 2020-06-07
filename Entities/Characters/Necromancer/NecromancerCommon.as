@@ -39,7 +39,7 @@ namespace NecromancerParams
 			SpellType::summoning, 20, 10, 0, 64.0f, true),
 			 
 		Spell("black_hole", "Black Hole", 18, "Open a portal into outer space, pulling your enemies into the airless void. Also drains the mana of enemies in the area and gives it to the caster.",
-			SpellType::other, 45, 60, 5, 180.0f, true),
+			SpellType::other, 45, 120, 5, 180.0f, true),
 			 
 		//Spell("greg", "Greg", 4, "Testing",
 			//SpellType::summoning, 20, 50, 15, 64.0f, true),
@@ -69,7 +69,7 @@ namespace NecromancerParams
 			SpellType::other,55,40,10,360,true),
 							
 		Spell("bunker_buster", "Bunker Buster", 39, "Anti-Barrier spell.",
-				SpellType::other, 15, 30, 0, 360.0f, true),	
+				SpellType::other, 15, 20, 0, 360.0f, true),	
 				
 		Spell("no_teleport_barrier", "Teleport Block", 49, "Prevents enemies from teleporting past this barrier.",
 				SpellType::other, 15, 10, 0, 80.0f, true),	
