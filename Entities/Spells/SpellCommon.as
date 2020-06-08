@@ -1489,6 +1489,35 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 
+		case -595243942://voltage_field
+		{
+			f32 orbDamage = 0.2f;
+            f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;
+
+			if (charge_state == NecromancerParams::cast_3) {
+				orbDamage *= 1.0f + extraDamage;
+			}
+				else if (charge_state == NecromancerParams::extra_ready) {
+				orbDamage *= 1.0f + extraDamage;
+			}
+
+			if(this.hasScript("VoltageField.as"))
+			{
+				return;
+			}
+
+			if(!this.hasScript("VoltageField.as"))
+			{
+				this.AddScript("VoltageField.as");
+				this.set_u16("stunned", 5*30);//disables casting and the such
+				if(isClient())
+				{
+					this.getSprite().PlaySound("voltage.ogg", 3.0f);
+				}
+			}
+		}
+		break;
+
 		case 2029285710://zombie_rain
 		case 1033042153://skeleton_rain
 		case 1761466304://meteor_rain

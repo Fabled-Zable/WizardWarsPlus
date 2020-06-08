@@ -38,11 +38,11 @@ namespace EntropistParams
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
 			SpellType::other, 10, 10, 0, 8.0f, true),
 			 
-		Spell("sidewind", "Sidewind", 52, "Temporarily accelerate your own time by transporting yourself to another dimension for a few moments. Harder to damage while in this dimension.",
-				SpellType::other, 15, 10, 3, 1.0f, true),
+		Spell("sidewind", "Sidewind", 53, "Temporarily accelerate your own time by transporting yourself to another dimension for a few moments. Harder to damage while in this dimension.",
+				SpellType::other, 10, 10, 3, 1.0f, true),
 			 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("voltage_field", "Voltage Field", 54, "Releases a bubble of electricity that knocks away projectiles and enemies that collide with it. Cannot cast spells while active.",
+				SpellType::other, 15, 60, 6, 1.0f),
 			
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

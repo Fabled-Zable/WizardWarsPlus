@@ -181,4 +181,23 @@ void onTick( CBlob@ this)
 		}
 		this.set_u16("sidewinding", sidewinding);
 	}
+
+	//STUN
+	u16 stunned = this.get_u16("stunned");
+	if (stunned > 0)
+	{
+		stunned--;
+
+		//this.DisableMouse(true);
+		u16 takekeys;
+		takekeys = key_action1 | key_action2 | key_action3;
+		this.DisableKeys(takekeys);
+
+		if ( stunned == 0 )
+		{
+			//this.DisableMouse(false);
+			this.DisableKeys(0);
+		}
+		this.set_u16("stunned", stunned);
+	}
 }

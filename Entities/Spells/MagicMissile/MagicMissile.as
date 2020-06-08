@@ -106,7 +106,7 @@ int closestBlobIndex(CBlob@ this, CBlob@[] blobs, CPlayer@ caster)
     for(int i = 0; i < blobs.length; i++){
 		if (blobs[i] is null)
 		{continue;}
-        if ( this.getTeamNum() == blobs[i].getTeamNum() || (caster !is null && blobs[i] is caster.getBlob()) || !blobs[i].hasTag("flesh") )
+        if ( this.getTeamNum() == blobs[i].getTeamNum() || (caster !is null && blobs[i] is caster.getBlob()) || !blobs[i].hasTag("flesh") || blobs[i].hasTag("dead") )
 		{continue;}
         f32 dist = this.getDistanceTo(blobs[i]);
         if(bestDistance > dist)

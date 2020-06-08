@@ -49,16 +49,16 @@ void onTick(CBlob@ this)
             return;
         }
         float mana = manaInfo.mana;
-        mana -= manaInfo.manaRegen* (fullCharge ? 4 : 2.5);
+        mana -= (fullCharge ? 4 : 3);
 
         if(mana >= 0)
         {
-            manaInfo.mana -= manaInfo.manaRegen * (fullCharge ? 4 : 2.5);
+            manaInfo.mana -= manaInfo.manaRegen + (fullCharge ? 4 : 3);
         }
 
         if(isClient())
         {
-            for(int i = 0; i < manaInfo.manaRegen*10; i++)
+            for(int i = 0; i < 30; i++)
             {
                 CParticle@ p = ParticlePixelUnlimited(b.getPosition(), b.getVelocity() + Vec2f(XORRandom(12) - 6, XORRandom(12) - 6), randomManaColor(), true);
                 if(p !is null)
