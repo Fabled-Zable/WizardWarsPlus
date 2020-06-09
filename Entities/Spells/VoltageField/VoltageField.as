@@ -53,7 +53,7 @@ void onTick(CBlob@ this)
 		if(target.getTeamNum() == this.getTeamNum()){continue;}//skip over like team numbers
 		if(!isEnemy(this,target)){continue;}//if target isn't an enemy then we don't need to do anything to it
 
-		float damage = 0.6f;
+		float damage = 0.4f;
 		Vec2f norm = (target.getPosition() - this.getPosition());
 		norm.Normalize();
 
@@ -70,7 +70,7 @@ void onTick(CBlob@ this)
 				targetVel.RotateByDegrees(difference);
 				target.setVelocity(targetVel);
 			}
-			damage = 0.4;
+			damage = 0.6;
 		}
 
 		if (voltageFieldDamage(target))
