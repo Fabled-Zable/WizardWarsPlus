@@ -477,43 +477,38 @@ float drawScoreboard(CPlayer@ localplayer, CPlayer@[] players, Vec2f topleft, CT
 void onRenderScoreboard(CRules@ this)
 {
 	//sort players
-	array<array<CPlayer@>> allplayers;
-	for(int i = 0; i < this.getTeamsCount(); i++)
-	{
-		allplayers.push_back(array<CPlayer@>());
-	}
-	//CPlayer@[] blueplayers;
-	//CPlayer@[] redplayers;
+	CPlayer@[] blueplayers;
+	CPlayer@[] redplayers;
 	CPlayer@[] spectators;
 	for (u32 i = 0; i < getPlayersCount(); i++)
 	{
 		CPlayer@ p = getPlayer(i);
 		f32 kdr = getKDR(p);
 		bool inserted = false;
-		if (p.getTeamNum() > this.getTeamsCount() || p.getTeamNum() == 3)
+		if (p.getTeamNum() == this.getSpectatorTeamNum())
 		{
 			spectators.push_back(p);
 			continue;
 		}
 
 		int teamNum = p.getTeamNum();
-		//if (teamNum == 0) //blue team
+		if (teamNum == 0) //blue team
 		{
-			for (u32 j = 0; j < allplayers[teamNum].length; j++)
+			for (u32 j = 0; j < blueplayers.length; j++)
 			{
-				if (getKDR(allplayers[teamNum][j]) < kdr)
+				if (getKDR(blueplayers[j]) < kdr)
 				{
-					allplayers[teamNum].insert(j, p);
+					blueplayers.insert(j, p);
 					inserted = true;
 					break;
 				}
 			}
 
 			if (!inserted)
-				allplayers[teamNum].push_back(p);
+				blueplayers.push_back(p);
 
 		}
-		/*else
+		else
 		{
 			for (u32 j = 0; j < redplayers.length; j++)
 			{
@@ -528,7 +523,7 @@ void onRenderScoreboard(CRules@ this)
 			if (!inserted)
 				redplayers.push_back(p);
 
-		}*/
+		}
 
 	}
 
@@ -538,8 +533,8 @@ void onRenderScoreboard(CRules@ this)
 	if (localPlayer is null)
 		return;
 	int localTeam = localPlayer.getTeamNum();
-	//if (localTeam != 0 && localTeam != 1)
-		//localTeam = 0;
+	if (localTeam != 0 && localTeam != 1)
+		localTeam = 0;
 
 	@hoveredPlayer = null;
 
@@ -555,21 +550,8 @@ void onRenderScoreboard(CRules@ this)
 	hovered_tier = -1;
 
 	//draw the scoreboards
-	array<int> todraw = {0, 1, 2, 3, 4, 5, 6, 7};
-	topleft.y = drawScoreboard(localPlayer, allplayers[localTeam], topleft, this.getTeam(localTeam), Vec2f(0, 0));
-	topleft.y += 52;
-	todraw.removeAt(localTeam);
-	int drawn = 1;
-	for(int i = 0; i < todraw.length(); i++)
-	{
-		if(allplayers[todraw[i]].length > 0 && todraw[i] != 3)
-		{
-			topleft.y = drawScoreboard(localPlayer, allplayers[todraw[i]], topleft, this.getTeam(todraw[i]), Vec2f(32 * drawn, 0));
-			topleft.y += 52;
-			drawn++;
-		}
-	}
-	/*if (localTeam == 0)
+
+	if (localTeam == 0)
 		topleft.y = drawScoreboard(localPlayer, blueplayers, topleft, this.getTeam(0), Vec2f(0, 0));
 	else
 		topleft.y = drawScoreboard(localPlayer, redplayers, topleft, this.getTeam(1), Vec2f(32, 0));
@@ -579,9 +561,9 @@ void onRenderScoreboard(CRules@ this)
 	if (localTeam == 1)
 		topleft.y = drawScoreboard(localPlayer, blueplayers, topleft, this.getTeam(0), Vec2f(0, 0));
 	else
-		topleft.y = drawScoreboard(localPlayer, redplayers, topleft, this.getTeam(1), Vec2f(32, 0));*/
+		topleft.y = drawScoreboard(localPlayer, redplayers, topleft, this.getTeam(1), Vec2f(32, 0));
 
-	//topleft.y += 52;
+	topleft.y += 52;
 
 	if (spectators.length > 0)
 	{
