@@ -16,7 +16,7 @@ namespace ArcherParams
 
 	const ::s32 ready_time = 11;
 
-	const ::s32 shoot_period = 30;
+	const ::s32 shoot_period = 10;
 	const ::s32 shoot_period_1 = ArcherParams::shoot_period / 3;
 	const ::s32 shoot_period_2 = 2 * ArcherParams::shoot_period / 3;
 	const ::s32 legolas_period = ArcherParams::shoot_period * 3;
@@ -28,11 +28,7 @@ namespace ArcherParams
 	const ::s32 legolas_arrows_count = 1;
 	const ::s32 legolas_arrows_volley = 3;
 	const ::s32 legolas_arrows_deviation = 5;
-	const ::s32 legolas_time = 60;
-	
-	const ::f32 MAX_ATTACK_DIST = 360.0f;
-	const ::s32 MAX_MANA = 150;
-	const ::s32 MANA_REGEN = 3;
+	const ::s32 legolas_time = 120;
 }
 
 //TODO: move vars into archer params namespace

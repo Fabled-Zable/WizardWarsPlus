@@ -23,7 +23,7 @@ void onInit(CBlob@ this)
 	this.set_s8("charge_time", 0);
 	this.set_u8("charge_state", ArcherParams::not_aiming);
 	this.set_bool("has_arrow", false);
-	this.set_f32("gib health", -3.0f);
+	this.set_f32("gib health", -1.5f);
 	this.Tag("player");
 	this.Tag("flesh");
 
@@ -41,8 +41,8 @@ void onInit(CBlob@ this)
 
 	this.addCommandID(grapple_sync_cmd);
 
-	SetHelp(this, "help self hide", "archer", "Hide    $KEY_S$", "", 1);
-	SetHelp(this, "help self action2", "archer", "$Grapple$ Grappling hook    $RMB$", "", 3);
+	SetHelp(this, "help self hide", "archer", getTranslatedString("Hide    $KEY_S$"), "", 1);
+	SetHelp(this, "help self action2", "archer", getTranslatedString("$Grapple$ Grappling hook    $RMB$"), "", 3);
 
 	//add a command ID for each arrow type
 	for (uint i = 0; i < arrowTypeNames.length; i++)
@@ -151,8 +151,8 @@ void ManageGrapple(CBlob@ this, ArcherInfo@ archer)
 			}
 
 			//left map? too long? close grapple
-			if (archer.grapple_pos.x < map.tilesize ||
-			        archer.grapple_pos.x > (map.tilemapwidth - 1)*map.tilesize ||
+			if (archer.grapple_pos.x < 0 ||
+			        archer.grapple_pos.x > (map.tilemapwidth)*map.tilesize ||
 			        dist > archer_grapple_length * 3.0f)
 			{
 				if (canSend(this))
@@ -251,7 +251,8 @@ void ManageGrapple(CBlob@ this, ArcherInfo@ archer)
 
 				this.AddForce(force);
 				Vec2f target = (this.getPosition() + offset);
-				if (!map.rayCastSolid(this.getPosition(), target))
+				if (!map.rayCastSolid(this.getPosition(), target) &&
+					(this.getVelocity().Length() > 2 || !this.isOnMap()))
 				{
 					this.setPosition(target);
 				}
@@ -267,37 +268,45 @@ void ManageGrapple(CBlob@ this, ArcherInfo@ archer)
 
 void ManageBow(CBlob@ this, ArcherInfo@ archer, RunnerMoveVars@ moveVars)
 {
-	CSprite@ sprite = this.getSprite();
+	//are we responsible for this actor?
 	bool ismyplayer = this.isMyPlayer();
+	bool responsible = ismyplayer;
+	if (isServer() && !ismyplayer)
+	{
+		CPlayer@ p = this.getPlayer();
+		if (p !is null)
+		{
+			responsible = p.isBot();
+		}
+	}
+	//
+	CSprite@ sprite = this.getSprite();
 	bool hasarrow = archer.has_arrow;
+	bool hasnormal = hasArrows(this, ArrowType::normal);
 	s8 charge_time = archer.charge_time;
 	u8 charge_state = archer.charge_state;
 	const bool pressed_action2 = this.isKeyPressed(key_action2);
 	Vec2f pos = this.getPosition();
 
-	if (ismyplayer)
+	if (responsible)
 	{
 		if ((getGameTime() + this.getNetworkID()) % 10 == 0)
 		{
 			hasarrow = hasArrows(this);
 
-			if (!hasarrow)
+			if (!hasarrow && hasnormal)
 			{
 				// set back to default
-				for (uint i = 0; i < ArrowType::count; i++)
-				{
-					hasarrow = hasArrows(this, i);
-					if (hasarrow)
-					{
-						archer.arrow_type = i;
-						break;
-					}
-				}
+				archer.arrow_type = ArrowType::normal;
+				hasarrow = hasnormal;
 			}
 		}
 
-		this.set_bool("has_arrow", hasarrow);
-		this.Sync("has_arrow", false);
+		if (hasarrow != this.get_bool("has_arrow"))
+		{
+			this.set_bool("has_arrow", hasarrow);
+			this.Sync("has_arrow", isServer());
+		}
 
 		archer.stab_delay = 0;
 	}
@@ -328,7 +337,7 @@ void ManageBow(CBlob@ this, ArcherInfo@ archer, RunnerMoveVars@ moveVars)
 			//didn't fire
 			if (archer.legolas_arrows == ArcherParams::legolas_arrows_count)
 			{
-				Sound::Play("/Stun", pos, 1.0f, this.getSexNum() == 0 ? 1.0f : 2.0f);
+				Sound::Play("/Stun", pos, 1.0f, this.getSexNum() == 0 ? 1.0f : 1.5f);
 				setKnocked(this, 15);
 			}
 			else if (pressed)
@@ -344,13 +353,13 @@ void ManageBow(CBlob@ this, ArcherInfo@ archer, RunnerMoveVars@ moveVars)
 		{
 			ClientFire(this, charge_time, hasarrow, archer.arrow_type, true);
 			charge_state = ArcherParams::legolas_charging;
-			charge_time = ArcherParams::shoot_period - ArcherParams::legolas_charge_time;
+			charge_time = 25;
 			Sound::Play("FastBowPull.ogg", pos);
 			archer.legolas_arrows--;
 
 			if (archer.legolas_arrows == 0)
 			{
-				charge_state = ArcherParams::readying;
+				charge_state = ArcherParams::not_aiming;
 				charge_time = 5;
 
 				sprite.RewindEmitSound();
@@ -372,20 +381,19 @@ void ManageBow(CBlob@ this, ArcherInfo@ archer, RunnerMoveVars@ moveVars)
 		        (charge_state == ArcherParams::not_aiming || charge_state == ArcherParams::fired))
 		{
 			charge_state = ArcherParams::readying;
-			//hasarrow = hasArrows(this);
-			hasarrow = true;
+			hasarrow = hasArrows(this);
 
-			if (!hasarrow)
+			if (!hasarrow && hasnormal)
 			{
 				archer.arrow_type = ArrowType::normal;
-				hasarrow = hasArrows(this);
+				hasarrow = hasnormal;
 
 			}
 
-			if (ismyplayer)
+			if (responsible)
 			{
 				this.set_bool("has_arrow", hasarrow);
-				this.Sync("has_arrow", false);
+				this.Sync("has_arrow", isServer());
 			}
 
 			charge_time = 0;
@@ -396,7 +404,7 @@ void ManageBow(CBlob@ this, ArcherInfo@ archer, RunnerMoveVars@ moveVars)
 
 				if (ismyplayer && !this.wasKeyPressed(key_action1))   // playing annoying no ammo sound
 				{
-					Sound::Play("Entities/Characters/Sounds/NoAmmo.ogg");
+					this.getSprite().PlaySound("Entities/Characters/Sounds/NoAmmo.ogg", 0.5);
 				}
 
 			}
@@ -449,14 +457,16 @@ void ManageBow(CBlob@ this, ArcherInfo@ archer, RunnerMoveVars@ moveVars)
 				Sound::Play("AnimeSword.ogg", pos, ismyplayer ? 1.3f : 0.7f);
 				Sound::Play("FastBowPull.ogg", pos);
 				charge_state = ArcherParams::legolas_charging;
-				charge_time = ArcherParams::shoot_period - ArcherParams::legolas_charge_time;
+				charge_time = 25;
 
 				archer.legolas_arrows = ArcherParams::legolas_arrows_count;
 				archer.legolas_time = ArcherParams::legolas_time;
 			}
 
 			if (charge_time >= ArcherParams::shoot_period)
+			{
 				sprite.SetEmitSoundPaused(true);
+			}
 		}
 		else if (charge_state == ArcherParams::no_arrows)
 		{
@@ -510,34 +520,41 @@ void ManageBow(CBlob@ this, ArcherInfo@ archer, RunnerMoveVars@ moveVars)
 
 	// my player!
 
-	if (ismyplayer)
+	if (responsible)
 	{
 		// set cursor
 
-		if (!getHUD().hasButtons())
+		if (ismyplayer && !getHUD().hasButtons())
 		{
 			int frame = 0;
 			//	print("archer.charge_time " + archer.charge_time + " / " + ArcherParams::shoot_period );
 			if (archer.charge_state == ArcherParams::readying)
 			{
-				frame = 1 + float(archer.charge_time) / float(ArcherParams::shoot_period + ArcherParams::ready_time) * 7;
+				//readying shot
+				frame = 2 + int((float(archer.charge_time) / float(ArcherParams::shoot_period + ArcherParams::ready_time)) * 8) * 2.0f;
 			}
 			else if (archer.charge_state == ArcherParams::charging)
 			{
-				if (archer.charge_time <= ArcherParams::shoot_period)
+				if (archer.charge_time < ArcherParams::shoot_period)
 				{
-					frame = float(ArcherParams::ready_time + archer.charge_time) / float(ArcherParams::shoot_period) * 7;
+					//charging shot
+					frame = 2 + int((float(ArcherParams::ready_time + archer.charge_time) / float(ArcherParams::shoot_period + ArcherParams::ready_time)) * 8) * 2;
 				}
 				else
-					frame = 9;
+				{
+					//charging legolas
+					frame = 1 + int((float(archer.charge_time - ArcherParams::shoot_period) / (ArcherParams::legolas_period - ArcherParams::shoot_period)) * 9) * 2;
+				}
 			}
 			else if (archer.charge_state == ArcherParams::legolas_ready)
 			{
-				frame = 10;
+				//legolas ready
+				frame = 19;
 			}
 			else if (archer.charge_state == ArcherParams::legolas_charging)
 			{
-				frame = 9;
+				//in between shooting multiple legolas shots
+				frame = 1;
 			}
 			getHUD().SetCursorFrame(frame);
 		}
@@ -582,21 +599,17 @@ void onTick(CBlob@ this)
 		return;
 	}
 
-	if (getKnockedRemaining(this) > 0)
+	if (isKnocked(this) || this.isInInventory())
 	{
 		archer.grappling = false;
 		archer.charge_state = 0;
 		archer.charge_time = 0;
+		this.getSprite().SetEmitSoundPaused(true);
+		getHUD().SetCursorFrame(0);
 		return;
 	}
 
 	ManageGrapple(this, archer);
-
-	// vvvvvvvvvvvvvv CLIENT-SIDE ONLY vvvvvvvvvvvvvvvvvvv
-
-	if (!getNet().isClient()) return;
-
-	if (this.isInInventory()) return;
 
 	RunnerMoveVars@ moveVars;
 	if (!this.get("moveVars", @moveVars))
@@ -623,6 +636,8 @@ bool checkGrappleStep(CBlob@ this, ArcherInfo@ archer, CMap@ map, const f32 dist
 
 		archer.grapple_ratio = Maths::Max(0.2, Maths::Min(archer.grapple_ratio, dist / archer_grapple_length));
 
+		archer.grapple_pos.y = Maths::Max(0.0, archer.grapple_pos.y);
+
 		if (canSend(this)) SyncGrapple(this);
 
 		return true;
@@ -646,7 +661,7 @@ bool checkGrappleStep(CBlob@ this, ArcherInfo@ archer, CMap@ map, const f32 dist
 
 				return true;
 			}
-			else if (b.isCollidable() && b.getShape().isStatic())
+			else if (b.isCollidable() && b.getShape().isStatic() && !b.hasTag("ignore_arrow"))
 			{
 				//TODO: Maybe figure out a way to grapple moving blobs
 				//		without massive desync + forces :)
@@ -790,10 +805,16 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
 	if (cmd == this.getCommandID("shoot arrow"))
 	{
-		Vec2f arrowPos = params.read_Vec2f();
-		Vec2f arrowVel = params.read_Vec2f();
-		u8 arrowType = params.read_u8();
-		bool legolas = params.read_bool();
+		Vec2f arrowPos;
+		if (!params.saferead_Vec2f(arrowPos)) return;
+		Vec2f arrowVel;
+		if (!params.saferead_Vec2f(arrowVel)) return;
+		u8 arrowType;
+		if (!params.saferead_u8(arrowType)) return;
+		bool legolas;
+		if (!params.saferead_bool(legolas)) return;
+
+		if (arrowType >= arrowTypeNames.length) return;
 
 		ArcherInfo@ archer;
 		if (!this.get("archerInfo", @archer))
@@ -855,7 +876,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	else if (cmd == this.getCommandID("pickup arrow"))
 	{
 		CBlob@ arrow = getPickupArrow(this);
-		bool spriteArrow = canPickSpriteArrow(this, false);
+		bool spriteArrow = canPickSpriteArrow(this, false); // unnecessary
+
 		if (arrow !is null || spriteArrow)
 		{
 			if (arrow !is null)
@@ -874,22 +896,33 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				}
 			}
 
-			CBlob@ mat_arrows = server_CreateBlob("mat_arrows", this.getTeamNum(), this.getPosition());
-			if (mat_arrows !is null)
+			if (getNet().isServer())
 			{
-				mat_arrows.server_SetQuantity(fletch_num_arrows);
-				mat_arrows.Tag("do not set materials");
-				this.server_PutInInventory(mat_arrows);
+				CBlob@ mat_arrows = server_CreateBlobNoInit('mat_arrows');
 
-				if (arrow !is null)
+				if (mat_arrows !is null)
 				{
-					arrow.server_Die();
-				}
-				else
-				{
-					canPickSpriteArrow(this, true);
+					mat_arrows.Tag('custom quantity');
+					mat_arrows.Init();
+
+					mat_arrows.server_SetQuantity(1); // unnecessary
+
+					if (not this.server_PutInInventory(mat_arrows))
+					{
+						mat_arrows.setPosition(this.getPosition());
+					}
+
+					if (arrow !is null)
+					{
+						arrow.server_Die();
+					}
+					else
+					{
+						canPickSpriteArrow(this, true);
+					}
 				}
 			}
+
 			this.getSprite().PlaySound("Entities/Items/Projectiles/Sounds/ArrowHitGround.ogg");
 		}
 	}
@@ -956,7 +989,7 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu @gridmenu)
 	this.ClearGridMenusExceptInventory();
 	Vec2f pos(gridmenu.getUpperLeftPosition().x + 0.5f * (gridmenu.getLowerRightPosition().x - gridmenu.getUpperLeftPosition().x),
 	          gridmenu.getUpperLeftPosition().y - 32 * 1 - 2 * 24);
-	CGridMenu@ menu = CreateGridMenu(pos, this, Vec2f(arrowTypeNames.length, 2), "Current arrow");
+	CGridMenu@ menu = CreateGridMenu(pos, this, Vec2f(arrowTypeNames.length, 2), getTranslatedString("Current arrow"));
 
 	ArcherInfo@ archer;
 	if (!this.get("archerInfo", @archer))
@@ -972,7 +1005,7 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu @gridmenu)
 		for (uint i = 0; i < arrowTypeNames.length; i++)
 		{
 			string matname = arrowTypeNames[i];
-			CGridButton @button = menu.AddButton(arrowIcons[i], arrowNames[i], this.getCommandID("pick " + matname));
+			CGridButton @button = menu.AddButton(arrowIcons[i], getTranslatedString(arrowNames[i]), this.getCommandID("pick " + matname));
 
 			if (button !is null)
 			{
@@ -1005,7 +1038,7 @@ void onAddToInventory(CBlob@ this, CBlob@ blob)
 		{
 			if (itemname == arrowTypeNames[j])
 			{
-				SetHelp(this, "help self action", "archer", "$arrow$Fire arrow   $KEY_HOLD$$LMB$", "", 3);
+				SetHelp(this, "help self action", "archer", getTranslatedString("$arrow$Fire arrow   $KEY_HOLD$$LMB$"), "", 3);
 				if (j > 0 && this.getInventory().getItemsCount() > 1)
 				{
 					SetHelp(this, "help inventory", "archer", "$Help_Arrow1$$Swap$$Help_Arrow2$         $KEY_TAP$$KEY_F$", "", 2);
@@ -1046,12 +1079,18 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 			{
 				if (getNet().isServer())
 				{
-					CBlob@ mat_arrows = server_CreateBlob("mat_arrows", this.getTeamNum(), this.getPosition());
+					CBlob@ mat_arrows = server_CreateBlobNoInit('mat_arrows');
 					if (mat_arrows !is null)
 					{
+						mat_arrows.Tag('custom quantity');
+						mat_arrows.Init();
+
 						mat_arrows.server_SetQuantity(fletch_num_arrows);
-						mat_arrows.Tag("do not set materials");
-						this.server_PutInInventory(mat_arrows);
+
+						if (not this.server_PutInInventory(mat_arrows))
+						{
+							mat_arrows.setPosition(this.getPosition());
+						}
 					}
 				}
 				this.getSprite().PlaySound("Entities/Items/Projectiles/Sounds/ArrowHitGround.ogg");
@@ -1062,9 +1101,8 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 
 		if (blockAttack(hitBlob, velocity, 0.0f))
 		{
-			this.getSprite().PlaySound("/Stun", 1.0f, this.getSexNum() == 0 ? 1.0f : 2.0f);
+			this.getSprite().PlaySound("/Stun", 1.0f, this.getSexNum() == 0 ? 1.0f : 1.5f);
 			setKnocked(this, 30);
 		}
 	}
 }
-
