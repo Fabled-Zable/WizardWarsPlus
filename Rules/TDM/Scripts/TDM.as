@@ -495,35 +495,15 @@ shared class TDMCore : RulesCore
 		teams.push_back(t);
 	}
 
-	void SetupPlayers()
-	{
-		players.clear();
-		array<int> playerids;
-		for (int player_step = 0; player_step < getPlayersCount(); ++player_step)
-		{
-			playerids.push_back(player_step);
-		}
-		for (int player_step = 0; player_step < getPlayersCount(); ++player_step)
-		{
-			int thisid = XORRandom(playerids.length);
-			AddPlayer(getPlayer(playerids[thisid]));
-			playerids.removeAt(thisid);
-		}
-	}
-
 	void AddPlayer(CPlayer@ player, u8 team = 0, string default_config = "")
-	{	
-		print("" + getRules().getSpectatorTeamNum());
+	{
 		TDMPlayerInfo p(player.getUsername(), player.getTeamNum(), player.isBot() ? "knight" : "wizard" );
 		CMap@ map = getMap();
-		if(p.team != getRules().getSpectatorTeamNum())
-		{
-			p.team = getSmallerTeam();
-			if(p.team == team1id)
-				team1c++;
-			else
-				team2c++;
-		}
+		p.team = getSmallerTeam();
+		if(p.team == team1id)
+			team1c++;
+		else
+			team2c++;
 		players.push_back(p);
 		ChangeTeamPlayerCount(p.team, 1);
 	}
@@ -918,58 +898,4 @@ void onPlayerLeave(CRules@ this, CPlayer@ player)
 		print("Next mapping due to the last player on a team or last player on the server leaving");
         LoadNextMap();
 	}
-}
-
-void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newTeam)
-{
-	RulesCore@ core;
-	this.get("core", @core);
-	TDMCore@ tdmcore = cast<TDMCore@>(@core);
-	if (tdmcore is null) return;
-
-	
-
-	int oldTeam = player.getTeamNum();
-	bool spect = (oldTeam == this.getSpectatorTeamNum());
-	// print("---request team change--- " + oldTeam + " -> " + newTeam);
-
-	//if a player changes to team 255 (-1), auto-assign
-	if (newTeam == 255 || oldTeam == 255)
-	{
-		
-		newTeam = tdmcore.getSmallerTeam();
-		oldTeam = newTeam;
-		if(newTeam == tdmcore.team1id)
-			tdmcore.team1c++;
-		else
-			tdmcore.team2c++;
-	}
-	else if(newTeam == this.getSpectatorTeamNum())
-	{
-		if(oldTeam == tdmcore.team1id)
-			tdmcore.team1c--;
-		else if(oldTeam == tdmcore.team2id)
-			tdmcore.team2c--;
-	}
-
-	/*int newSize = getTeamSize(core.teams, newTeam);
-	int oldSize = getTeamSize(core.teams, oldTeam);
-
-	if (!getSecurity().checkAccess_Feature(player, "always_change_team")
-	        && (!spect && newSize + 1 > oldSize - 1 + TEAM_DIFFERENCE_THRESHOLD //changing to bigger team
-	            || spect && newTeam == getLargestTeam(core.teams)
-	            && getTeamDifference(core.teams) + 1 > TEAM_DIFFERENCE_THRESHOLD //or changing to bigger team from spect
-	           ))*/
-	{
-		//awww shit, thats a SERVER_ONLY script :/
-		// if(player.isMyPlayer())
-		// 	client_AddToChat("Can't change teams now - it would imbalance them.");
-
-	//	getNet().server_SendMsg("Switching " + player.getUsername() + " back to "
-		//                        + (spect ? "spectator" : core.teams[oldTeam].name) + " - teams unbalanced");
-
-		//return;
-	}
-
-	core.ChangePlayerTeam(player, newTeam);
 }
