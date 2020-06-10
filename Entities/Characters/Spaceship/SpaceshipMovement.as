@@ -73,7 +73,7 @@ void onTick(CMovement@ this)
     s32 dashRate = 30/4;
 
     Vec2f deltaV = Vec2f_zero;
-
+/*
     if(blob.isKeyJustPressed(key_right))
     {
         s32 lastTap = blob.get_s32("rightTap");
@@ -110,7 +110,7 @@ void onTick(CMovement@ this)
         }
         blob.set_s32("downTap",getGameTime());
     }
-    
+*/
 
 
     if(blob.isKeyPressed(key_right))
