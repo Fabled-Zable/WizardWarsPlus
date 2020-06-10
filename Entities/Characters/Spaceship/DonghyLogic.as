@@ -75,6 +75,12 @@ void onInit( CBlob@ this )
 	
 	if(getNet().isServer())
 		this.set_u8("spell_count", 0);
+
+	if(isClient())
+	{
+		this.getSprite().SetEmitSound("engine_loop.ogg");
+		this.getSprite().SetEmitSoundPaused(false);
+	}
 }
 
 void onSetPlayer( CBlob@ this, CPlayer@ player )
@@ -454,6 +460,18 @@ void onTick( CBlob@ this )
 	// vvvvvvvvvvvvvv CLIENT-SIDE ONLY vvvvvvvvvvvvvvvvvvv
 
 	if (!getNet().isClient()) return;
+
+	Vec2f vel = this.getVelocity();
+	float posVelX = Maths::Abs(vel.x);
+	float posVelY = Maths::Abs(vel.y);
+	if(posVelX > 2.9f)
+	{
+		this.getSprite().SetEmitSoundVolume(3.0f);
+	}
+	else
+	{
+		this.getSprite().SetEmitSoundVolume(1.0f * (posVelX > posVelY ? posVelX : posVelY));
+	}
 
 	if (this.isInInventory()) return;
 

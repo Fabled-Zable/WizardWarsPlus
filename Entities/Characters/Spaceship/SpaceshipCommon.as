@@ -1,11 +1,14 @@
 // Runner Common
 
-shared class RunnerMoveVars
+shared class SpaceshipMoveVars
 {
 	//flying vars
 	f32 flySpeed;  //target vel
 	f32 flySpeedInAir;
 	f32 flyFactor;
+
+	//ladder
+	Vec2f flyLadderSpeed;
 
 	//jumping vars
 	f32 jumpMaxVel;
@@ -15,6 +18,11 @@ shared class RunnerMoveVars
 	f32 jumpFactor;
 	s32 jumpCount; //internal counter
 	s32 fallCount; //internal counter only moving down
+
+	//swimming vars
+	f32 swimspeed;
+	f32 swimforce;
+	f32 swimEdgeScale;
 
 	//vaulting vars
 	bool canVault;

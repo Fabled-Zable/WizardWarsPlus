@@ -11,7 +11,7 @@ void onTick(CMovement@ this)
 {
     CBlob@ b = this.getBlob();
 
-    f32 speed = 0.2;
+    f32 speed = 0.05;
     f32 acellBoost = 4;
     f32 dashSpeed = 8;
     s32 dashRate = 30/4;
@@ -62,20 +62,20 @@ void onTick(CMovement@ this)
 
     if(b.isKeyPressed(key_right))
     {
-        deltaV += Vec2f(vel.x < 2 ? speed*acellBoost : speed,0);
+        deltaV += Vec2f(speed,0);
     }
     if(b.isKeyPressed(key_left))
     {
-        deltaV += Vec2f(vel.x > -2 ? speed * -1 * acellBoost : -1 * speed,0);
+        deltaV += Vec2f(-speed,0);
     }
 
     if(b.isKeyPressed(key_up))
     {
-        deltaV += Vec2f(0,vel.y > -2 ? speed * -1 * acellBoost : -1 * speed);
+        deltaV += Vec2f(0,-speed/2);
     }
     if(b.isKeyPressed(key_down))
     {
-        deltaV += Vec2f(0,vel.y < 2 ? speed * acellBoost : speed);
+        deltaV += Vec2f(0,speed/2);
     }
 
     if(b.getPosition().y/8 >=  getMap().tilemapheight - 2)

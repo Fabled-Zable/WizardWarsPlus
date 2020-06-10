@@ -7,13 +7,15 @@
 
 void onInit(CMovement@ this)
 {
+	this.getBlob().set_u32("accelSoundDelay",0);
+
 	this.getCurrentScript().removeIfTag = "dead";
 }
 
 void onTick(CMovement@ this)
 {
 	CBlob@ blob = this.getBlob();
-	RunnerMoveVars@ moveVars;
+	SpaceshipMoveVars@ moveVars;
 	if (!blob.get("moveVars", @moveVars))
 	{
 		return;
@@ -38,21 +40,22 @@ void onTick(CMovement@ this)
 
 	if (is_client && getGameTime() % 3 == 0)
 	{
-		const string fallscreamtag = "_fallingscream";
-		if (vel.y > 0.2f)
+		const string acceltag = "engine_is_accelerating";
+		if (blob.isKeyPressed(key_left) || blob.isKeyPressed(key_right))
 		{
-			if (vel.y > BaseFallSpeed() * 1.8f)
+			if (vel.x < 0.4f && vel.x > -0.4f)
 			{
-				if (!blob.hasTag(fallscreamtag))
+				if (!blob.hasTag(acceltag))
 				{
-					blob.Tag(fallscreamtag);
-					Sound::Play("man_scream.ogg", pos);
+					blob.Tag(acceltag);
+					Sound::Play("engine_accel.ogg", pos, 3.0f);
+					blob.set_u32("accelSoundDelay", getGameTime() + 80);
 				}
 			}
 		}
-		else
+		else if(getGameTime() > blob.get_u32("accelSoundDelay"))
 		{
-			blob.Untag(fallscreamtag);
+			blob.Untag(acceltag);
 		}
 	}
 
@@ -581,7 +584,7 @@ bool canVault(CBlob@ blob, CMap@ map, f32 movingside)
 
 //cleanup all vars here - reset clean slate for next frame
 
-void CleanUp(CMovement@ this, CBlob@ blob, RunnerMoveVars@ moveVars)
+void CleanUp(CMovement@ this, CBlob@ blob, SpaceshipMoveVars@ moveVars)
 {
 	//reset all the vars here
 	moveVars.jumpFactor = 1.0f;
