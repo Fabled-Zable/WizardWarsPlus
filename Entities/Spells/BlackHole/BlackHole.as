@@ -76,7 +76,14 @@ void onTick(CBlob@ this)
 				{
 					if (manaInfo.mana > 0.0)
 					{
-						manaInfo.mana = manaInfo.mana - MANA_DRAIN;
+						if (attractedblob.getName() == "entropist")
+						{
+							manaInfo.mana -= 1.0f;
+						}
+						else
+						{
+							manaInfo.mana -= MANA_DRAIN;
+						}
 						attractedblob.getSprite().PlaySound("ManaDraining.ogg", 0.5f, 1.0f + XORRandom(2)/10.0f);
 						makeManaDrainParticles( blobPos, 30 );
 					

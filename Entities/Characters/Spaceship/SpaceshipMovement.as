@@ -2,7 +2,6 @@
 
 #include "SpaceshipCommon.as"
 #include "MakeDustParticle.as";
-#include "FallDamageCommon.as";
 #include "KnockedCommon.as";
 
 void onInit(CMovement@ this)
@@ -10,6 +9,11 @@ void onInit(CMovement@ this)
 	this.getBlob().set_u32("accelSoundDelay",0);
 
 	this.getCurrentScript().removeIfTag = "dead";
+
+	this.getBlob().set_s32("rightTap",0);
+    this.getBlob().set_s32("leftTap",0);
+    this.getBlob().set_s32("upTap",0);
+    this.getBlob().set_s32("downTap",0);
 }
 
 void onTick(CMovement@ this)
@@ -49,7 +53,7 @@ void onTick(CMovement@ this)
 				{
 					blob.Tag(acceltag);
 					Sound::Play("engine_accel.ogg", pos, 3.0f);
-					blob.set_u32("accelSoundDelay", getGameTime() + 80);
+					blob.set_u32("accelSoundDelay", getGameTime() + 200);
 				}
 			}
 		}
@@ -59,566 +63,93 @@ void onTick(CMovement@ this)
 		}
 	}
 
-	if (onground || blob.isInWater())  //also reset when vaulting
-	{
-		moveVars.walljumped_side = Walljump::NONE;
-		moveVars.wallrun_start = pos.y;
-		moveVars.wallrun_current = pos.y;
-		moveVars.fallCount = -1;
-	}
-
 	shape.SetGravityScale(0.0f);
-	shape.getVars().onladder = false;
-
-	//walljumping, wall running and wall sliding
-
-	if (vel.y > 5.0f)
-	{
-		//moveVars.walljumped_side = Walljump::BOTH;
-	}
-	else if (vel.y > 4.0f)
-	{
-		if (moveVars.walljumped_side == Walljump::JUMPED_LEFT)
-			moveVars.walljumped_side = Walljump::LEFT;
-
-		if (moveVars.walljumped_side == Walljump::JUMPED_RIGHT)
-			moveVars.walljumped_side = Walljump::RIGHT;
-	}
-
-	if (!blob.isOnCeiling() && !isknocked &&
-	        !blob.isOnLadder() && (up || left || right))  //key pressed
-	{
-		//check solid tiles
-		const f32 ts = map.tilesize;
-		const f32 y_ts = ts * 0.2f;
-		const f32 x_ts = ts * 1.4f;
-
-		bool surface_left = map.isTileSolid(pos + Vec2f(-x_ts, y_ts - map.tilesize)) ||
-		                    map.isTileSolid(pos + Vec2f(-x_ts, y_ts));
-		if (!surface_left)
-		{
-			surface_left = checkForSolidMapBlob(map, pos + Vec2f(-x_ts, y_ts - map.tilesize)) ||
-			               checkForSolidMapBlob(map, pos + Vec2f(-x_ts, y_ts));
-		}
-
-		bool surface_right = map.isTileSolid(pos + Vec2f(x_ts, y_ts - map.tilesize)) ||
-		                     map.isTileSolid(pos + Vec2f(x_ts, y_ts));
-		if (!surface_right)
-		{
-			surface_right = checkForSolidMapBlob(map, pos + Vec2f(x_ts, y_ts - map.tilesize)) ||
-			                checkForSolidMapBlob(map, pos + Vec2f(x_ts, y_ts));
-		}
-
-		//not checking blobs for this - perf
-		bool surface_above = map.isTileSolid(pos + Vec2f(y_ts, -x_ts)) || map.isTileSolid(pos + Vec2f(-y_ts, -x_ts));
-		bool surface_below = map.isTileSolid(pos + Vec2f(y_ts, x_ts)) || map.isTileSolid(pos + Vec2f(-y_ts, x_ts));
-
-		bool surface = surface_left || surface_right;
-
-		const f32 slidespeed = 2.45f;
-
-		//wall jumping/running
-		if (up && surface && 									//only on surface
-		        moveVars.walljumped_side != Walljump::BOTH &&		//do nothing if jammed
-		        !(left && right) &&									//do nothing if pressing both sides
-		        !onground)
-		{
-			bool wasNONE = (moveVars.walljumped_side == Walljump::NONE);
-
-			bool jumpedLEFT = (moveVars.walljumped_side == Walljump::JUMPED_LEFT);
-			bool jumpedRIGHT = (moveVars.walljumped_side == Walljump::JUMPED_RIGHT);
-
-			bool dust = false;
-
-			if (moveVars.jumpCount > 5) //wait some time to be properly in the air
-			{
-				//set contact point
-				bool set_contact = false;
-				if (left && surface_left && (moveVars.walljumped_side == Walljump::RIGHT || jumpedRIGHT || wasNONE))
-				{
-					moveVars.walljumped_side = Walljump::LEFT;
-					moveVars.wallrun_start = pos.y;
-					moveVars.wallrun_current = pos.y + 1.0f;
-					set_contact = true;
-				}
-				if (right && surface_right && (moveVars.walljumped_side == Walljump::LEFT || jumpedLEFT || wasNONE))
-				{
-					moveVars.walljumped_side = Walljump::RIGHT;
-					moveVars.wallrun_start = pos.y;
-					moveVars.wallrun_current = pos.y + 1.0f;
-					set_contact = true;
-				}
-
-				//wallrun
-				if (!surface_above && vel.y < slidespeed &&
-				        ((left && surface_left && !jumpedLEFT) || (right && surface_right && !jumpedRIGHT) || set_contact))
-				{
-					//within range
-					if (set_contact ||
-					        (pos.y - 1.0f < moveVars.wallrun_current &&
-					         pos.y + 1.0f > moveVars.wallrun_start - map.tilesize * moveVars.wallrun_length))
-					{
-						moveVars.wallrun_current = Maths::Min(pos.y - 1.0f, moveVars.wallrun_current - 1.0f);
-
-						moveVars.walljumped = true;
-						if (set_contact || getGameTime() % 5 == 0)
-						{
-							dust = true;
-
-							f32 wallrun_speed = moveVars.jumpMaxVel * 1.2f;
-
-							if (vel.y > -wallrun_speed || set_contact)
-							{
-								vel.Set(0, -wallrun_speed);
-								blob.setVelocity(vel);
-							}
-
-							if (!set_contact)
-							{
-								blob.getSprite().PlayRandomSound("/StoneJump");
-							}
-						}
-					}
-					else
-					{
-						moveVars.walljumped = false;
-					}
-				}
-				//walljump
-				else if (vel.y < slidespeed &&
-				         ((left && surface_right) || (right && surface_left)) &&
-				         !surface_below && !jumpedLEFT && !jumpedRIGHT)
-				{
-					f32 walljumpforce = 4.0f;
-					vel.Set(surface_right ? -walljumpforce : walljumpforce, -2.0f);
-					blob.setVelocity(vel);
-
-					dust = true;
-
-					moveVars.jumpCount = 0;
-
-					if (right)
-					{
-						moveVars.walljumped_side = Walljump::JUMPED_LEFT;
-					}
-					else
-					{
-						moveVars.walljumped_side = Walljump::JUMPED_RIGHT;
-					}
-				}
-			}
-
-			if (dust)
-			{
-				Vec2f dust_pos = (Vec2f(right ? 4.0f : -4.0f, 0.0f) + pos);
-				MakeDustParticle(dust_pos, "Smoke.png");
-			}
-		}
-		else
-		{
-			moveVars.walljumped = false;
-		}
-
-		//wall sliding
-		{
-			Vec2f groundNormal = blob.getGroundNormal();
-			if (
-			    (left || right) && // require direction key hold
-			    Maths::Abs(groundNormal.y) <= 0.01f) //sliding on wall
-			{
-				Vec2f force;
-
-				Vec2f vel = blob.getVelocity();
-				if (vel.y >= slidespeed && (blob.isFacingLeft() ? groundNormal.x > 0 : groundNormal.x < 0))
-				{
-					f32 temp = vel.y * 0.9f;
-					Vec2f new_vel(vel.x * 0.9f, temp < slidespeed ? slidespeed : temp);
-					blob.setVelocity(new_vel);
-
-					if (is_client) // effect
-					{
-						if (!moveVars.wallsliding)
-						{
-							blob.getSprite().PlayRandomSound("/Scrape");
-						}
-
-						//falling for almost a second so add effects
-						if (moveVars.jumpCount > 20)
-						{
-							int gametime = getGameTime();
-							if (gametime % (uint(Maths::Max(0, 7 - int(Maths::Abs(vel.y)))) + 3) == 0)
-							{
-								MakeDustParticle(pos, "/dust2.png");
-								blob.getSprite().PlayRandomSound("/Scrape");
-							}
-						}
-					}
-
-					moveVars.wallsliding = true;
-				}
-			}
-		}
-	}
-
-	// vaulting
-
-	if (blob.isKeyPressed(key_up) && moveVars.canVault)
-	{
-
-		// boost over corner
-		Vec2f groundNormal = blob.getGroundNormal();
-		bool onMap = blob.isOnMap();
-		bool canFreeVault = !onMap && moveVars.jumpCount < 5;
-		groundNormal.Normalize();
-		bool sidekeypressed = ((left && (groundNormal.x > 0.1f || canFreeVault)) ||
-		                       (right && (groundNormal.x < -0.1f || canFreeVault)));
-
-		if (sidekeypressed)
-		{
-			bool vault = false;
-
-			if (left)
-			{
-				f32 movingside = -1.0f;
-
-				if (canVault(blob, map, movingside))
-				{
-					vault = true;
-				}
-			}
-
-			if (right)
-			{
-				f32 movingside = 1.0f;
-
-				if (canVault(blob, map, movingside))
-				{
-					vault = true;
-				}
-			}
-
-			if (vault)
-			{
-				moveVars.jumpCount = -3;
-
-				moveVars.walljumped_side = Walljump::NONE;
-				moveVars.wallrun_start = pos.y;
-				moveVars.wallrun_current = pos.y;
-			}
-		}
-	}
-
-	//jumping
-
-	if (moveVars.jumpFactor > 0.01f && !isknocked)
-	{
-
-		if (onground)
-		{
-			moveVars.jumpCount = 0;
-		}
-		else
-		{
-			moveVars.jumpCount++;
-		}
-
-		if (up && vel.y > -moveVars.jumpMaxVel)
-		{
-			moveVars.jumpStart = 0.7f;
-			moveVars.jumpMid = 0.2f;
-			moveVars.jumpEnd = 0.1f;
-			bool crappyjump = false;
-
-			//todo what constitutes a crappy jump? maybe carrying heavy?
-			if (crappyjump)
-			{
-				moveVars.jumpStart *= 0.79f;
-				moveVars.jumpMid *= 0.69f;
-				moveVars.jumpEnd *= 0.59f;
-			}
-
-			Vec2f force = Vec2f(0, 0);
-			f32 side = 0.0f;
-
-			if (blob.isFacingLeft() && left)
-			{
-				side = -1.0f;
-			}
-			else if (!blob.isFacingLeft() && right)
-			{
-				side = 1.0f;
-			}
-
-			// jump
-			if (moveVars.jumpCount <= 0)
-			{
-				force.y -= 1.5f;
-			}
-			else if (moveVars.jumpCount < 3)
-			{
-				force.y -= moveVars.jumpStart;
-				//force.x += side * moveVars.jumpMid;
-			}
-			else if (moveVars.jumpCount < 6)
-			{
-				force.y -= moveVars.jumpMid;
-				//force.x += side * moveVars.jumpEnd;
-			}
-			else if (moveVars.jumpCount < 8)
-			{
-				force.y -= moveVars.jumpEnd;
-			}
-
-			//if (blob.isOnWall()) {
-			//  force.y *= 1.1f;
-			//}
-
-			force *= moveVars.jumpFactor * moveVars.overallScale * 60.0f;
-
-
-			blob.AddForce(force);
-
-			// sound
-
-			if (moveVars.jumpCount == 1 && is_client)
-			{
-				TileType tile = blob.getMap().getTile(blob.getPosition() + Vec2f(0.0f, blob.getRadius() + 4.0f)).type;
-
-				if (blob.getMap().isTileGroundStuff(tile))
-				{
-					blob.getSprite().PlayRandomSound("/EarthJump");
-				}
-				else
-				{
-					blob.getSprite().PlayRandomSound("/StoneJump");
-				}
-			}
-		}
-	}
-
-	//flying & stopping
-
-	bool stop = true;
-	if (!onground)
-	{
-		if (isknocked)
-			stop = false;
-		else if (blob.hasTag("dont stop til ground"))
-			stop = false;
-	}
-	else
-	{
-		blob.Untag("dont stop til ground");
-	}
-
-	bool left_or_right = (left || right);
-	{
-		// carrying heavy
-		CBlob@ carryBlob = blob.getCarriedBlob();
-		if (carryBlob !is null)
-		{
-			if (carryBlob.hasTag("medium weight"))
-			{
-				moveVars.flyFactor *= 0.8f;
-				moveVars.jumpFactor *= 0.8f;
-			}
-			else if (carryBlob.hasTag("heavy weight"))
-			{
-				moveVars.flyFactor *= 0.6f;
-				moveVars.jumpFactor *= 0.5f;
-			}
-			else if (carryBlob.hasTag("super heavy weight"))
-			{
-				moveVars.flyFactor *= 0.4f;
-				moveVars.jumpFactor *= 0.0f;
-			}
-		}
-
-		bool facingleft = blob.isFacingLeft();
-		bool stand = blob.isOnGround() || blob.isOnLadder();
-		Vec2f flyDirection;
-		const f32 turnaroundspeed = 1.3f;
-		const f32 normalspeed = 1.0f;
-		const f32 backwardsspeed = 0.8f;
-
-		if (right)
-		{
-			if (vel.x < -0.1f)
-			{
-				flyDirection.x += turnaroundspeed;
-			}
-			else if (facingleft)
-			{
-				flyDirection.x += backwardsspeed;
-			}
-			else
-			{
-				flyDirection.x += normalspeed;
-			}
-		}
-
-		if (left)
-		{
-			if (vel.x > 0.1f)
-			{
-				flyDirection.x -= turnaroundspeed;
-			}
-			else if (!facingleft)
-			{
-				flyDirection.x -= backwardsspeed;
-			}
-			else
-			{
-				flyDirection.x -= normalspeed;
-			}
-		}
-
-		f32 force = 1.0f;
-
-		f32 lim = 0.0f;
-
-		{
-			if (left_or_right)
-			{
-				lim = moveVars.flySpeed;
-				if (!onground)
-				{
-					lim = moveVars.flySpeedInAir;
-				}
-
-				lim *= moveVars.flyFactor * Maths::Abs(flyDirection.x);
-			}
-
-			Vec2f stop_force;
-
-			bool greater = vel.x > 0;
-			f32 absx = greater ? vel.x : -vel.x;
-
-			if (moveVars.walljumped)
-			{
-				moveVars.stoppingFactor *= 0.5f;
-				moveVars.flyFactor *= 0.6f;
-
-				//hack - fix gliding
-				if (vel.y > 0 && blob.hasTag("shielded"))
-					moveVars.flyFactor *= 0.6f;
-			}
-
-			bool stopped = false;
-			if (absx > lim)
-			{
-				if (stop) //stopping
-				{
-					stopped = true;
-					stop_force.x -= (absx - lim) * (greater ? 1 : -1);
-
-					stop_force.x *= moveVars.overallScale * 30.0f * moveVars.stoppingFactor *
-					                (onground ? moveVars.stoppingForce : moveVars.stoppingForceAir);
-
-					if (absx > 3.0f)
-					{
-						f32 extra = (absx - 3.0f);
-						f32 scale = (1.0f / ((1 + extra) * 2));
-						stop_force.x *= scale;
-					}
-
-					blob.AddForce(stop_force);
-				}
-			}
-
-			if (!isknocked && ((absx < lim) || left && greater || right && !greater))
-			{
-				force *= moveVars.flyFactor * moveVars.overallScale * 30.0f;
-				if (Maths::Abs(force) > 0.01f)
-				{
-					blob.AddForce(flyDirection * force);
-				}
-			}
-		}
-
-	}
-
-	//falling count
-	if (!onground && vel.y > 0.1f)
-	{
-		moveVars.fallCount++;
-	}
-	else
-	{
-		moveVars.fallCount = 0;
-	}
+	shape.setDrag(0.5f*moveVars.stoppingFactor);
+
+
+    f32 speed = 0.05*moveVars.flySpeed;
+    f32 acellBoost = moveVars.flyFactor;
+    f32 dashSpeed = 8;
+    s32 dashRate = 30/4;
+
+    Vec2f deltaV = Vec2f_zero;
+
+    if(blob.isKeyJustPressed(key_right))
+    {
+        s32 lastTap = blob.get_s32("rightTap");
+        if(getGameTime() - lastTap < dashRate)
+        {
+            vel.x = dashSpeed;
+        }
+        blob.set_s32("rightTap",getGameTime());
+    }
+    if(blob.isKeyJustPressed(key_left))
+    {
+        s32 lastTap = blob.get_s32("leftTap");
+        if(getGameTime() - lastTap < dashRate)
+        {
+            vel.x = -dashSpeed;
+        }
+        blob.set_s32("leftTap",getGameTime());
+    }
+    if(blob.isKeyJustPressed(key_up))
+    {
+        s32 lastTap = blob.get_s32("upTap");
+        if(getGameTime() - lastTap < dashRate)
+        {
+            vel.y = -dashSpeed;
+        }
+        blob.set_s32("upTap",getGameTime());
+    }
+    if(blob.isKeyJustPressed(key_down))
+    {
+        s32 lastTap = blob.get_s32("downTap");
+        if(getGameTime() - lastTap < dashRate)
+        {
+            vel.y = dashSpeed;
+        }
+        blob.set_s32("downTap",getGameTime());
+    }
+    
+
+
+    if(blob.isKeyPressed(key_right))
+    {
+        deltaV += Vec2f(speed,0);
+    }
+    if(blob.isKeyPressed(key_left))
+    {
+        deltaV += Vec2f(-speed,0);
+    }
+
+    if(blob.isKeyPressed(key_up))
+    {
+        deltaV += Vec2f(0,-speed/2);
+    }
+    if(blob.isKeyPressed(key_down))
+    {
+        deltaV += Vec2f(0,speed/2);
+    }
+
+    if(blob.getPosition().y/8 >=  getMap().tilemapheight - 2)
+    {
+        vel = Vec2f(vel.x,-1);
+    }
+
+    blob.setVelocity(vel + (deltaV*acellBoost));
 
 	CleanUp(this, blob, moveVars);
 }
 
-//some specific helpers
 
-const f32 offsetheight = -1.2f;
-bool canVault(CBlob@ blob, CMap@ map, f32 movingside)
-{
-	Vec2f pos = blob.getPosition();
 
-	f32 tilesize = map.tilesize;
-	if (!map.isTileSolid(Vec2f(pos.x + movingside * tilesize, pos.y + tilesize * (offsetheight))) &&
-	        !map.isTileSolid(Vec2f(pos.x + movingside * tilesize, pos.y + tilesize * (offsetheight + 1))) &&
-	        map.isTileSolid(Vec2f(pos.x + movingside * tilesize, pos.y + tilesize * (offsetheight + 2))))
-	{
-
-		bool hasRayFace = map.rayCastSolid(pos + Vec2f(0, -6), pos + Vec2f(movingside * 12, -6));
-		if (hasRayFace)
-			return false;
-
-		bool hasRayFeet = map.rayCastSolid(pos + Vec2f(0, 6), pos + Vec2f(movingside * 12, 6));
-
-		if (hasRayFeet)
-			return true;
-
-		//TODO: fix flags sync and hitting so we dont have to do this
-		{
-			return !checkForSolidMapBlob(map, pos + Vec2f(movingside * 12, -6)) &&
-			       checkForSolidMapBlob(map, pos + Vec2f(movingside * 12, 6));
-		}
-	}
-	return false;
-}
 
 //cleanup all vars here - reset clean slate for next frame
 
 void CleanUp(CMovement@ this, CBlob@ blob, SpaceshipMoveVars@ moveVars)
 {
 	//reset all the vars here
-	moveVars.jumpFactor = 1.0f;
+	moveVars.flySpeed = 1.0f;
 	moveVars.flyFactor = 1.0f;
 	moveVars.stoppingFactor = 1.0f;
-	moveVars.wallsliding = false;
-	moveVars.canVault = true;
-}
-
-//TODO: fix flags sync and hitting so we dont need this
-bool checkForSolidMapBlob(CMap@ map, Vec2f pos)
-{
-	CBlob@ _tempBlob; CShape@ _tempShape;
-	@_tempBlob = map.getBlobAtPosition(pos);
-	if (_tempBlob !is null && _tempBlob.isCollidable())
-	{
-		@_tempShape = _tempBlob.getShape();
-		if (_tempShape.isStatic())
-		{
-			if (_tempBlob.getName() == "wooden_platform")
-			{
-				f32 angle = _tempBlob.getAngleDegrees();
-				if (angle > 180)
-					angle -= 360;
-				angle = Maths::Abs(angle);
-				if (angle < 30 || angle > 150)
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-	}
-
-	return false;
 }
