@@ -1,6 +1,6 @@
-// Runner Movement Walking
+// Spaceship Movement
 
-#include "RunnerCommon.as"
+#include "SpaceshipCommon.as"
 #include "MakeDustParticle.as";
 #include "FallDamageCommon.as";
 #include "KnockedCommon.as";
@@ -54,32 +54,6 @@ void onTick(CMovement@ this)
 		{
 			blob.Untag(fallscreamtag);
 		}
-
-		/* unfortunately, this doesn't work with archer bow draw stuff;
-			might need to bind separate sounds cause this solution is much better.
-
-			if(vel.y > BaseFallSpeed() * 1.1f)
-			{
-				if(!blob.hasTag(fallscreamtag))
-				{
-					blob.Tag(fallscreamtag);
-
-					CSprite@ sprite = blob.getSprite();
-
-					sprite.SetEmitSoundVolume(1.0f);
-					sprite.SetEmitSound( "man_scream.ogg" );
-					sprite.SetEmitSoundPaused( false );
-					sprite.RewindEmitSound();
-				}
-			}
-		}
-		else
-		{
-			blob.Untag(fallscreamtag);
-			CSprite@ sprite = blob.getSprite();
-
-			sprite.SetEmitSoundPaused( true );
-		}*/
 	}
 
 	if (onground || blob.isInWater())  //also reset when vaulting
@@ -90,129 +64,8 @@ void onTick(CMovement@ this)
 		moveVars.fallCount = -1;
 	}
 
-	// ladder - overrides other movement completely
-	if (blob.isOnLadder() && !blob.isAttached() && !blob.isOnGround() && !isknocked)
-	{
-		shape.SetGravityScale(0.0f);
-		Vec2f ladderforce;
-
-		if (up)
-		{
-			ladderforce.y -= 1.0f;
-		}
-
-		if (down)
-		{
-			ladderforce.y += 1.2f;
-		}
-
-		if (left)
-		{
-			ladderforce.x -= 1.0f;
-		}
-
-		if (right)
-		{
-			ladderforce.x += 1.0f;
-		}
-
-		blob.AddForce(ladderforce * moveVars.overallScale * 100.0f);
-		//damp vel
-		Vec2f vel = blob.getVelocity();
-		vel *= 0.05f;
-		blob.setVelocity(vel);
-
-		moveVars.jumpCount = -1;
-		moveVars.fallCount = -1;
-
-		CleanUp(this, blob, moveVars);
-		return;
-	}
-
 	shape.SetGravityScale(0.0f);
 	shape.getVars().onladder = false;
-
-	//swimming - overrides other movement partially
-	if (blob.isInWater() && !isknocked)
-	{
-		CMap@ map = getMap();
-
-		const f32 swimspeed = moveVars.swimspeed;
-		const f32 swimforce = moveVars.swimforce;
-		const f32 edgespeed = moveVars.swimspeed * moveVars.swimEdgeScale;
-
-		Vec2f waterForce;
-
-		moveVars.jumpCount = 50;
-
-		//up and down
-		if (up)
-		{
-			if (vel.y > -swimspeed)
-			{
-				if (!map.isInWater(pos + Vec2f(0, -8)))
-				{
-					waterForce.y -= 0.6f;
-				}
-				else
-				{
-					waterForce.y -= 0.8f;
-				}
-			}
-
-			// more push near ledge
-			if (vel.y > -(swimspeed * 3.3))
-			{
-				if (blob.isOnWall())
-				{
-					moveVars.jumpCount = 0;
-
-					if (blob.isOnMap())
-					{
-						waterForce.y -= 2.0f;
-					}
-					else
-					{
-						waterForce.y -= 1.5f;
-					}
-				}
-			}
-		}
-
-		if (down && vel.y < swimspeed)
-		{
-			waterForce.y += 1;
-		}
-
-		//left and right
-		if (left && vel.x > -swimspeed)
-		{
-			waterForce.x -= 1;
-		}
-
-		if (right && vel.x < swimspeed)
-		{
-			waterForce.x += 1;
-		}
-
-		waterForce *= swimforce * moveVars.overallScale;
-		blob.AddForce(waterForce);
-
-
-		if (!blob.isOnGround() && !blob.isOnLadder())
-		{
-			CleanUp(this, blob, moveVars);
-			return;				//done for swimming -----------------------
-
-		}
-		else
-		{
-			moveVars.walkFactor *= 0.2f;
-			moveVars.jumpFactor *= 0.5f;
-		}
-	}
-
-	//otherwise, do normal movement :)
 
 	//walljumping, wall running and wall sliding
 
@@ -540,7 +393,7 @@ void onTick(CMovement@ this)
 		}
 	}
 
-	//walking & stopping
+	//flying & stopping
 
 	bool stop = true;
 	if (!onground)
@@ -563,24 +416,24 @@ void onTick(CMovement@ this)
 		{
 			if (carryBlob.hasTag("medium weight"))
 			{
-				moveVars.walkFactor *= 0.8f;
+				moveVars.flyFactor *= 0.8f;
 				moveVars.jumpFactor *= 0.8f;
 			}
 			else if (carryBlob.hasTag("heavy weight"))
 			{
-				moveVars.walkFactor *= 0.6f;
+				moveVars.flyFactor *= 0.6f;
 				moveVars.jumpFactor *= 0.5f;
 			}
 			else if (carryBlob.hasTag("super heavy weight"))
 			{
-				moveVars.walkFactor *= 0.4f;
+				moveVars.flyFactor *= 0.4f;
 				moveVars.jumpFactor *= 0.0f;
 			}
 		}
 
 		bool facingleft = blob.isFacingLeft();
 		bool stand = blob.isOnGround() || blob.isOnLadder();
-		Vec2f walkDirection;
+		Vec2f flyDirection;
 		const f32 turnaroundspeed = 1.3f;
 		const f32 normalspeed = 1.0f;
 		const f32 backwardsspeed = 0.8f;
@@ -589,15 +442,15 @@ void onTick(CMovement@ this)
 		{
 			if (vel.x < -0.1f)
 			{
-				walkDirection.x += turnaroundspeed;
+				flyDirection.x += turnaroundspeed;
 			}
 			else if (facingleft)
 			{
-				walkDirection.x += backwardsspeed;
+				flyDirection.x += backwardsspeed;
 			}
 			else
 			{
-				walkDirection.x += normalspeed;
+				flyDirection.x += normalspeed;
 			}
 		}
 
@@ -605,15 +458,15 @@ void onTick(CMovement@ this)
 		{
 			if (vel.x > 0.1f)
 			{
-				walkDirection.x -= turnaroundspeed;
+				flyDirection.x -= turnaroundspeed;
 			}
 			else if (!facingleft)
 			{
-				walkDirection.x -= backwardsspeed;
+				flyDirection.x -= backwardsspeed;
 			}
 			else
 			{
-				walkDirection.x -= normalspeed;
+				flyDirection.x -= normalspeed;
 			}
 		}
 
@@ -624,13 +477,13 @@ void onTick(CMovement@ this)
 		{
 			if (left_or_right)
 			{
-				lim = moveVars.walkSpeed;
+				lim = moveVars.flySpeed;
 				if (!onground)
 				{
-					lim = moveVars.walkSpeedInAir;
+					lim = moveVars.flySpeedInAir;
 				}
 
-				lim *= moveVars.walkFactor * Maths::Abs(walkDirection.x);
+				lim *= moveVars.flyFactor * Maths::Abs(flyDirection.x);
 			}
 
 			Vec2f stop_force;
@@ -641,11 +494,11 @@ void onTick(CMovement@ this)
 			if (moveVars.walljumped)
 			{
 				moveVars.stoppingFactor *= 0.5f;
-				moveVars.walkFactor *= 0.6f;
+				moveVars.flyFactor *= 0.6f;
 
 				//hack - fix gliding
 				if (vel.y > 0 && blob.hasTag("shielded"))
-					moveVars.walkFactor *= 0.6f;
+					moveVars.flyFactor *= 0.6f;
 			}
 
 			bool stopped = false;
@@ -672,10 +525,10 @@ void onTick(CMovement@ this)
 
 			if (!isknocked && ((absx < lim) || left && greater || right && !greater))
 			{
-				force *= moveVars.walkFactor * moveVars.overallScale * 30.0f;
+				force *= moveVars.flyFactor * moveVars.overallScale * 30.0f;
 				if (Maths::Abs(force) > 0.01f)
 				{
-					blob.AddForce(walkDirection * force);
+					blob.AddForce(flyDirection * force);
 				}
 			}
 		}
@@ -732,7 +585,7 @@ void CleanUp(CMovement@ this, CBlob@ blob, RunnerMoveVars@ moveVars)
 {
 	//reset all the vars here
 	moveVars.jumpFactor = 1.0f;
-	moveVars.walkFactor = 1.0f;
+	moveVars.flyFactor = 1.0f;
 	moveVars.stoppingFactor = 1.0f;
 	moveVars.wallsliding = false;
 	moveVars.canVault = true;

@@ -537,7 +537,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -1214504009://magic_missile
 		{
-			f32 orbspeed = 1.0f;
+			f32 orbspeed = 1.8f;
 			u8 spreadarc = 5;
 			//bool lowboid = false;
 
@@ -1667,7 +1667,6 @@ void CastNegentropy( CBlob@ this )
 			velocity.Normalize();
 			velocity *= 5;
 			b.server_Hit(this, this.getPosition(), velocity, 1.0f, Hitters::water, true);
-			continue;
 		}
 		
 		if(kill)

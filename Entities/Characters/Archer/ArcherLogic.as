@@ -39,6 +39,8 @@ void onInit(CBlob@ this)
 	this.addCommandID("pickup arrow");
 	this.getShape().getConsts().net_threshold_multiplier = 0.5f;
 
+	this.push("names to activate", "nuke");
+
 	this.addCommandID(grapple_sync_cmd);
 
 	SetHelp(this, "help self hide", "archer", getTranslatedString("Hide    $KEY_S$"), "", 1);

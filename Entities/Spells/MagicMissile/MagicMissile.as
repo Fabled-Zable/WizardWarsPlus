@@ -4,8 +4,8 @@
 
 const int LIFETIME = 10;
 const f32 SEARCH_RADIUS = 128.0f;
-const f32 HOMING_FACTOR = 2.2f;
-const f32 CORRECTION_FACTOR = 0.2f;
+const f32 HOMING_FACTOR = 2.1f;
+const f32 CORRECTION_FACTOR = 0.1f;
 const int HOMING_DELAY = 15;	
 
 
@@ -14,7 +14,6 @@ void onInit(CBlob@ this)
 	this.Tag("phase through spells");
     this.Tag('counterable');
     this.getShape().SetGravityScale(0);
-    this.set_f32("targetAngle",0);
 	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath) ); //dont collide with edge of the map
 
     if(isServer())
@@ -34,7 +33,7 @@ void onInit(CBlob@ this)
 void onTick( CBlob@ this)
 {
 	//trail
-	if ( this.getTickSinceCreated() % 3 == 0 )
+	if ( this.getTickSinceCreated() % 2 == 0 )
 	{
 		makeSmokeParticle(this);
 	}
@@ -49,6 +48,7 @@ void onTick( CBlob@ this)
 	{
 		Vec2f accel = this.getVelocity();
 		accel.Normalize();
+		this.getShape().setDrag(0.01f);
 		this.AddForce(accel*0.4f);
 		return;
 	}
@@ -67,6 +67,7 @@ void onTick( CBlob@ this)
 		norm -= (thisVel * CORRECTION_FACTOR);
 
         //Vec2f newVelocity = this.getVelocity() + (norm * HOMING_FACTOR);
+		this.getShape().setDrag(1.0f);
         this.AddForce(norm*HOMING_FACTOR);
     }
 

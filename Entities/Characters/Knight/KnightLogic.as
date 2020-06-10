@@ -89,6 +89,7 @@ void onInit(CBlob@ this)
 	this.set_s32("charge", 0);
 
 	this.push("names to activate", "keg");
+	this.push("names to activate", "nuke");
 
 	this.set_u8("bomb type", 255);
 	for (uint i = 0; i < bombTypeNames.length; i++)

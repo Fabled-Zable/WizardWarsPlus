@@ -4,7 +4,7 @@
 #include "TextureCreation.as";
 #include "ShieldCommon.as";
 
-const f32 RANGE = 180.0f;
+const f32 RANGE = 150.0f;
 const f32 DAMAGE = 2.0f;
 
 const f32 LIFETIME = 0.5f;
@@ -246,7 +246,7 @@ void onTick( CBlob@ this)
 						{
 							CBlob@ ownerBlob = ownerPlayer.getBlob();
 							if ( ownerBlob !is null )
-								ownerBlob.server_Heal(DAMAGE * extraDamage);
+								ownerBlob.server_Heal(DAMAGE * 0.5f);
 						}
 						
 						damageDealt = true;
