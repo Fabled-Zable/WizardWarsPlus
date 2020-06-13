@@ -1,8 +1,7 @@
 #include "/Entities/Common/Attacks/Hitters.as";
 
-const f32 hit_amount_ground = 1.0f;
+const f32 hit_amount_ground = 0.5f;
 const f32 hit_amount_air = 3.0f;
-const f32 hit_amount_cata = 10.0f;
 
 const int bomb_timer = 70;
 const int min_detonation_time = 18;
@@ -16,7 +15,6 @@ void onInit( CBlob @ this )
 	this.Tag("ignore fall");
     
     // damage
-    this.set_f32("hit dmg modifier", hit_amount_ground);
 	this.set_f32("map dmg modifier", 0.0f); //handled in this script
 	this.set_u8("hurtoncollide hitter", Hitters::boulder);
 
@@ -54,7 +52,7 @@ void onTick( CBlob@ this)
 	{
 		this.SetLight(true);
 		this.SetLightRadius(24.0f);
-		this.SetLightColor(SColor(255, 255, 255, 0));
+		this.SetLightColor(SColor( 255, 255, 150, 0));
 		this.set_string("custom_explosion_sound", "FireBlast2.ogg");
 		thisSprite.PlaySound("FireBlast4.ogg", 0.8f, 1.0f + XORRandom(20)/10.0f);
 		thisSprite.SetZ(1000.0f);
@@ -65,16 +63,9 @@ void onTick( CBlob@ this)
 	f32 angle = velocity.Angle();	
 	thisSprite.ResetTransform();
 	thisSprite.RotateBy( -angle, Vec2f(0,0) );
-
-    SColor lightColor = SColor( 255, 255, 150, 0);
-    this.SetLightColor( lightColor );
-
-	//normal mode
-	if (!this.isOnGround() && !this.isInWater())
-	{
-		this.set_f32("hit dmg modifier", hit_amount_air);
-	}
 	
+	makeSmokePuff(this);
+
 	if ( this.get_bool("bomb armed") )
 	{
 		f32 bombTimer = this.get_f32("bomb timer");
@@ -89,25 +80,30 @@ void onTick( CBlob@ this)
 	
 	if ( velocity.getLength() == 0 && this.getTickSinceCreated() > min_detonation_time )
 		Boom( this );
-
-	makeSmokePuff(this);
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
-	if ( solid )
-	{
-		this.set_bool("bomb armed", true);
-		this.getSprite().PlaySound("FireBlast11.ogg", 0.8f, 1.0f + XORRandom(20)/10.0f);
-	}
-	
 	if (blob !is null)
 	{
 		if ( (blob.hasTag("player") && isEnemy(this, blob)) && this.getTickSinceCreated() > min_detonation_time )
 		{
-			this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.5f, Hitters::fire, true);
+			if (!this.isOnGround() && !this.isInWater() && !this.get_bool("bomb armed"))
+			{
+				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), hit_amount_air, Hitters::fire, true);
+			}
+			else
+			{
+				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), hit_amount_ground, Hitters::fire, true);
+			}
 			Boom( this );
 		}
+	}
+	if(this is null){return;}
+	if ( solid )
+	{
+		this.set_bool("bomb armed", true);
+		this.getSprite().PlaySound("FireBlast11.ogg", 0.8f, 1.0f + XORRandom(20)/10.0f);
 	}
 }
 

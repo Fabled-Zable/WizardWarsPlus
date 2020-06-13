@@ -9,7 +9,7 @@ void onTick(CBlob@ this)
 	{
 		this.set_u32("remainingTime",(5*30) + getGameTime());//5 seconds from now
 		this.set_u32("timeActive", 0); //counter system
-		this.set_f32("effectRadius",9.6f);// increasing radius
+		this.set_f32("effectRadius",9.7f);// increasing radius
 		this.set_u32("attackRate",2);
 		this.getSprite().AddScript("VoltageField.as");//need to do this to get the sprite hooks to run
 
@@ -64,19 +64,21 @@ void onTick(CBlob@ this)
 		if (target.hasTag("counterable"))
 		{
 			Vec2f targetVel = target.getVelocity();
-			if(targetVel == Vec2f(0,0)){continue;}
-			Vec2f targetNorm = targetVel;
-			targetNorm.Normalize();
-			float direcAngle = norm.getAngle();
-			float targetAngle = targetNorm.getAngle();
-			float difference = targetAngle-direcAngle;
-			if (difference > 90 || difference < -90)
+			if(targetVel != Vec2f(0,0))
 			{
-				targetVel.RotateByDegrees(difference);
-				if(target is null){continue;}
-				target.setVelocity(targetVel);
+				Vec2f targetNorm = targetVel;
+				targetNorm.Normalize();
+				float direcAngle = norm.getAngle();
+				float targetAngle = targetNorm.getAngle();
+				float difference = targetAngle-direcAngle;
+				if (difference > 90 || difference < -90)
+				{
+					targetVel.RotateByDegrees(difference);
+					if(target is null){continue;}
+					target.setVelocity(targetVel);
+				}
+				damage = 0.6;
 			}
-			damage = 0.6;
 		}
 
 		if(target is null){continue;}
@@ -100,15 +102,13 @@ void onTick(CSprite@ this)
 		
 		b.set_bool("sphereSetupDone",true);
 		layer.ScaleBy(Vec2f(0.15f,0.15f));
+		layer.setRenderStyle(RenderStyle::additive);
 	}
-
 	
 	CSpriteLayer@ layer = this.getSpriteLayer("sphere");
 	layer.ResetTransform();
-	layer.setRenderStyle(RenderStyle::additive);
 	{layer.SetFrame(layer.getFrame()+1);}
 	layer.ScaleBy(Vec2f(1.01f,1.01f));
-	layer.SetFacingLeft(true);
 
 	CParticle@ p = ParticlePixelUnlimited(
 		b.getInterpolatedPosition(), //position
