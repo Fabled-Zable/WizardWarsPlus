@@ -21,7 +21,10 @@ void onTick(CBlob@ this)
 	if(this !is null)
 	{
 		if(this.hasTag("dead") ) //removes script if user dies
-		{cleanUp(this);}
+		{
+			cleanUp(this);
+			return;
+		}
 	}
 
 	u16 remainingTime = this.get_u32("remainingTime");
@@ -30,6 +33,7 @@ void onTick(CBlob@ this)
 		if(this !is null)
 		{
 			cleanUp(this);
+			return;
 		}
 	}
 
@@ -60,6 +64,7 @@ void onTick(CBlob@ this)
 		if (target.hasTag("counterable"))
 		{
 			Vec2f targetVel = target.getVelocity();
+			if(targetVel == Vec2f(0,0)){continue;}
 			Vec2f targetNorm = targetVel;
 			targetNorm.Normalize();
 			float direcAngle = norm.getAngle();
@@ -68,11 +73,13 @@ void onTick(CBlob@ this)
 			if (difference > 90 || difference < -90)
 			{
 				targetVel.RotateByDegrees(difference);
+				if(target is null){continue;}
 				target.setVelocity(targetVel);
 			}
 			damage = 0.6;
 		}
 
+		if(target is null){continue;}
 		if (voltageFieldDamage(target))
 		{
 			this.server_Hit(target, target.getPosition(), norm*3,damage,Hitters::water);// hit em

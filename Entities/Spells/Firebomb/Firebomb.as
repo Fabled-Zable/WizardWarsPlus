@@ -1,7 +1,4 @@
-#include "/Entities/Common/Attacks/Hitters.as";	   
-#include "/Entities/Common/Attacks/LimitedAttacks.as";
-
-const int pierce_amount = 8;
+#include "/Entities/Common/Attacks/Hitters.as";
 
 const f32 hit_amount_ground = 1.0f;
 const f32 hit_amount_air = 3.0f;
@@ -15,16 +12,8 @@ void onInit( CBlob @ this )
 	this.Tag("kill other spells");
 	this.Tag("counterable");
 
-    this.set_u8("launch team",255);
-    //this.server_setTeamNum(1);
 	this.Tag("medium weight");
 	this.Tag("ignore fall");
-    
-    LimitedAttack_setup(this);
-    
-    this.set_u8( "blocks_pierced", 0 );
-    u32[] tileOffsets;
-    this.set( "tileOffsets", tileOffsets );
     
     // damage
     this.set_f32("hit dmg modifier", hit_amount_ground);
@@ -79,15 +68,9 @@ void onTick( CBlob@ this)
 
     SColor lightColor = SColor( 255, 255, 150, 0);
     this.SetLightColor( lightColor );
-	//rock and roll mode
-	if (!this.getShape().getConsts().collidable)
-	{
-		Vec2f vel = this.getVelocity();
-		f32 angle = vel.Angle();
-		Slam( this, angle, vel, this.getShape().vellen * 1.5f );
-	}
+
 	//normal mode
-	else if (!this.isOnGround() && !this.isInWater())
+	if (!this.isOnGround() && !this.isInWater())
 	{
 		this.set_f32("hit dmg modifier", hit_amount_air);
 	}
@@ -168,17 +151,11 @@ void ExplodeWithFire(CBlob@ this)
 bool isOwnerBlob(CBlob@ this, CBlob@ target)
 {
 	//easy check
-	if (this.getDamageOwnerPlayer() is target.getPlayer())
-		return true;
-
-	if (!this.exists("explosive_parent")) { return false; }
-
-	return (target.getNetworkID() == this.get_u16("explosive_parent"));
+	return (this.getDamageOwnerPlayer() is target.getPlayer());
 }
 
 bool isEnemy( CBlob@ this, CBlob@ target )
 {
-	CBlob@ friend = getBlobByNetworkID(target.get_netid("brain_friend_id"));
 	return 
 	(
 		(
@@ -186,9 +163,6 @@ bool isEnemy( CBlob@ this, CBlob@ target )
 			(
 				target.hasTag("flesh") 
 				&& !target.hasTag("dead") 
-				&& (friend is null
-					|| friend.getTeamNum() != this.getTeamNum()
-					)
 			)
 		)
 		&& target.getTeamNum() != this.getTeamNum() 
@@ -292,110 +266,15 @@ void Boom( CBlob@ this )
 	smoke(this.getPosition(), 5);	
 	blast(this.getPosition(), 10);	
 	
-    this.server_SetHealth(-1.0f);
     this.server_Die();
 }
 
-void Slam( CBlob @this, f32 angle, Vec2f vel, f32 vellen )
-{
-	if(vellen < 0.1f)
-		return;
-
-	CMap@ map = this.getMap();
-	Vec2f pos = this.getPosition();
-    HitInfo@[] hitInfos;
-	u8 team = this.get_u8("launch team");
-
-    if (map.getHitInfosFromArc( pos, -angle, 30, vellen, this, false, @hitInfos ))
-    {
-        for (uint i = 0; i < hitInfos.length; i++)
-        {
-            HitInfo@ hi = hitInfos[i];
-            f32 dmg = 0.5f;
-
-            if (hi.blob is null) // map
-            {
-            	if (BoulderHitMap( this, hi.hitpos, hi.tileOffset, vel, dmg, Hitters::cata_boulder ))
-					return;
-            }
-			else if(team != u8(hi.blob.getTeamNum()))
-			{
-				this.server_Hit( hi.blob, pos, vel, dmg, Hitters::cata_boulder, true);
-				this.setVelocity(vel*0.9f); //damp
-			}
-        }
-    }
-
-	// chew through backwalls
-
-	Tile tile = map.getTile( pos );	 
-	if (map.isTileBackgroundNonEmpty( tile ) )
-	{			   
-		if (map.getSectorAtPosition( pos, "no build") !is null) {
-			return;
-		}
-		map.server_DestroyTile( pos + Vec2f( 7.0f, 7.0f), 10.0f, this );
-		map.server_DestroyTile( pos - Vec2f( 7.0f, 7.0f), 10.0f, this );
-	}
-}
-
-bool BoulderHitMap( CBlob@ this, Vec2f worldPoint, int tileOffset, Vec2f velocity, f32 damage, u8 customData )
-{
-    //check if we've already hit this tile
-    u32[]@ offsets;
-    this.get( "tileOffsets", @offsets );
-
-    if( offsets.find(tileOffset) >= 0 ) { return false; }
-
-    this.getSprite().PlaySound( "ArrowHitGroundFast.ogg" );
-    f32 angle = velocity.Angle();
-    CMap@ map = getMap();
-    TileType t = map.getTile(tileOffset).type;
-    u8 blocks_pierced = this.get_u8( "blocks_pierced" );
-    bool stuck = false;
-
-    if ( map.isTileCastle(t) || map.isTileWood(t) )
-    {
-		Vec2f tpos = this.getMap().getTileWorldPosition(tileOffset);
-		if (map.getSectorAtPosition( tpos, "no build") !is null) {
-			return false;
-		}
-
-		//make a shower of gibs here
-		
-        map.server_DestroyTile( tpos, 100.0f, this );
-        Vec2f vel = this.getVelocity();
-        this.setVelocity(vel*0.8f); //damp
-        this.push( "tileOffsets", tileOffset );
-
-        if (blocks_pierced < pierce_amount)
-        {
-            blocks_pierced++;
-            this.set_u8( "blocks_pierced", blocks_pierced );
-        }
-        else {
-            stuck = true;
-        }
-    }
-    else
-    {
-        stuck = true;
-    }
-
-	if (velocity.LengthSquared() < 5)
-		stuck = true;		
-
-	return stuck;
-}
-
-
-
-//sprite
+/*sprite
 
 void onInit( CSprite@ this )
 {
     this.animation.frame = (this.getBlob().getNetworkID()%4);
 	this.getCurrentScript().runFlags |= Script::remove_after_this;
 }
-
+*/
 

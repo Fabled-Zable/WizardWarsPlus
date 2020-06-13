@@ -149,37 +149,6 @@ bool doesCollideWithBlob( CBlob@ this, CBlob@ b )
 	); 
 }
 
-/*
-void onCollision( CBlob@ this, CBlob@ blob, bool solid )
-{	
-	if ( this is null )
-	{return;}
-
-	if ( solid && this.getTickSinceCreated() > (HOMING_DELAY*3) )
-	{
-		Explode( this );
-		this.server_Die();
-		return;
-	}
-	
-	if (blob !is null)
-	{
-		if ( (blob.hasTag("flesh") || blob.hasTag("kill other spells") || blob.hasTag("barrier")) && isEnemy(this, blob) )
-		{
-			f32 finalDamage = 1.0f;
-			f32 extraDamage = 0.0f;
-			if(blob.hasScript("BladedShell.as"))
-			{finalDamage = 0.0f;}
-			if(this.hasTag("extra_damage"))
-			{extraDamage = 0.4f;}
-			this.server_Hit(blob, blob.getPosition(), this.getVelocity(), (finalDamage + extraDamage) , Hitters::water, true);
-			Explode( this );
-			this.server_Die();
-		}
-	}
-}
-*/
-
 
 void makeSmokeParticle( CBlob@ this )
 {
@@ -197,21 +166,6 @@ void makeSmokeParticle( CBlob@ this )
 		p.Z = 300.0f;
 	}
 }
-
-
-/*
-void makeSmokePuff(CBlob@ this, const f32 velocity = 1.0f, const int smallparticles = 10, const bool sound = true)
-{
-	if (this is null)
-	{ return; }
-	if ( !isClient() )
-		return;
-	
-		f32 randomness = (XORRandom(32) + 32)*0.015625f * 0.5f + 0.75f;
-		Vec2f vel = getRandomVelocity( -90, velocity * randomness, 360.0f );
-		makeSmokeParticle(this, vel);
-}
-*/
 
 
 Random _blast_r(0x10002);
