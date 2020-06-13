@@ -1,6 +1,6 @@
-// Entropist logic
+// Frigate logic
 
-#include "EntropistCommon.as"
+#include "FrigateCommon.as"
 #include "PlayerPrefsCommon.as"
 #include "MagicCommon.as";
 #include "ThrowCommon.as"
@@ -17,16 +17,16 @@ const u8 rechargeSeconds = 1; //seconds for recharge
 
 void onInit( CBlob@ this )
 {
-	EntropistInfo entropist;
-	this.set("entropistInfo", @entropist);
+	FrigateInfo frigate;
+	this.set("frigateInfo", @frigate);
 	
 	ManaInfo manaInfo;
-	manaInfo.maxMana = EntropistParams::MAX_MANA;
-	manaInfo.manaRegen = EntropistParams::MANA_REGEN;
+	manaInfo.maxMana = FrigateParams::MAX_MANA;
+	manaInfo.manaRegen = FrigateParams::MANA_REGEN;
 	this.set("manaInfo", @manaInfo);
 
 	this.set_s8( "charge_time", 0 );
-	this.set_u8( "charge_state", EntropistParams::not_aiming );
+	this.set_u8( "charge_state", FrigateParams::not_aiming );
 	this.set_s32( "mana", 100 );
 	this.set_f32("gib health", -3.0f);
 	this.set_Vec2f("spell blocked pos", Vec2f(0.0f, 0.0f));
@@ -127,8 +127,8 @@ void onTick( CBlob@ this )
 		}
 	}		
 
-    EntropistInfo@ entropist;
-	if (!this.get( "entropistInfo", @entropist )) 
+    FrigateInfo@ frigate;
+	if (!this.get( "frigateInfo", @frigate )) 
 	{
 		return;
 	}
@@ -152,18 +152,18 @@ void onTick( CBlob@ this )
 
 	if (getGameTime() % (30*rechargeSeconds) == 0) //Pulse regeneration
 	{
-		s8 pulses = entropist.pulse_amount;
+		s8 pulses = frigate.pulse_amount;
         
 		if (pulses < 3)
 		{
-			entropist.pulse_amount += 1;
+			frigate.pulse_amount += 1;
         }
     }
 
 	/*if(getKnockedRemaining(this) > 0)
 	{
-		entropist.charge_state = 0;
-		entropist.charge_time = 0;
+		frigate.charge_state = 0;
+		frigate.charge_time = 0;
 		return;
 	}*/
 
@@ -190,7 +190,7 @@ void onTick( CBlob@ this )
 
 	if (this.isInInventory()) return;
 
-    ManageSpell( this, entropist, playerPrefsInfo, moveVars );
+    ManageSpell( this, frigate, playerPrefsInfo, moveVars );
 }
 
 void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
@@ -206,7 +206,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
         u8 charge_state = params.read_u8();
 		u8 spellID = params.read_u8();
 		
-        Spell spell = EntropistParams::spells[spellID];
+        Spell spell = FrigateParams::spells[spellID];
         Vec2f aimpos = params.read_Vec2f();
         CastSpell(this, charge_state, spell, aimpos);
 		
@@ -214,15 +214,15 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
     }
 	if (cmd == this.getCommandID("pulsed"))
 	{
-		EntropistInfo@ entropist;
-		if (!this.get( "entropistInfo", @entropist )) 
+		FrigateInfo@ frigate;
+		if (!this.get( "frigateInfo", @frigate )) 
 		{
 			return;
 		}
 
 		CastNegentropy(this);
 
-		entropist.pulse_amount -= 1;
+		frigate.pulse_amount -= 1;
 	}
 }
 

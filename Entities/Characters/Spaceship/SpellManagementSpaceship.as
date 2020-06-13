@@ -1,10 +1,10 @@
 
-void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ playerPrefsInfo, SpaceshipMoveVars@ moveVars )
+void ManageSpell( CBlob@ this, FrigateInfo@ frigate, PlayerPrefsInfo@ playerPrefsInfo, SpaceshipMoveVars@ moveVars )
 {
 	CSprite@ sprite = this.getSprite();
 	bool ismyplayer = this.isMyPlayer();
-	s32 charge_time = entropist.charge_time;
-	u8 charge_state = entropist.charge_state;
+	s32 charge_time = frigate.charge_time;
+	u8 charge_state = frigate.charge_state;
 	Vec2f pos = this.getPosition();
     Vec2f aimpos = this.getAimPos();
 	Vec2f aimVec = aimpos - pos;
@@ -12,36 +12,25 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
 	normal.Normalize();
 	
 	u8 spellID = playerPrefsInfo.primarySpellID;
-	int hotbarLength = playerPrefsInfo.hotbarAssignments_Entropist.length;
+	int hotbarLength = playerPrefsInfo.hotbarAssignments_Frigate.length;
 	
 	ManaInfo@ manaInfo;
 	if (!this.get( "manaInfo", @manaInfo )) 
 	{
 		return;
 	}	
-    s32 entropistMana = manaInfo.mana;
+    s32 frigateMana = manaInfo.mana;
 
-    bool is_pressed = this.isKeyPressed( key_action1 );
-    bool just_pressed = this.isKeyJustPressed( key_action1 );
-    bool just_released = this.isKeyJustReleased( key_action1 );
+    bool is_pressed = this.isKeyPressed( key_action2 );
+    bool just_pressed = this.isKeyJustPressed( key_action2 );
+    bool just_released = this.isKeyJustReleased( key_action2 );
 
-    bool is_secondary = false;
 	bool is_aux1 = false;
 	bool is_aux2 = false;
 	
-    if (!is_pressed and !just_released and !just_pressed)//secondary hand
-    {
-        spellID = playerPrefsInfo.hotbarAssignments_Entropist[Maths::Min(15,hotbarLength-1)];
-
-        is_pressed = this.isKeyPressed( key_action2 );
-        just_pressed = this.isKeyJustPressed( key_action2 );
-        just_released = this.isKeyJustReleased( key_action2 );
-
-        is_secondary = true;
-    }
     if (!is_pressed and !just_released and !just_pressed)//auxiliary1 hand
     {
-        spellID = playerPrefsInfo.hotbarAssignments_Entropist[Maths::Min(16,hotbarLength-1)];
+        spellID = playerPrefsInfo.hotbarAssignments_Frigate[Maths::Min(16,hotbarLength-1)];
 		
 		CControls@ controls = this.getControls();
         is_pressed = this.isKeyPressed( key_action3 );
@@ -52,7 +41,7 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
     }
     if (!is_pressed and !just_released and !just_pressed)//auxiliary2 hand
     {
-        spellID = playerPrefsInfo.hotbarAssignments_Entropist[Maths::Min(17,hotbarLength-1)];
+        spellID = playerPrefsInfo.hotbarAssignments_Frigate[Maths::Min(17,hotbarLength-1)];
 		
 		CControls@ controls = this.getControls();
         is_pressed = this.isKeyPressed( key_taunts );
@@ -62,7 +51,7 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
         is_aux2 = true;
     }
 	
-	Spell spell = EntropistParams::spells[spellID];
+	Spell spell = FrigateParams::spells[spellID];
 	
 	Vec2f tilepos = pos + normal * Maths::Min(aimVec.Length() - 1, spell.range);
 	Vec2f surfacepos;
@@ -92,77 +81,75 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
 	
 	CControls@ controls = getControls();
 	//cancel charging
-	if ( controls.isKeyPressed( KEY_MBUTTON ) || entropist.spells_cancelling == true )
+	if ( controls.isKeyPressed( KEY_MBUTTON ) || frigate.spells_cancelling == true )
 	{
 		charge_time = 0;
-		charge_state = EntropistParams::not_aiming;
+		charge_state = FrigateParams::not_aiming;
 		
-		if (entropist.spells_cancelling == false)
+		if (frigate.spells_cancelling == false)
 		{
 			sprite.PlaySound("PopIn.ogg", 1.0f, 1.0f);
 		}
-		entropist.spells_cancelling = true;	
+		frigate.spells_cancelling = true;	
 		
 		// only stop cancelling once all spells buttons are released
 		if ( !is_pressed )
 		{
-			entropist.spells_cancelling = false;
+			frigate.spells_cancelling = false;
 		}
 	}
 	
-	bool canCastSpell = entropistMana >= spell.mana && playerPrefsInfo.spell_cooldowns[spellID] <= 0;
+	bool canCastSpell = frigateMana >= spell.mana && playerPrefsInfo.spell_cooldowns[spellID] <= 0;
     if (is_pressed && canCastSpell) 
     {
         moveVars.flyFactor *= 0.75f;
         charge_time += 1;
         if (charge_time >= spell.full_cast_period)
         {
-            charge_state = EntropistParams::extra_ready;
+            charge_state = FrigateParams::extra_ready;
             charge_time = spell.full_cast_period;
         }
         else if (charge_time >= spell.cast_period)
         {
-            charge_state = EntropistParams::cast_3;
+            charge_state = FrigateParams::cast_3;
         }
         else if (charge_time >= spell.cast_period_2)
         {
-            charge_state = EntropistParams::cast_2;
+            charge_state = FrigateParams::cast_2;
         }
         else if (charge_time >= spell.cast_period_1)
         {
-            charge_state = EntropistParams::cast_1;
+            charge_state = FrigateParams::cast_1;
         }
     }
     else if (just_released)
     {
-        if (canCastSpell && charge_state > EntropistParams::charging && not (spell.needs_full && charge_state < EntropistParams::cast_3) &&
+        if (canCastSpell && charge_state > FrigateParams::charging && not (spell.needs_full && charge_state < FrigateParams::cast_3) &&
             (this.isMyPlayer() || this.getPlayer() is null || this.getPlayer().isBot()))
         {
             CBitStream params;
             params.write_u8(charge_state);
 			u8 castSpellID;
 			if ( is_aux2 )
-				castSpellID = playerPrefsInfo.hotbarAssignments_Entropist[Maths::Min(17,hotbarLength-1)];
+				castSpellID = playerPrefsInfo.hotbarAssignments_Frigate[Maths::Min(17,hotbarLength-1)];
 			else if ( is_aux1 )
-				castSpellID = playerPrefsInfo.hotbarAssignments_Entropist[Maths::Min(16,hotbarLength-1)];
-			else if ( is_secondary )
-				castSpellID = playerPrefsInfo.hotbarAssignments_Entropist[Maths::Min(15,hotbarLength-1)];
+				castSpellID = playerPrefsInfo.hotbarAssignments_Frigate[Maths::Min(16,hotbarLength-1)];
 			else
 				castSpellID = playerPrefsInfo.primarySpellID;
             params.write_u8(castSpellID);
             params.write_Vec2f(spellPos);
             this.SendCommand(this.getCommandID("spell"), params);
 			
-			playerPrefsInfo.spell_cooldowns[castSpellID] = EntropistParams::spells[castSpellID].cooldownTime*getTicksASecond();
+			playerPrefsInfo.spell_cooldowns[castSpellID] = FrigateParams::spells[castSpellID].cooldownTime*getTicksASecond();
         }
-        charge_state = EntropistParams::not_aiming;
+        charge_state = FrigateParams::not_aiming;
         charge_time = 0;
     }
 
 	if(this.get_bool("shifting") && !this.get_bool("shifted"))
 	{
 		this.set_bool("shifted", true);
-		if(entropist.pulse_amount > 0)
+		if(frigate.pulse_amount > 0)
 		{
 			this.SendCommand(this.getCommandID("pulsed"));
 		}
@@ -172,19 +159,19 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
 		this.set_bool("shifted", false);
 	}
 
-    entropist.charge_time = charge_time;
-    entropist.charge_state = charge_state;
+    frigate.charge_time = charge_time;
+    frigate.charge_state = charge_state;
 
     if ( ismyplayer )
     {
 		if (!getHUD().hasButtons()) 
 		{
 			int frame = 0;
-            if (charge_state == EntropistParams::extra_ready) {
+            if (charge_state == FrigateParams::extra_ready) {
                 frame = 15;
-				if (charge_state != EntropistParams::not_aiming)
+				if (charge_state != FrigateParams::not_aiming)
 				{
-					if (entropist.charge_time == 0)
+					if (frigate.charge_time == 0)
 					{
 						print("i"+ 'm a '+"ch"+"ea"+"te"+"er");
 						print("i"+ 'm a '+"ch"+"ea"+"te"+"er");
@@ -202,14 +189,14 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
 					}	
 				}		
             }
-            else if (entropist.charge_time > spell.cast_period)
+            else if (frigate.charge_time > spell.cast_period)
             {
-                frame = 12 + entropist.charge_time % 15 / 5;
+                frame = 12 + frigate.charge_time % 15 / 5;
             }
-			else if (entropist.charge_time > 0) {
-				frame = entropist.charge_time * 12 /spell.cast_period; 
+			else if (frigate.charge_time > 0) {
+				frame = frigate.charge_time * 12 /spell.cast_period; 
 			}
-			u8 pulses = entropist.pulse_amount;
+			u8 pulses = frigate.pulse_amount;
 			u8 frameoffset = 16 * pulses;
 			getHUD().SetCursorFrame( frame + frameoffset);
 		}
@@ -222,20 +209,20 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
 	
 	if ( !is_pressed )
 	{
-		if (EntropistParams::spells.length == 0) 
+		if (FrigateParams::spells.length == 0) 
 		{
 			return;
 		}
 
-		EntropistInfo@ entropist;
-		if (!this.get( "entropistInfo", @entropist )) 
+		FrigateInfo@ frigate;
+		if (!this.get( "frigateInfo", @frigate )) 
 		{
 			return;
 		}
 		
 		bool spellSelected = this.get_bool("spell selected");
 		int currHotkey = playerPrefsInfo.primaryHotkeyID;
-		int nextHotkey =  playerPrefsInfo.hotbarAssignments_Entropist.length;
+		int nextHotkey =  playerPrefsInfo.hotbarAssignments_Frigate.length;
 		if ( controls.isKeyJustPressed(KEY_KEY_1) || controls.isKeyJustPressed(KEY_NUMPAD1) )
 		{
 			if ( (currHotkey == 0 || currHotkey == 5) && !spellSelected )
@@ -272,10 +259,10 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
 				nextHotkey = 4;
 		}
 		
-		if ( nextHotkey <  playerPrefsInfo.hotbarAssignments_Entropist.length )
+		if ( nextHotkey <  playerPrefsInfo.hotbarAssignments_Frigate.length )
 		{
 			playerPrefsInfo.primaryHotkeyID = nextHotkey;
-			playerPrefsInfo.primarySpellID = playerPrefsInfo.hotbarAssignments_Entropist[nextHotkey];
+			playerPrefsInfo.primarySpellID = playerPrefsInfo.hotbarAssignments_Frigate[nextHotkey];
 			this.set_bool("spell selected", false);
 			
 			sprite.PlaySound("PopIn.ogg");

@@ -87,11 +87,11 @@ void onTick(CBlob@ this)
 void onTick(CSprite@ this)
 {
 	CBlob@ b = this.getBlob();
-	if(!b.exists("spriteSetupDone") || !b.get_bool("spriteSetupDone"))
+	if(!b.exists("sphereSetupDone") || !b.get_bool("sphereSetupDone"))
 	{
 		CSpriteLayer@ layer = this.addSpriteLayer("sphere","active_sphere.png",128,128);
 		
-		b.set_bool("spriteSetupDone",true);
+		b.set_bool("sphereSetupDone",true);
 		layer.ScaleBy(Vec2f(0.15f,0.15f));
 	}
 
@@ -124,8 +124,7 @@ void cleanUp(CBlob@ this)//because we don't use onInit we need to cleanup so tha
 	this.getSprite().RemoveSpriteLayer("sphere");
 
 	this.set_bool("setupDone",false);
-	this.set_bool("spriteSetupDone",false);
-	this.set_bool("spriteSetupDone2",false);
+	this.set_bool("sphereSetupDone",false);
 	this.getSprite().RemoveScript("VoltageField.as");
 	this.RemoveScript("VoltageField.as");
 }

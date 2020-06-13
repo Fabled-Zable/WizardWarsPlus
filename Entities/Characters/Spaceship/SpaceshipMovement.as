@@ -124,16 +124,21 @@ void onTick(CMovement@ this)
 
     if(blob.isKeyPressed(key_up))
     {
-        deltaV += Vec2f(0,-speed/2);
+        deltaV += Vec2f(0,-speed*0.8);
     }
     if(blob.isKeyPressed(key_down))
     {
-        deltaV += Vec2f(0,speed/2);
+        deltaV += Vec2f(0,speed*0.8);
     }
 
     if(blob.getPosition().y/8 >=  getMap().tilemapheight - 2)
     {
         vel = Vec2f(vel.x,-1);
+    }
+
+    if(blob.getPosition().y <= 2)
+    {
+        vel = Vec2f(vel.x,1);
     }
 
     blob.setVelocity(vel + (deltaV*acellBoost));

@@ -9,6 +9,7 @@
 #include "DruidCommon.as"
 #include "SwordCasterCommon.as"
 #include "EntropistCommon.as"
+#include "FrigateCommon.as"
 
 #define CLIENT_ONLY
 
