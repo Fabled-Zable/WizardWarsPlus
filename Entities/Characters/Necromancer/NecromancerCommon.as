@@ -60,7 +60,7 @@ namespace NecromancerParams
 				SpellType::other, 25, 20, 0, 360.0f, true),
 							
 		Spell("leech", "Leech", 25, "Fire a short-ranged arc of dark energy which steals the life-force from foes and revitalizes the user.",
-				SpellType::other, 20, 40, 0, 150.0f, true),
+				SpellType::other, 20, 40, 0, 180.0f, true),
 				
 		Spell("force_of_nature", "Force of Nature", 27, "By invoking this spell, you call into being an orb of ghastly green light which destroys anything foolish enough to cross its path, including you!",
 				SpellType::other, 60, 10, 3, 360.0f, true),

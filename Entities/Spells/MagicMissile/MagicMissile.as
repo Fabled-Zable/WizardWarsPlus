@@ -86,7 +86,7 @@ void onTick( CBlob@ this)
                     damage = 0.2;
                 }
             }
-            this.server_Hit(target,target.getPosition(),this.getVelocity()*2,damage,Hitters::water);
+            this.server_Hit(target,target.getPosition(),this.getVelocity()*3,damage,Hitters::water);
 			blast(this, 4);
             this.server_Die();
         }

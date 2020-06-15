@@ -47,7 +47,11 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 				for(int i = 0; i < mushrooms.length; i++)
 				{
-					if(mushrooms[i].get_string("owner") == this.getPlayer().getUsername())
+					if (mushrooms[i] is null)
+					{continue;}
+					if (this.getPlayer() is null)
+					{break;}
+					if(mushrooms[i].getDamageOwnerPlayer() == this.getPlayer())
 					{
 						mushrooms[i].server_Die();
 						break;
@@ -61,7 +65,6 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					{
 						CBlob@ mush = server_CreateBlob("mushroom",this.getTeamNum(),Vec2f(aimpos.x,height) );
 						mush.SetDamageOwnerPlayer(this.getPlayer());
-						mush.set_string("owner",this.getPlayer().getUsername());
 						mush.set_s32("aliveTime",charge_state == 5 ? 1800 : 900); //if full charge last longer
 					}
 				}
@@ -307,7 +310,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			if(!isServer()){
 				return;
 			}
-			f32 orbDamage = 2.0f;
+			f32 orbDamage = 3.0f;
             f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;
 
 			if (charge_state == NecromancerParams::cast_1) {
