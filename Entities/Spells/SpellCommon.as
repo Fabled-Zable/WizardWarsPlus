@@ -51,7 +51,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					{continue;}
 					if (this.getPlayer() is null)
 					{break;}
-					if(mushrooms[i].getDamageOwnerPlayer() == this.getPlayer())
+					if(mushrooms[i].getDamageOwnerPlayer().getNetworkID() == this.getPlayer().getNetworkID())
 					{
 						mushrooms[i].server_Die();
 						break;
