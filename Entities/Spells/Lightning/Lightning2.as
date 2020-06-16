@@ -42,8 +42,14 @@ void onInit( CBlob @ this )
 
 void onTick( CBlob@ this)
 {
+	if(this is null)
+	{return;}
+	
 	CSprite@ thisSprite = this.getSprite();
-	CBlob@ caster = this.getDamageOwnerPlayer().getBlob();
+	CPlayer@ player = this.getDamageOwnerPlayer();
+	if (player is null)
+	{return;}
+	CBlob@ caster = player.getBlob();
 	if (caster is null)
 	{return;}
 	this.setPosition(caster.getPosition());
