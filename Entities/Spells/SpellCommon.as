@@ -744,6 +744,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orb.set_string("effect", "mana");
 					orb.set_u8("mana_used", manaUsed);
 					orb.set_u8("caster_mana", casterMana);
+					orb.set_bool("silent", false);
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -2026,7 +2027,7 @@ void Sidewind( CBlob@ blob, u16 windTime )
 	{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + XORRandom(1)/10.0f);}
 }
 
-void manaShot( CBlob@ blob, u8 manaUsed, u8 casterMana)
+void manaShot( CBlob@ blob, u8 manaUsed, u8 casterMana, bool silent = false)
 {	
 	if(blob !is null)
 	{
@@ -2046,7 +2047,11 @@ void manaShot( CBlob@ blob, u8 manaUsed, u8 casterMana)
 		{
 			manaInfo.mana += manaAmount;
 		}
-		blob.getSprite().PlaySound("manaShot.ogg", 1.8f, 1.0f + XORRandom(1)/10.0f);
+
+		if(!silent)
+		{
+			blob.getSprite().PlaySound("manaShot.ogg", 1.8f, 1.0f + XORRandom(1)/10.0f);
+		}
 	}
 }
 

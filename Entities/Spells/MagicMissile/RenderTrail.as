@@ -33,7 +33,12 @@ void onInit( CBlob @ this )
 	
 	Setup(SColor(220, 255, 254, 73), "rend1", IS_FUZZY);//Magic missles
 	Setup(SColor(220, 237, 237, 237), "rend2", IS_FUZZY);//Heal, slow, and haste
-	int cb_id = Render::addBlobScript(Render::layer_objects, this, "RenderTrail.as", "RenderTrailFunction");
+
+	if(!this.get_bool("silent"))
+	{
+		int cb_id = Render::addBlobScript(Render::layer_objects, this, "RenderTrail.as", "RenderTrailFunction");
+	}
+	
 	this.set_bool("initialized", false);
 	
 }

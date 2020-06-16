@@ -28,7 +28,7 @@ void onTick(CBlob@ this)
 
     if(reverse && this.get_u8("frame") < 1) this.server_Die();
 
-    if(!this.hasTag("finished") || !isClient()) return;
+    if(!this.hasTag("finished")) return;
 
     CMap@ map = getMap();
     CBlob@[] blobs;
@@ -39,22 +39,44 @@ void onTick(CBlob@ this)
         CBlob@ b = blobs[i];
 
         if(b.getPlayer() is null || b.getTeamNum() == this.getTeamNum()) continue;
-        Vec2f vel = b.getVelocity();
-        b.setVelocity(Vec2f(vel.x * 0.5,vel.y * 0.9));
-
-        if(getGameTime() % 20 != 0) return;
-
-        ManaInfo@ manaInfo;
-        if (!b.get( "manaInfo", @manaInfo )) {
-            return;
-        }
-        float mana = manaInfo.mana;
-        mana -= (fullCharge ? 4 : 3);
-
-        if(mana >= 0)
+        if(isClient())
         {
-            manaInfo.mana -= manaInfo.manaRegen + (fullCharge ? 4 : 3);
+            Vec2f vel = b.getVelocity();
+            b.setVelocity(Vec2f(vel.x * 0.5,vel.y * 0.9));
+
+            if(getGameTime() % 20 != 0) return;
+
+            ManaInfo@ manaInfo;
+            if (!b.get( "manaInfo", @manaInfo )) 
+            {
+                return;
+            }
+        
+            float mana = manaInfo.mana;
+            mana -= (fullCharge ? 4 : 3);
+
+            if(mana >= 0)
+            {
+                manaInfo.mana -= manaInfo.manaRegen + (fullCharge ? 4 : 3);
+            }
         }
+
+        if (isServer())
+		{
+            if(getGameTime() % 20 != 0) return;
+			CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), b.getPosition() ); 
+			if (orb !is null)
+			{
+				orb.set_string("effect", "mana");
+				orb.set_u8("mana_used", 1);
+				orb.set_u8("caster_mana", 3);
+                orb.set_bool("silent", true);
+
+				orb.IgnoreCollisionWhileOverlapped( this );
+                Vec2f orbVel = Vec2f( 0.1f , 0 ).RotateByDegrees(XORRandom(360));
+				orb.setVelocity( orbVel );
+			}
+		}
 
         if(isClient())
         {

@@ -45,25 +45,29 @@ void onTick( CBlob@ this)
 	Vec2f thisPos = this.getPosition();
 	Vec2f thisVel = this.getVelocity();
 
-	string effect = this.get_string("effect");
-	if(effect == "heal")
+	if(!this.exists("setupDone") || !this.get_bool("setupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
 	{
-		thisSprite.SetFrame(1);
-	}
-	if(effect == "haste")
-	{
-		thisSprite.SetFrame(0);
-	}
-	if(effect == "slow"){
-		thisSprite.SetFrame(3);
-	}
-	if(effect == "revive")
-	{
-		thisSprite.SetFrame(2);
-	}
-	if(effect == "mana")
-	{
-		thisSprite.SetFrame(4);
+		string effect = this.get_string("effect");
+		if(effect == "heal")
+		{
+			thisSprite.SetFrame(1);
+		}
+		if(effect == "haste")
+		{
+			thisSprite.SetFrame(0);
+		}
+		if(effect == "slow"){
+			thisSprite.SetFrame(3);
+		}
+		if(effect == "revive")
+		{
+			thisSprite.SetFrame(2);
+		}
+		if(effect == "mana")
+		{
+			thisSprite.SetFrame(4);
+		}
+		this.set_bool("setupDone",true);
 	}
 	
 	bool isDead = this.get_bool("dead");
@@ -76,7 +80,10 @@ void onTick( CBlob@ this)
 		this.SetLightRadius(24.0f);
 		SColor lightColor = SColor( 255, 255, 150, 0);
 		this.SetLightColor( lightColor );
-		thisSprite.PlaySound("GenericProjectile1.ogg", 0.8f, 1.0f + XORRandom(3)/10.0f);
+		if(!this.get_bool("silent"))
+		{
+			thisSprite.PlaySound("GenericProjectile1.ogg", 0.8f, 1.0f + XORRandom(3)/10.0f);
+		}
 		thisSprite.SetZ(500.0f);
 		
 		this.set_bool("initialized", true);
@@ -187,7 +194,7 @@ void onTick( CBlob@ this)
 					else if ( effectType == "haste" )
 						Haste(blob, this.get_u16("haste_time"));
 					else if ( effectType == "mana" )
-						manaShot(blob, this.get_u8("mana_used"), this.get_u8("caster_mana"));
+						manaShot(blob, this.get_u8("mana_used"), this.get_u8("caster_mana"), this.get_bool("silent"));
 					Die( this );
 				}
 				else if ( isEnemy(this, blob) && followsEnemies( this ) )	//curse status effects
