@@ -1419,7 +1419,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 39628416://no_teleport_barrier
 		{
-			u16 lifetime = 20;
+			u16 lifetime = 30;
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f dirNorm = (targetPos - this.getPosition());
