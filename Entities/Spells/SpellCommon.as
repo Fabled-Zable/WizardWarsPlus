@@ -1304,17 +1304,16 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 				Vec2f othVel = other.getVelocity(); //velocity of target shortcut
 
-				if(other.hasTag("flesh")) //only people and zombies
-				{
-					other.setVelocity( othVel + (castDir / 3)); //slight push using cast direction for convenience
-				}
-
 				if(other.hasTag("zombie")) //only zombies (extra)
 				{
 					other.setVelocity( othVel + (castDir * 2)); //strong push using cast direction for convenience
 				}
 
-				if(other.hasTag("counterable")) //set anything counterable to your own team, and reflect it.
+				if(other.hasTag("flesh")) //only people and zombies
+				{
+					other.setVelocity( othVel + (castDir / 3)); //slight push using cast direction for convenience
+				}
+				else if(other.hasTag("counterable")) //set anything counterable to your own team, and reflect it.
 				{
 					if (other.getName() == "executioner") //IF it's an executioner, since damageownerplayer doesn't work, delet and replace with a new projectile in the same place.
 					{
@@ -1332,11 +1331,15 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 						other.server_Die(); //this destroys the existing executioner
 
 					}
-					else if(!other.hasTag("flesh")) //anything that's not an executioner, or not actually made out of flesh, do as usual.
+					else //anything that's not an executioner, or not actually made out of flesh, do as usual.
 					{
 						other.server_setTeamNum(ownTeam);
 						other.SetDamageOwnerPlayer( this.getPlayer() ); //<<doesn't seem to work properly
-						other.setVelocity(-othVel);
+						float othVelAngle = othVel.getAngleDegrees();
+						float parryAngle = castDir.getAngleDegrees();
+						float redirectAngle = (othVelAngle-parryAngle) % 360;
+						othVel.RotateBy(redirectAngle);
+						other.setVelocity(othVel);
 					}
 				}
 			}
