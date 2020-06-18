@@ -126,7 +126,8 @@ void onTick( CBlob@ this)
 		
 		Vec2f thisVel = this.getVelocity();
 		moveVars.walkFactor *= 2.5f;
-		moveVars.jumpFactor *= 2.5f;		
+		moveVars.jumpFactor *= 2.5f;
+		moveVars.swimspeed *= 2.5f;		
 
 		//makeSmokeParticle(this, Vec2f(), "Smoke");
 		if ( sidewinding % 2 == 0 )
@@ -162,6 +163,7 @@ void onTick( CBlob@ this)
 			this.Sync("sidewinding", true);
 			this.getSprite().SetVisible(true);
 			this.getShape().getConsts().collidable = true;
+			moveVars.swimspeed = 1.2f;
 
 			SColor color = SColor(255,255,0,XORRandom(191));
 			for(int i = 0; i < 100; i ++)
