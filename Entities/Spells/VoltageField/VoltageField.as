@@ -50,8 +50,21 @@ void onTick(CBlob@ this)
 
 	map.getBlobsInRadius(this.getPosition(),effectRadius, @blobs);//get the blobs
 
+	u32 check = 0;
+
 	for(s32 i = 0; i < blobs.length(); i++)//itterate through blobs
 	{
+		if(check <= 25)
+		{
+			check++;
+		}
+		else
+		{
+			print("looped like an idiot");
+			break;
+			return;
+		}
+
 		CBlob@ target = @blobs[i];//setting target blob to a variable for readability
 		if(target is null){continue;}
 		if(target.getTeamNum() == this.getTeamNum()){continue;}//skip over like team numbers
