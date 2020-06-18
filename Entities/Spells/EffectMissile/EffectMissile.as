@@ -37,6 +37,7 @@ void onInit( CBlob @ this )
 	
 	this.set_bool("onCollision triggered", false);
 	this.set_netid("onCollision blob", 0);
+	this.set_bool("setupDone",false);
 }
 
 void onTick( CBlob@ this)

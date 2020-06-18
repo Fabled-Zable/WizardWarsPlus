@@ -11,7 +11,7 @@ void onInit( CBlob@ this )
     this.getShape().SetGravityScale( 0.0f );
 	this.getShape().getConsts().mapCollisions = false;
 	this.getSprite().SetZ(1450);// draw over ground
-    this.server_SetTimeToDie(60);
+    this.server_SetTimeToDie(180);
 
     this.SetLight( true );
 	this.SetLightRadius( 32.0f );

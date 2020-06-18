@@ -2,6 +2,7 @@
 
 void onInit(CBlob@ this)
 {
+    this.set_u8("frame", 0);
     this.SetLightRadius(effectRadius);
     this.SetLightColor(SColor(255,255,0,0));
     this.SetLight(true);
@@ -12,25 +13,27 @@ const int effectRadius = 8*10;
 void onTick(CBlob@ this)
 {
     bool fullCharge = this.hasTag("fullCharge");
+    bool reverse = this.hasTag("reverse");
 
+    if((!this.hasTag("finished") || reverse)  && getGameTime() % 2 == 0)
+    {
+        this.add_u8("frame", reverse ? -1 : 1);
+        if(this.get_u8("frame") == 29)
+        {
+            this.Tag("finished");
+        }
+    }
 
-    int frame = this.get_s8("frame");
-    if(getGameTime() % 2 == 0 && frame < 29 || this.hasTag("reverse"))
-    {
-        this.add_s8("frame",this.hasTag("reverse") ? -1 : 1);
-    }
-    else this.Tag("built");
-    if(frame < 0 && this.hasTag("reverse"))
-    {
-        this.server_Die();
-    }
+    if(reverse && this.get_u8("frame") < 1) this.server_Die();
+
+    if(!this.hasTag("finished")) return;
 
     Vec2f pos = this.getInterpolatedPosition();
     CMap@ map = getMap();
     CBlob@[] blobs;
     map.getBlobsInRadius(pos,effectRadius,@blobs);
 
-    if(getGameTime() % (fullCharge ? 5 : 10) == 0 && this.hasTag("built") && !this.hasTag("reverse"))
+    if(getGameTime() % (fullCharge ? 5 : 10) == 0 && !this.hasTag("reverse"))
     {
 
         for(float i = 0; i < blobs.length; i++)
@@ -101,8 +104,6 @@ void onInit(CSprite@ this)
     this.ScaleBy(Vec2f(1.4,1.4));
     //this.SetZ(0);
 
-    this.getBlob().set_s8("frame",0);
-
     this.PlaySound("circle_create.ogg",10);
     //this.setRenderStyle(RenderStyle::light);
 
@@ -115,10 +116,10 @@ void onTick(CSprite@ this)
     bool reverse = this.getBlob().hasTag("reverse");
     CBlob@ b = this.getBlob();
     CSpriteLayer@ scythes = this.getSpriteLayer("scythes");
-    if(b.get_s8("frame") != 29 || reverse)
+    if(b.get_u8("frame") != 29 || reverse)
     {
-        this.SetFrame(b.get_s8("frame"));
-        scythes.SetFrame(b.get_s8("frame"));
+        this.SetFrame(b.get_u8("frame"));
+        scythes.SetFrame(b.get_u8("frame"));
     }
     else
     {
