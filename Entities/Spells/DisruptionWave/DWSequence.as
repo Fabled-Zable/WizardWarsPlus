@@ -30,7 +30,7 @@ void onTick( CBlob@ this)
 		this.setVelocity(Vec2f(0,0));
 		
 		u16 takekeys;
-		takekeys = key_left | key_right | key_up | key_down | key_action1 | key_action2 | key_action3 | key_pickup;
+		takekeys = key_left | key_right | key_up | key_down | key_action1 | key_action2 | key_action3 | key_taunts | key_pickup;
 
 		this.DisableKeys(takekeys);
 		this.DisableMouse(true);

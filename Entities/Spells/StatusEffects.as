@@ -194,7 +194,7 @@ void onTick( CBlob@ this)
 
 		//this.DisableMouse(true);
 		u16 takekeys;
-		takekeys = key_action1 | key_action2 | key_action3;
+		takekeys = key_action1 | key_action2 | key_action3 | key_taunts;
 		this.DisableKeys(takekeys);
 
 		if ( stunned == 0 )
