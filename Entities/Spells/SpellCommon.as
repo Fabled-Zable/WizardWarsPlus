@@ -105,7 +105,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 
 			f32 orbspeed = NecromancerParams::shoot_max_vel;
-			f32 orbDamage = 2.0f;
+			f32 orbDamage = 1.0f;
             f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;//Is this condition true? yes is 1.2f and no is 1.0f
             
 			if (charge_state == NecromancerParams::cast_1) {

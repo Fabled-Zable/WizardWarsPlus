@@ -52,6 +52,12 @@ void onTick(CBlob@ this)
                 }
             }
         }
+
+        if ( this.getTeamNum() == 3 )
+        {
+            manaRegenRate *= 2;
+        }
+        
         this.set_u8("mana regen rate", manaRegenRate);//Set the mana regen rate
     }
 
