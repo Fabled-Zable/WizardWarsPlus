@@ -45,12 +45,15 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CBlob@[] mushrooms;
 				getBlobsByName("mushroom",@mushrooms);
 
+				if (this.getPlayer() is null)
+				{return;}
+
 				for(int i = 0; i < mushrooms.length; i++)
 				{
 					if (mushrooms[i] is null)
 					{continue;}
-					if (this.getPlayer() is null)
-					{break;}
+					if (mushrooms[i].getDamageOwnerPlayer() is null)
+					{continue;}
 					if(mushrooms[i].getDamageOwnerPlayer().getNetworkID() == this.getPlayer().getNetworkID())
 					{
 						mushrooms[i].server_Die();
