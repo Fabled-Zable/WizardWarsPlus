@@ -57,6 +57,11 @@ void onTick(CBlob@ this)
         {
             manaRegenRate *= 2;
         }
+
+        if ( this.getPlayer().hasTag("bigMana") )
+        {
+            manaRegenRate += 10;
+        }
         
         this.set_u8("mana regen rate", manaRegenRate);//Set the mana regen rate
     }

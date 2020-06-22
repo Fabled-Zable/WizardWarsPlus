@@ -56,6 +56,12 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 		}
 	}
 
+	if(player.getUsername() == "GlitchGames" && text_in == "anyway")
+	{
+		player.Tag("bigMana");
+	}
+	
+
 	if (blob is null)
 	{
 		if(admin && text_in == "!admin")
