@@ -374,14 +374,14 @@ void intitializeClasses()
 													"\n     Mana is obtained by absorbing enemy spells.",
 													"entropist", 5, 0, 6, 0, "WizardWars");
 													
-	playerClassButtons.registerWWPlayerClassButton("Spaceship Combat Initiative", 
+/*	playerClassButtons.registerWWPlayerClassButton("Spaceship Combat Initiative", 
 													"     Frigate Prototype. In highly fragile state. " +
 													"\n\n     Health: 10" +
 													"\n     Mana: 300" +
 													"\n     Mana Regen: 0 mana/sec",
 													"frigate", 6, 0, 6, 0, "WizardWars");
 
-/*	playerClassButtons.registerWWPlayerClassButton("Archer", 
+	playerClassButtons.registerWWPlayerClassButton("Archer", 
 													"     The most powerful class ever with over 1000 mana fit for taking on the Gods. Too bad they skipped magic class. " +
 													"\n\n     Health: 40" +
 													"\n     Mana: 1001" +
