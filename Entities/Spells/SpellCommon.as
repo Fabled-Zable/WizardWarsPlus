@@ -312,14 +312,16 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				return;
 			}
 			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
-			f32 orbDamage = 1.6f * extraDamage;
+			f32 orbDamage = 1.2f * extraDamage;
 
 			if (charge_state == NecromancerParams::extra_ready) {
 				orbDamage *= 1.5f;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos- orbPos);
+			orbVel.Normalize();
+			orbVel *= orbspeed;
 
 			CBlob@ orb = server_CreateBlob( "fire_sprite" );
 			if (orb !is null)
