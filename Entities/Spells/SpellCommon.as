@@ -321,7 +321,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
 			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
-			orbVel *= orbspeed;
+			orbVel *= 2;
 
 			CBlob@ orb = server_CreateBlob( "fire_sprite" );
 			if (orb !is null)
