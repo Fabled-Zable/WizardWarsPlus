@@ -46,7 +46,7 @@ namespace WizardParams
 			SpellType::other, 25, 25, 0, 360.0f, true),
 			 
 		Spell("fire_sprite", "Fire Sprites", 12, "Create long-ranged explosive balls of energy which follow your aim for an extended period of time.",
-			SpellType::other, 15, 10, 0, 360.0f, true),	
+			SpellType::other, 20, 35, 0, 360.0f, true),	
 			 
 		Spell("meteor_strike", "Meteor Strike", 9, "Bring flaming meteors crashing down wherever you desire.",
 			SpellType::other, 50, 40, 0, 360.0f, true),
