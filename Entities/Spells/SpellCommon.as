@@ -339,24 +339,13 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			if (!isServer()){
            		return;
 			}
+			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
 			f32 orbspeed = 6.0f;
-			f32 orbDamage = 4.0f;
-            f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;
+			f32 orbDamage = 4.0f * extraDamage;
 
-			if (charge_state == NecromancerParams::cast_1) {
-				orbspeed *= (1.0f/2.0f);
-				orbDamage *= 0.5f + extraDamage;
-			}
-			else if (charge_state == NecromancerParams::cast_2) {
-				orbspeed *= (4.0f/5.0f);
-				orbDamage *= 0.7f + extraDamage;
-			}
-            else if (charge_state == NecromancerParams::cast_3) {
-				orbDamage *= 1.0f + extraDamage;
-			}
-			else if (charge_state == NecromancerParams::extra_ready) {
+			if (charge_state == NecromancerParams::extra_ready) {
 				orbspeed *= 1.2f;
-				orbDamage *= 1.5f + extraDamage;
+				orbDamage *= 1.5f;
 			}
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);

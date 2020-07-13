@@ -499,7 +499,6 @@ bool HitBlob(CBlob@ this, CBlob@ hit_blob, f32 radius, f32 damage, const u8 hitt
 	f32 scale;
 	Vec2f bombforce = getBombForce(this, radius, hit_blob_pos, pos, hit_blob.getMass(), scale);
 	f32 dam = damage * scale;
-	dam *= 0.8f;
 
 	//explosion particle
 	makeSmallExplosionParticle(hit_blob_pos);
