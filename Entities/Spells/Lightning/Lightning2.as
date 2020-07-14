@@ -6,8 +6,6 @@
 const f32 RANGE = 2000.0f;
 const f32 DAMAGE = 0.6f;
 
-const f32 LIFETIME = 0.4f;
-
 const int MAX_LASER_POSITIONS = 30;
 const int LASER_UPDATE_TIME = 10;
 
@@ -37,7 +35,7 @@ void onInit( CBlob @ this )
 	
 	this.set_bool("initialized", false);
 	
-	this.server_SetTimeToDie(LIFETIME);
+	this.server_SetTimeToDie(1);
 }
 
 void onTick( CBlob@ this)
@@ -52,7 +50,10 @@ void onTick( CBlob@ this)
 	CBlob@ caster = player.getBlob();
 	if (caster is null)
 	{return;}
-	this.setPosition(caster.getPosition());
+	if(this.hasTag("stick"))
+	{
+		this.setPosition(caster.getPosition());
+	}
 	Vec2f thisPos = this.getPosition();
 	
 	if ( this.get_bool("initialized") == false && this.getTickSinceCreated() > 1 )
@@ -84,6 +85,8 @@ void onTick( CBlob@ this)
 		
 		Sound::Play("lightning1.ogg", aimPos, 0.3f, 1.0f + XORRandom(5)/10.0f);
 		
+		this.server_SetTimeToDie(this.get_f32("lifetime"));
+
 		this.set_bool("initialized", true);
 	}
 	

@@ -1511,6 +1511,37 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 
+		case -2121014561://nova
+		{
+			if(!isServer()){
+				return;
+			}
+			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
+			f32 orbDamage = 1.2f * extraDamage;
+
+			if (charge_state == NecromancerParams::extra_ready) {
+				orbDamage *= 1.5f;
+			}
+
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos- orbPos);
+			orbVel.Normalize();
+			orbVel *= 2;
+
+			CBlob@ orb = server_CreateBlob( "nova_bolt" );
+			if (orb !is null)
+			{
+				orb.set_f32("explosive_damage", orbDamage);
+				orb.set_Vec2f("aimpos", aimpos);
+
+				orb.IgnoreCollisionWhileOverlapped( this );
+				orb.SetDamageOwnerPlayer( this.getPlayer() );
+				orb.server_setTeamNum( this.getTeamNum() );
+				orb.setPosition( orbPos );
+			}
+		}
+		break;
+
 		case 2029285710://zombie_rain
 		case 1033042153://skeleton_rain
 		case 1761466304://meteor_rain
@@ -1642,6 +1673,8 @@ void CastNegentropy( CBlob@ this )
 			if (orb !is null)
 			{
 				orb.set_Vec2f("aim pos", b.getPosition());
+				orb.set_f32("lifetime", 0.4f);
+				orb.Tag("stick");
 				if(incompatible)
 				{
 					orb.set_bool("repelled", true);
