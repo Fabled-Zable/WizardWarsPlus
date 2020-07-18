@@ -1,6 +1,6 @@
 #include "/Entities/Common/Attacks/Hitters.as";
 
-const f32 hit_amount_ground = 0.5f;
+const f32 hit_amount_ground = 0.6f;
 const f32 hit_amount_air = 3.0f;
 
 const int bomb_timer = 70;

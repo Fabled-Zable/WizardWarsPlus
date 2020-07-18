@@ -268,7 +268,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
            		return;
 			}
 			f32 orbspeed = NecromancerParams::shoot_max_vel*0.75f;
-			f32 orbDamage = 4.0f;
+			f32 orbDamage = 2.0f;
             f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;
 
 			if (charge_state == NecromancerParams::cast_1) {
@@ -358,10 +358,16 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
+			//power of spell determined by caster's health
+			f32 initialHealth = this.getInitialHealth();
+			f32 health = this.getHealth();
+			f32 freezePower = 1.0f - (health/initialHealth);
+
 			CBlob@ orb = server_CreateBlob( "frost_ball" );
 			if (orb !is null)
 			{
 				orb.set_f32("explosive_damage", orbDamage);
+				orb.set_f32("freeze_power", freezePower);
 
 				orb.IgnoreCollisionWhileOverlapped( this );
 				orb.SetDamageOwnerPlayer( this.getPlayer() );

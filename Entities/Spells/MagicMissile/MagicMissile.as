@@ -5,7 +5,7 @@
 const int LIFETIME = 10;
 const f32 SEARCH_RADIUS = 128.0f;
 const f32 HOMING_FACTOR = 2.1f;
-const f32 CORRECTION_FACTOR = 0.1f;
+//const f32 CORRECTION_FACTOR = 0.1f;
 const int HOMING_DELAY = 15;	
 
 
@@ -59,14 +59,31 @@ void onTick( CBlob@ this)
     if( creaTicks >= HOMING_DELAY )//wait a bit before homing
     {
         Vec2f thisPos = this.getPosition();
+		Vec2f thisVelNorm = this.getVelocity();
+		Vec2f thisVel = thisVelNorm;
+		thisVelNorm.Normalize();
         Vec2f targetPos = target.getPosition();
-		Vec2f thisVel = this.getVelocity();
-		thisVel.Normalize();
-        Vec2f norm = targetPos - thisPos;
+		Vec2f targetVel = target.getVelocity();
+		Vec2f predictedTrajectory = targetPos+targetVel;
+        Vec2f norm = predictedTrajectory - thisPos;
+
+		//Trajectory correction algorithm
+		float direcAngle = norm.getAngle();
+		float targetAngle = thisVel.getAngle();
+		float difference = targetAngle-direcAngle;
+		difference = Maths::Abs(difference);
+		float CORRECTION_FACTOR = difference/330;
+		
+		//collision deterrant algorithm
+		CMap@ map = getMap();
+		if(map.rayCastSolidNoBlobs(thisPos, thisPos+(thisVelNorm*10)))
+		{
+			CORRECTION_FACTOR += 0.5f;
+		}
+
         norm.Normalize();
 		norm -= (thisVel * CORRECTION_FACTOR);
 
-        //Vec2f newVelocity = this.getVelocity() + (norm * HOMING_FACTOR);
 		this.getShape().setDrag(1.0f);
         this.AddForce(norm*HOMING_FACTOR);
     }
