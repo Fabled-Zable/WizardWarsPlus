@@ -75,7 +75,7 @@ namespace WizardParams
 		Spell("negatisphere", "NegatiSphere", 50, "Moving magic field that negates other counterable spells. Press SHIFT to launch them in the direction of your aim.",
 				SpellType::other, 15, 10, 2, 360.0f, true),
 
-		Spell("", "", 50, "Empty spell.",
+		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
 
 		Spell("", "", 0, "Empty spell.",

@@ -40,10 +40,10 @@ namespace DruidParams
 			SpellType::other, 30, 40, 3, 360.0f, true),	
 										
 		Spell("spikeorb", "SpikeBall", 30, "The spikeball is natures punishment to those that tread her woods unwelcomed",
-				SpellType::other, 4, 5, 0, 360.0f),			
+			SpellType::other, 4, 5, 0, 360.0f),			
 				
 		Spell("sporeshot", "SporeShot", 31, "A foul fungus that is painful to the touch, lighter than air",
-				SpellType::other, 4, 10, 0, 360.0f, true),	
+			SpellType::other, 4, 10, 0, 360.0f, true),	
 				
 		Spell("rock_wall", "Rock Wall", 36, "Create a wall of ordinary rock in front of you that blocks most things both ways. Its not exactly durable though.",
 			SpellType::other, 12, 5, 0, 30.0f, true),
@@ -60,14 +60,14 @@ namespace DruidParams
 		Spell("haste", "Haste", 20, "Give your allies some added speed and maneuverability. Fully charge to hasten yourself.",
 			SpellType::other, 20, 20, 0, 360.0f, true),
 
-		// Spell("bouldershot", "Boulder Shot", 35, "Empty spell.",
-		// 	SpellType::other, 15, 25, 0, 360.0f),
-
-				Spell("stone_spikes", "Stone Spikes", 38, "Creates a line of dangerous sharp rocks.",
+		Spell("stone_spikes", "Stone Spikes", 38, "Creates a line of dangerous sharp rocks.",
 		SpellType::other, 40, 30, 10, 180.0f),
 
-				Spell("", "", 0, "Empty spell.",
-		SpellType::other, 1, 1, 0, 0.0f),
+				Spell("airblast_shield", "Airblast Shield", 56, "Cover your team or yourself in a volatile wind barrier that blasts away nearby enemies whenever you take damage.",
+		SpellType::other, 40, 30, 0, 360.0f, true),
+
+				Spell("fire_ward", "Fire Ward", 57, "Form a heat protection aura around yourself. Completely nullifies fire damage.",
+		SpellType::other, 40, 30, 0, 360.0f, true),
 
 				Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f),
@@ -75,14 +75,14 @@ namespace DruidParams
 				Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f),
 
-				Spell("", "", 0, "Ur Mum Gey.",
-		SpellType::other, 1, 1, 0, 0.0f),
-
 				Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f),
 
 				Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f),
+		
+				Spell("", "", 0, "Empty spell.",
+		SpellType::other, 1, 1, 0, 0.0f)
 
 				/*Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f),

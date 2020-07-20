@@ -53,20 +53,32 @@ void onTick( CBlob@ this)
 		{
 			thisSprite.SetFrame(1);
 		}
-		if(effect == "haste")
+		else if(effect == "haste")
 		{
 			thisSprite.SetFrame(0);
 		}
-		if(effect == "slow"){
+		else if(effect == "slow"){
 			thisSprite.SetFrame(3);
 		}
-		if(effect == "revive")
+		else if(effect == "revive")
 		{
 			thisSprite.SetFrame(2);
 		}
-		if(effect == "mana")
+		else if(effect == "mana")
 		{
 			thisSprite.SetFrame(4);
+		}
+		else if(effect == "airblastShield")
+		{
+			thisSprite.SetFrame(5);
+		}
+		else if(effect == "fireProt")
+		{
+			thisSprite.SetFrame(6);
+		}
+		else if(effect == "stoneSkin")
+		{
+			thisSprite.SetFrame(7);
 		}
 		this.set_bool("setupDone",true);
 	}
@@ -193,15 +205,21 @@ void onTick( CBlob@ this)
 					if ( effectType == "heal" )
 						Heal(blob, this.get_f32("heal_amount"));
 					else if ( effectType == "haste" )
-						Haste(blob, this.get_u16("haste_time"));
+						Haste(blob, this.get_u16("effect_time"));
 					else if ( effectType == "mana" )
 						manaShot(blob, this.get_u8("mana_used"), this.get_u8("caster_mana"), this.get_bool("silent"));
+					else if ( effectType == "airblastShield" )
+						AirblastShield(blob, this.get_u16("effect_time"));
+					else if ( effectType == "fireProt" )
+						FireWard(blob, this.get_u16("effect_time"));
+					else if ( effectType == "stoneSkin" )
+						StoneSkin(blob, this.get_u16("effect_time"));
 					Die( this );
 				}
 				else if ( isEnemy(this, blob) && followsEnemies( this ) )	//curse status effects
 				{
 					if ( effectType == "slow" )
-						Slow(blob, this.get_u16("slow_time"));
+						Slow(blob, this.get_u16("effect_time"));
 						
 					Die( this );
 				}
@@ -236,7 +254,13 @@ bool followsAllies( CBlob@ this )
 {		
 	string effectType = this.get_string("effect");
 	
-	return ( effectType == "heal" || effectType == "haste" || effectType == "mana");
+	return ( 
+		effectType == "heal"
+	 || effectType == "haste" 
+	 || effectType == "mana" 
+	 || effectType == "airblastShield"
+	 || effectType == "fireProt"
+	 || effectType == "stoneSkin");
 }
 
 bool followsEnemies( CBlob@ this )

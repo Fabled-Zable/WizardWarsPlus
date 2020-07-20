@@ -617,7 +617,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		case 1838498488://slow
 		{
 			f32 orbspeed = 4.0f;
-			u16 slowTime = 600;
+			u16 effectTime = 600;
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
@@ -631,7 +631,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				if (orb !is null)
 				{
 					orb.set_string("effect", "slow");
-					orb.set_u16("slow_time", slowTime);
+					orb.set_u16("effect_time", effectTime);
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -644,7 +644,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		case 888767856://haste
 		{
 			f32 orbspeed = 4.0f;
-			u16 hasteTime = 600;
+			u16 effectTime = 600;
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
@@ -654,7 +654,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 			if (charge_state == NecromancerParams::extra_ready)
 			{
-				Haste(this, hasteTime);
+				Haste(this, effectTime);
 			}		
 			else if (isServer())
 			{
@@ -662,7 +662,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				if (orb !is null)
 				{
 					orb.set_string("effect", "haste");
-					orb.set_u16("haste_time", hasteTime);
+					orb.set_u16("effect_time", effectTime);
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -755,6 +755,102 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 
 			Sidewind(this, windTime);
+		}
+		break;
+
+		case 1227615081://airblast_shield
+		{
+			f32 orbspeed = 4.0f;
+			u16 effectTime = 600;
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (targetPos- orbPos);
+			orbVel.Normalize();
+			orbVel *= orbspeed;
+
+			if (charge_state == NecromancerParams::extra_ready)
+			{
+				AirblastShield(this, effectTime);
+			}
+			else if (isServer())
+			{
+				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
+				if (orb !is null)
+				{
+					orb.set_string("effect", "airblastShield");
+					orb.set_u16("effect_time", effectTime);
+
+					orb.IgnoreCollisionWhileOverlapped( this );
+					orb.SetDamageOwnerPlayer( this.getPlayer() );
+					orb.setVelocity( orbVel );
+				}
+			}
+			
+		}
+		break;
+
+		case -282533932://fire_ward
+		{
+			f32 orbspeed = 4.0f;
+			u16 effectTime = 900;
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (targetPos- orbPos);
+			orbVel.Normalize();
+			orbVel *= orbspeed;
+
+			if (charge_state == NecromancerParams::extra_ready)
+			{
+				FireWard(this, effectTime);
+			}
+			else if (isServer())
+			{
+				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
+				if (orb !is null)
+				{
+					orb.set_string("effect", "fireProt");
+					orb.set_u16("effect_time", effectTime);
+
+					orb.IgnoreCollisionWhileOverlapped( this );
+					orb.SetDamageOwnerPlayer( this.getPlayer() );
+					orb.setVelocity( orbVel );
+				}
+			}
+			
+		}
+		break;
+
+		case -954155722://stone_skin
+		{
+			f32 orbspeed = 4.0f;
+			u16 effectTime = 600;
+
+			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (targetPos- orbPos);
+			orbVel.Normalize();
+			orbVel *= orbspeed;
+
+			if (charge_state == NecromancerParams::extra_ready)
+			{
+				StoneSkin(this, effectTime);
+			}
+			else if (isServer())
+			{
+				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
+				if (orb !is null)
+				{
+					orb.set_string("effect", "stoneSkin");
+					orb.set_u16("effect_time", effectTime);
+
+					orb.IgnoreCollisionWhileOverlapped( this );
+					orb.SetDamageOwnerPlayer( this.getPlayer() );
+					orb.setVelocity( orbVel );
+				}
+			}
+			
 		}
 		break;
 
@@ -1937,10 +2033,36 @@ void counterSpell( CBlob@ caster )
 					
 					countered = true;
 				}
-				else if ( b.get_u16("hastened") > 0 && !sameTeam )
-				{			
-					b.set_u16("hastened", 2);
-					b.Sync("hastened", true);
+				else if (
+				(	b.get_u16("hastened") > 0
+				 || b.get_u16("fireProt") > 0 
+				 || b.get_u16("airblastShield") > 0 
+				 || b.get_u16("stoneSkin") > 0 )
+				 && !sameTeam )
+				{
+					if(b.get_u16("hastened") > 0)
+					{
+						b.set_u16("hastened", 2);
+						b.Sync("hastened", true);
+					}
+
+					if(b.get_u16("fireProt") > 0)
+					{
+						b.set_u16("fireProt", 1);
+						b.Sync("fireProt", true);
+					}
+
+					if(b.get_u16("airblastShield") > 0)
+					{
+						b.set_u16("airblastShield", 1);
+						b.Sync("airblastShield", true);
+					}
+
+					if(b.get_u16("stoneSkin") > 0)
+					{
+						b.set_u16("stoneSkin", 1);
+						b.Sync("stoneSkin", true);
+					}
 					
 					countered = true;
 				}
@@ -2042,7 +2164,8 @@ void Haste( CBlob@ blob, u16 hasteTime )
 	{
 		blob.set_u16("hastened", hasteTime);
 		blob.Sync("hastened", true);
-		blob.getSprite().PlaySound("HasteOn.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);
+		if(isClient())
+		{blob.getSprite().PlaySound("HasteOn.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);}
 	}
 }
 
@@ -2052,6 +2175,29 @@ void Sidewind( CBlob@ blob, u16 windTime )
 	blob.Sync("sidewinding", true);
 	if(isClient())
 	{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + XORRandom(1)/10.0f);}
+}
+
+void AirblastShield( CBlob@ blob, u16 airshieldTime )
+{	
+	blob.set_u16("airblastShield", airshieldTime);
+	blob.Sync("airblastShield", true);
+	//if(isClient())
+	//{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + XORRandom(1)/10.0f);}
+}
+void FireWard( CBlob@ blob, u16 firewardTime )
+{	
+	blob.set_u16("fireProt", firewardTime);
+	blob.Sync("fireProt", true);
+	//if(isClient())
+	//{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + XORRandom(1)/10.0f);}
+}
+
+void StoneSkin( CBlob@ blob, u16 stoneskinTime )
+{	
+	blob.set_u16("stoneSkin", stoneskinTime);
+	blob.Sync("stoneSkin", true);
+	//if(isClient())
+	//{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + XORRandom(1)/10.0f);}
 }
 
 void manaShot( CBlob@ blob, u8 manaUsed, u8 casterMana, bool silent = false)

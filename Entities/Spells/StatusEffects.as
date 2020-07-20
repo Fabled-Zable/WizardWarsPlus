@@ -9,6 +9,8 @@ void onTick( CBlob@ this)
 		return;
 	}
 
+	CSprite@ thisSprite = this.getSprite();
+
 	//FREEZE
 	bool isFrozen = this.get_bool("frozen");
 	bool isInIce = this.isAttachedToPoint("PICKUP2");
@@ -68,7 +70,7 @@ void onTick( CBlob@ this)
 		
 		if ( slowed == 1 )
 		{
-			this.getSprite().PlaySound("SlowOff.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);
+			thisSprite.PlaySound("SlowOff.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);
 			this.Sync("slowed", true);
 		}
 	}
@@ -110,7 +112,7 @@ void onTick( CBlob@ this)
 		
 		if ( hastened == 1 )
 		{
-			this.getSprite().PlaySound("HasteOff.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);
+			thisSprite.PlaySound("HasteOff.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);
 			this.Sync("hastened", true);
 		}
 	}
@@ -121,7 +123,7 @@ void onTick( CBlob@ this)
 	if (sidewinding > 0)
 	{
 		sidewinding--;
-		this.getSprite().SetVisible(false);
+		thisSprite.SetVisible(false);
 		this.getShape().getConsts().collidable = false;
 		
 		Vec2f thisVel = this.getVelocity();
@@ -135,8 +137,8 @@ void onTick( CBlob@ this)
 		{
 			if(isClient()) 
 			{
-				u16 frame = this.getSprite().getFrameIndex();
-				bool lookingLeft = this.getSprite().isFacingLeft();
+				u16 frame = thisSprite.getFrameIndex();
+				bool lookingLeft = thisSprite.isFacingLeft();
 
 				Vec2f pos = this.getPosition() + Vec2f(3,-2);
 				string afterimageFile = "afterimages.png";
@@ -160,9 +162,9 @@ void onTick( CBlob@ this)
 		if ( sidewinding == 0 )
 		{
 			if(isClient())
-			{this.getSprite().PlaySound("sidewind_exit.ogg", 3.0f, 1.0f + XORRandom(1)/10.0f);}
+			{thisSprite.PlaySound("sidewind_exit.ogg", 3.0f, 1.0f + XORRandom(1)/10.0f);}
 			this.Sync("sidewinding", true);
-			this.getSprite().SetVisible(true);
+			thisSprite.SetVisible(true);
 			this.getShape().getConsts().collidable = true;
 			moveVars.swimspeed = 1.2f;
 			moveVars.swimforce = 30;
@@ -204,4 +206,92 @@ void onTick( CBlob@ this)
 		}
 		this.set_u16("stunned", stunned);
 	}
+
+	//AIRBLAST SHIELD
+	u16 airblastShield = this.get_u16("airblastShield");
+	if (airblastShield > 0)
+	{
+		airblastShield--;
+		if(!this.hasScript("Wards.as"))
+		{
+			thisSprite.PlaySound("Airblast.ogg", 1.0f, 1.0f + XORRandom(1)/10.0f);
+			this.AddScript("Wards.as");
+		}
+
+		if(!this.exists("airblastSetupDone") || !this.get_bool("airblastSetupDone")) //Ward sprite setup
+		{
+			CSpriteLayer@ layer = thisSprite.addSpriteLayer("airblast_ward","Airblast Ward.png",25,25);
+			layer.SetRelativeZ(-2);
+			this.set_bool("airblastSetupDone",true);
+		}
+
+		if(airblastShield == 0 || this.hasTag("dead"))
+		{
+			airblastShield = 0;
+			if(this.hasScript("Wards.as") && this.get_u16("stoneSkin") == 0)
+			{
+				this.RemoveScript("Wards.as");
+			}
+			thisSprite.RemoveSpriteLayer("airblast_ward"); //Ward sprite removal
+			this.set_bool("airblastSetupDone",false);
+		}
+
+		this.set_u16("airblastShield", airblastShield);
+	}
+
+	//FIRE WARD
+	u16 fireProt = this.get_u16("fireProt");
+	if (fireProt > 0)
+	{
+		fireProt--;
+
+		if(!this.exists("fireprotSetupDone") || !this.get_bool("fireprotSetupDone")) //Ward sprite setup
+		{
+			CSpriteLayer@ layer = thisSprite.addSpriteLayer("fire_ward","Fire Ward.png",25,25);
+			layer.SetRelativeZ(-3);
+			this.set_bool("fireprotSetupDone",true);
+		}
+		
+		if(fireProt == 0 || this.hasTag("dead"))
+		{
+			fireProt = 0;
+			thisSprite.RemoveSpriteLayer("fire_ward"); //Ward sprite removal
+			this.set_bool("fireprotSetupDone",false);
+		}
+
+		this.set_u16("fireProt", fireProt);
+	}
+
+	//STONE SKIN
+	/*u16 stoneSkin = this.get_u16("stoneSkin");
+	if (stoneSkin > 0)
+	{
+		stoneSkin--;
+		if(!this.hasScript("Wards.as"))
+		{
+			thisSprite.PlaySound("Airblast.ogg", 1.0f, 1.0f + XORRandom(1)/10.0f);
+			this.AddScript("Wards.as");
+		}
+
+		if(!this.exists("stoneSkinSetupDone") || !this.get_bool("stoneSkinSetupDone")) //Ward sprite setup
+		{
+			CSpriteLayer@ layer = thisSprite.addSpriteLayer("stoneskin_ward","Stoneskin Ward.png",25,25);
+			layer.SetRelativeZ(-1);
+			this.set_bool("stoneSkinSetupDone",true);
+		}
+
+		if(stoneSkin == 0 || this.hasTag("dead"))
+		{
+			stoneSkin = 0;
+			if(this.hasScript("Wards.as") && this.get_u16("airblastShield") == 0)
+			{
+				this.RemoveScript("Wards.as");
+			}
+			thisSprite.RemoveSpriteLayer("stoneskin_ward"); //Ward sprite removal
+			this.set_bool("stoneSkinSetupDone",false);
+		}
+
+		this.set_u16("stoneSkin", stoneSkin);
+	}
+	*/
 }

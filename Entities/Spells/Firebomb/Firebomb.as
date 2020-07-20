@@ -90,11 +90,25 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 		{
 			if (!this.isOnGround() && !this.isInWater() && !this.get_bool("bomb armed"))
 			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), hit_amount_air, Hitters::fire, true);
+				if(blob.get_u16("fireProt") > 0)
+				{
+					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.0f, Hitters::fire, true);
+				}
+				else
+				{
+					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), hit_amount_air, Hitters::fire, true);
+				}
 			}
 			else
 			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), hit_amount_ground, Hitters::fire, true);
+				if(blob.get_u16("fireProt") > 0)
+				{
+					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.0f, Hitters::fire, true);
+				}
+				else
+				{
+					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), hit_amount_ground, Hitters::fire, true);
+				}
 			}
 			Boom( this );
 		}
@@ -135,7 +149,14 @@ void ExplodeWithFire(CBlob@ this)
 				Vec2f bPos = b.getPosition();
 				if ( !map.rayCastSolid(thisPos, bPos) )
 				{
-					this.server_Hit(b, bPos, bPos-thisPos, 0.5f, Hitters::fire, isOwnerBlob(this,b));
+					if(b.get_u16("fireProt") > 0)
+					{
+						this.server_Hit(b, bPos, bPos-thisPos, 0.0f, Hitters::fire, isOwnerBlob(this,b));
+					}
+					else
+					{
+						this.server_Hit(b, bPos, bPos-thisPos, 0.5f, Hitters::fire, isOwnerBlob(this,b));
+					}
 				}
 			}
 		}

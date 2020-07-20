@@ -44,6 +44,11 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 		default: break;
 	}
 
+	if(this.get_u16("stoneSkin") > 0) // stone skin knockback nullifier
+	{
+		scale = 0.0f;
+	}
+
 	Vec2f f(x_side, y_side);
 
 	if (damage > 0.125f && customData != 41)
