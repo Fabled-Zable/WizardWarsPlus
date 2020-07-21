@@ -58,6 +58,8 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
             Vec2f forceDir = blob.getPosition() - thisPos;
             float dist = forceDir.getLength();
             forceDir.Normalize();
+            if(dist < 1)
+            {dist = 1;}
             forceDir *= 10000/dist;
             blob.AddForce(forceDir);
         }

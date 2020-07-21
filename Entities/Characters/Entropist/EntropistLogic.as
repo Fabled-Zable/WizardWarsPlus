@@ -47,7 +47,6 @@ void onInit( CBlob@ this )
 	//no spinning
 	this.getShape().SetRotationsAllowed(false);
     this.addCommandID( "spell" );
-	this.addCommandID( "pulsed" );
 	this.getShape().getConsts().net_threshold_multiplier = 0.5f;
 
     AddIconToken( "$Skeleton$", "SpellIcons.png", Vec2f(16,16), 0 );
@@ -241,19 +240,6 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
         charge_state = EntropistParams::not_aiming;
         charge_time = 0;
     }
-
-	if(this.get_bool("shifting") && !this.get_bool("shifted"))
-	{
-		this.set_bool("shifted", true);
-		if(entropist.pulse_amount > 0)
-		{
-			this.SendCommand(this.getCommandID("pulsed"));
-		}
-	}
-	else if(!this.get_bool("shifting") && this.get_bool("shifted"))
-	{
-		this.set_bool("shifted", false);
-	}
 
     entropist.charge_time = charge_time;
     entropist.charge_state = charge_state;
@@ -477,18 +463,6 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		
 		manaInfo.mana -= spell.mana;
     }
-	if (cmd == this.getCommandID("pulsed"))
-	{
-		EntropistInfo@ entropist;
-		if (!this.get( "entropistInfo", @entropist )) 
-		{
-			return;
-		}
-
-		CastNegentropy(this);
-
-		entropist.pulse_amount -= 1;
-	}
 }
 
 f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData )

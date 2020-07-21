@@ -99,7 +99,7 @@ s8 negentropyDecoder( CBlob@ b )
 		break;
 		case 131361395: //expunger
 		{
-			return 4;
+			return 2;
 		}
 		break;
 		case -1661937901: //impaler
@@ -109,7 +109,7 @@ s8 negentropyDecoder( CBlob@ b )
 		break;
 		case -32608566: //crusader
 		{
-			return 10;
+			return 15;
 		}
 		break;
 		case 603057094: //executioner

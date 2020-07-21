@@ -533,7 +533,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		case -1214504009://magic_missile
 		{
 			f32 orbspeed = 1.8f;
-			u8 spreadarc = 5;
+			float spreadarc = 10;
 			//bool lowboid = false;
 
 			if (charge_state == NecromancerParams::cast_3) {
@@ -541,7 +541,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 			else if (charge_state == NecromancerParams::extra_ready) {
 				orbspeed *= 2.0f;
-				spreadarc = 3;
+				spreadarc = 5;
 				//lowboid = true;
 			}
 
@@ -567,7 +567,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
                         orb.IgnoreCollisionWhileOverlapped( this );
 						orb.SetDamageOwnerPlayer( this.getPlayer() );
 						Vec2f newVel = orbVel;
-						newVel.RotateBy( -(spreadarc+3) + spreadarc*i, Vec2f());
+						newVel.RotateBy( -spreadarc + (spreadarc/2)*i, Vec2f());
 						orb.setVelocity( newVel );
 					}
 				}
@@ -1112,7 +1112,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 
 			f32 orbspeed = NecromancerParams::shoot_max_vel * 1.1f;
-			f32 orbDamage = 0.4f;
+			f32 orbDamage = 0.6f;
             f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;//Is this condition true? yes is 1.2f and no is 1.0f
 
             if (charge_state == NecromancerParams::cast_3) {
@@ -1126,28 +1126,28 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
 			Vec2f orbVel = (targetPos- orbPos);
-			Vec2f spawnVel = Vec2f(0,(3 * -1.0f));
-			float swordWheelRot = (XORRandom(45) +1 * -1.0f);
-			const int numOrbs = 8;
+			const int numOrbs = 16;  //number of swords
+			float anglePerOrb = 360/numOrbs;
+			float swordWheelRot = -(XORRandom(anglePerOrb) + 1);
 			for (int i = 0; i < numOrbs; i++)
 			{
-			CBlob@ orb = server_CreateBlob( "expunger" );
-			if (orb !is null)
+				CBlob@ orb = server_CreateBlob( "expunger" );
+				if (orb !is null)
 				{
-				u32 shooTime = getGameTime() + (XORRandom(16) +42);
-				orb.set_Vec2f("targetto", orbVel);
-				orb.set_f32("speeddo", orbspeed);
-				orb.set_f32("damage", orbDamage);
-				orb.set_u32("shooTime", shooTime);
+					u32 shooTime = getGameTime() + (XORRandom(16) +42);
+					orb.set_Vec2f("targetto", orbVel);
+					orb.set_f32("speeddo", orbspeed);
+					orb.set_f32("damage", orbDamage);
+					orb.set_u32("shooTime", shooTime);
 
-				orb.IgnoreCollisionWhileOverlapped( this );
-				orb.SetDamageOwnerPlayer( this.getPlayer() );
-				orb.server_setTeamNum( this.getTeamNum() );
-				orb.getShape().SetGravityScale(0);
-				orb.setPosition( orbPos );
-				Vec2f newVel = spawnVel;
-				newVel.RotateBy(swordWheelRot + 45*i, Vec2f());
-				orb.setVelocity(newVel);
+					orb.IgnoreCollisionWhileOverlapped( this );
+					orb.SetDamageOwnerPlayer( this.getPlayer() );
+					orb.server_setTeamNum( this.getTeamNum() );
+					orb.getShape().SetGravityScale(0);
+					orb.setPosition( orbPos );
+					Vec2f spawnVel = Vec2f(0,-3); //Spawn Speed
+					spawnVel.RotateBy(swordWheelRot + anglePerOrb*i, Vec2f());
+					orb.setVelocity(spawnVel);
 				}
 			}
 		}
@@ -1252,10 +1252,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 408450338://bladed_shell
 		{
-			// if (!isServer()){
-           	// 	return;
-			// }
-
+			
 			f32 orbDamage = 0.2f;
             f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;
 
@@ -1293,7 +1290,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 
 			f32 orbspeed = NecromancerParams::shoot_max_vel*1.1f;
-			f32 orbDamage = 0.4f;
+			f32 orbDamage = 0.6f;
             f32 extraDamage = this.hasTag("extra_damage") ? 0.3f : 0.0f;//Is this condition true? yes is 1.2f and no is 1.0f
             
             if (charge_state == NecromancerParams::cast_3) {
@@ -1619,10 +1616,10 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				return;
 			}
 			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
-			f32 orbDamage = 1.2f * extraDamage;
+			f32 orbDamage = 2.0f * extraDamage;
 
 			if (charge_state == NecromancerParams::extra_ready) {
-				orbDamage *= 1.5f;
+				orbDamage = 3.0f;
 			}
 
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);

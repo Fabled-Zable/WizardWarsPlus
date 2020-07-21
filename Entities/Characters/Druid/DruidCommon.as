@@ -64,10 +64,10 @@ namespace DruidParams
 		SpellType::other, 40, 30, 10, 180.0f),
 
 				Spell("airblast_shield", "Airblast Shield", 56, "Cover your team or yourself in a volatile wind barrier that blasts away nearby enemies whenever you take damage.",
-		SpellType::other, 40, 30, 0, 360.0f, true),
+		SpellType::other, 30, 30, 0, 360.0f, true),
 
 				Spell("fire_ward", "Fire Ward", 57, "Form a heat protection aura around yourself. Completely nullifies fire damage.",
-		SpellType::other, 40, 30, 0, 360.0f, true),
+		SpellType::other, 30, 30, 0, 360.0f, true),
 
 				Spell("", "", 0, "Empty spell.",
 		SpellType::other, 1, 1, 0, 0.0f),

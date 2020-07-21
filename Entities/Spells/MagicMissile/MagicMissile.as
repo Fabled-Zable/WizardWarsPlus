@@ -72,13 +72,13 @@ void onTick( CBlob@ this)
 		float targetAngle = thisVel.getAngle();
 		float difference = targetAngle-direcAngle;
 		difference = Maths::Abs(difference);
-		float CORRECTION_FACTOR = difference/330;
+		float CORRECTION_FACTOR = difference/500;
 		
 		//collision deterrant algorithm
 		CMap@ map = getMap();
 		if(map.rayCastSolidNoBlobs(thisPos, thisPos+(thisVelNorm*10)))
 		{
-			CORRECTION_FACTOR += 0.5f;
+			CORRECTION_FACTOR += 0.6f;
 		}
 
         norm.Normalize();
@@ -211,7 +211,7 @@ void blast( CBlob@ this , int amount)
 									0.0f, 
 									false );
 									
-        if(p is null) return; //bail if we stop getting particles
+        if(p is null) continue; //bail if we stop getting particles
 		
     	p.fastcollision = true;
         p.scale = 0.5f + _blast_r.NextFloat()*0.5f;
