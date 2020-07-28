@@ -1,12 +1,6 @@
 #include "PlayerPrefsCommon.as";
 #include "PlatinumCommon.as";
 
-/*
-void onTick( CRules@ this )
-{
-    //see the logic script for this
-}
-*/
 
 void onInit(CRules@ this)
 {

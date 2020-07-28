@@ -74,22 +74,22 @@ s8 negentropyDecoder( CBlob@ b )
 	{
 		case 1370376319: //bees
 		{
-			return 5;
+			return 4;
 		}
 		break;
 		case 829656850: //spores
 		{
-			return 5;
+			return 4;
 		}
 		break;
 		case 1463630946: //spikeballs
 		{
-			return 4;
+			return 3;
 		}
 		break;
 		case 1843332075: //ground rock spikes
 		{
-			return 3;
+			return 2;
 		}
 		break;
 		case -825046729: //mushroom
