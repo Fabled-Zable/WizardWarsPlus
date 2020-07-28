@@ -1385,37 +1385,13 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CBlob@ other = @blobs[i];//setting other blob to a variable for readability
 				if(other.getTeamNum() == ownTeam){continue;}//Does nothing if same team
 				if(other.hasTag("barrier")){continue;} //do nothing if it's a barrier
-
 				Vec2f othVel = other.getVelocity(); //velocity of target shortcut
 
-				if(other.hasTag("zombie")) //only zombies (extra)
+				s8 blobType = parryTargetIdentifier(other);
+
+				switch(blobType)  //decides what to do with the parried blob
 				{
-					other.setVelocity( othVel + (castDir * 2)); //strong push using cast direction for convenience
-				}
-
-				if(other.hasTag("flesh")) //only people and zombies
-				{
-					other.setVelocity( othVel + (castDir / 3)); //slight push using cast direction for convenience
-				}
-				else if(other.hasTag("counterable")) //set anything counterable to your own team, and reflect it.
-				{
-					if (other.getName() == "executioner") //IF it's an executioner, since damageownerplayer doesn't work, delet and replace with a new projectile in the same place.
-					{
-
-						float orbDamage = other.get_f32("damage");
-						CBlob@ newExe = server_CreateBlob("executioner",this.getTeamNum(),other.getPosition());
-						if (newExe !is null)
-						{
-							newExe.set_f32("damage", orbDamage);
-							newExe.set_u32("lifetime", 0);
-
-							newExe.SetDamageOwnerPlayer( this.getPlayer() );
-							newExe.getShape().SetGravityScale(0);
-						}
-						other.server_Die(); //this destroys the existing executioner
-
-					}
-					else //anything that's not an executioner, or not actually made out of flesh, do as usual.
+					case 0: //normal projectiles
 					{
 						other.server_setTeamNum(ownTeam);
 						other.SetDamageOwnerPlayer( this.getPlayer() ); //<<doesn't seem to work properly
@@ -1424,6 +1400,47 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 						float redirectAngle = (othVelAngle-parryAngle) % 360;
 						othVel.RotateBy(redirectAngle);
 						other.setVelocity(othVel);
+					}
+					break;
+					case 1: //projectiles that follow mouse
+					{
+						CBlob@ orb = server_CreateBlob(other.getName(),this.getTeamNum(),other.getPosition());
+						if (orb !is null)
+						{
+							if(other.exists("explosive_damage"))
+							{
+								orb.set_f32("explosive_damage", other.get_f32("explosive_damage"));
+							}
+							if(other.exists("damage"))
+							{
+								orb.set_f32("damage", other.get_f32("damage"));
+							}
+							if(other.exists("lifetime"))
+							{
+								orb.set_u32("lifetime", other.get_u32("lifetime"));
+							}
+							orb.IgnoreCollisionWhileOverlapped( other );
+							orb.SetDamageOwnerPlayer( this.getPlayer() );
+							orb.getShape().SetGravityScale(0);
+							
+							other.Untag("exploding");
+							other.server_Die();
+						}
+					}
+					break;
+					case 2: //players
+					{
+						other.setVelocity( othVel + (castDir / 3)); //slight push using cast direction for convenience
+					}
+					break;
+					case 3: //undead
+					{
+						other.setVelocity( othVel + (castDir * 2)); //strong push using cast direction for convenience
+					}
+					break;
+					default:
+					{
+						continue;
 					}
 				}
 			}

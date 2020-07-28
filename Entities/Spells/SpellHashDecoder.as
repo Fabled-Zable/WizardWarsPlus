@@ -197,6 +197,11 @@ s8 negentropyDecoder( CBlob@ b )
 			return 50;
 		}
 		break;
+		case -559341693: //nova_bolt
+		{
+			return 35;
+		}
+		break;
 		case 750462252: //mana_drain_circle
 		{
 			return -2;
@@ -327,4 +332,72 @@ bool voltageFieldDamage( CBlob@ b )
 	}
 	
 	return true;
+}
+
+s8 parryTargetIdentifier( CBlob@ b )
+{
+	if(b is null){return -1;}
+
+	string blobname = b.getName();
+	switch(blobname.getHash())
+	{
+		case 603057094: //executioner
+		case -445081510: //negatisphere
+		case 1174066691: //fire_sprite
+		{
+			return 1; //need reset
+		}
+		break;
+
+		case -66908406: //wizard
+		case 929393112: //necromancer
+		case -1901645281: //druid
+		case 896217902: //swordcaster
+		case -910968587: //entropist
+		case -541330116: //knight
+		case 871806850: //archer
+		case -466287296: //builder
+		{
+			return 2; //players slight push
+		}
+		break;
+
+		case -1320380562: //skeleton
+		case 285410015: //zombie
+		case 643717442: //zombieknight
+		case -862961004: //greg
+		case 1633970086: //wraith
+		{
+			return 3; //undead strong push
+		}
+		break;
+
+		case -1727909596: //arcane_circle
+		case 750462252: //mana_drain_circle
+		case -1612772378: //force_of_nature
+		case 452290988: //plant_aura
+		case -825046729: //mushroom
+		case 382419657: //rock_wall
+		case -286128466: //ice_prison
+		case 770505718: //leech
+		case -1661937901: //impaler
+		{
+			return -1; //doesn't affect
+		}
+		break;
+
+		default: //any other blob
+		{
+			if(b.hasTag("counterable"))
+			{
+				return 0;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+	}
+	
+	return -1;
 }

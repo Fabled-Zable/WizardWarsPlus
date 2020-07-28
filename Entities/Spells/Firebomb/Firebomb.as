@@ -162,7 +162,7 @@ void ExplodeWithFire(CBlob@ this)
 		}
 	}
 	
-    this.getSprite().PlaySound("MolotovExplosion.ogg", 1.6f);
+    this.getSprite().PlaySound("MolotovExplosion.ogg", 1.6f, 1.0f);
 }
 
 bool isOwnerBlob(CBlob@ this, CBlob@ target)

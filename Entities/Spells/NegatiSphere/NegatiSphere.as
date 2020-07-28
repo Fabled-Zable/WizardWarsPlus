@@ -8,6 +8,9 @@ void onInit( CBlob@ this )
 	this.Tag("counterable");
 	this.set_bool("launch", false);
 
+	this.set_Vec2f("caster", Vec2f_zero);
+	this.set_s8("lifepoints", 10);
+
     this.getShape().SetGravityScale( 0.0f );
 	this.getShape().getConsts().mapCollisions = false;
 	this.getSprite().SetZ(1450);// draw over ground
