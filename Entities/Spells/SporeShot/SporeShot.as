@@ -1,10 +1,10 @@
-const f32 DAMAGE = 0.5f;
 const f32 AOE = 12.0f;//radius
 const int min_detonation_time = 6;
 void onInit(CBlob@ this)
 {
 	this.Tag("standingup");
 	this.Tag("counterable");
+	this.set_f32("damage", 0.4f);
 	//this.set_f32("explosive_radius", 2.0f);
 	//this.set_f32("explosive_damage", 10.0f);
 	//this.set_f32("map_damage_radius", 4.0f);
@@ -107,7 +107,7 @@ void onDie( CBlob@ this )
 		{
 			CBlob@ blob = aoeBlobs[i];
 			if ( !getMap().rayCastSolidNoBlobs( pos, blob.getPosition() ) )
-				this.server_Hit( blob, pos, Vec2f_zero, DAMAGE, 40, blob.getName() == "sporeshot" );
+				this.server_Hit( blob, pos, Vec2f_zero, this.get_f32("damage") , 40, blob.getName() == "sporeshot" );
 		}
 	}
 	sparks(this.getPosition(), 10);

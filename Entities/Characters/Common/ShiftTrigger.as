@@ -4,6 +4,7 @@
 void onInit( CBlob@ this )
 {
     this.addCommandID("shiftpress");
+    this.addCommandID("negentropy");
 }
 
 void onTick( CBlob@ this )
@@ -13,11 +14,21 @@ void onTick( CBlob@ this )
     CControls@ controls = getControls();
     CBitStream params;
 
+    EntropistInfo@ entropist;
+
     if (controls.isKeyPressed(KEY_LSHIFT))
     {
         if(!this.get_bool("shifting"))
         {
             params.write_bool(true);
+            if (this.get( "entropistInfo", @entropist )) 
+	        {
+		        if(entropist.pulse_amount > 0)
+		        {
+                    entropist.pulse_amount -= 1;
+                    this.SendCommand(this.getCommandID("negentropy"), params);
+                }
+	        }
             this.SendCommand(this.getCommandID("shiftpress"), params);
             this.set_bool("shifting", true);
         }
@@ -39,20 +50,15 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
     {
         if(params.read_bool())
         {
-            EntropistInfo@ entropist;
-	        if (this.get( "entropistInfo", @entropist )) 
-	        {
-		        if(entropist.pulse_amount > 0)
-		        {
-                    CastNegentropy(this);
-                    entropist.pulse_amount -= 1;
-                }
-	        }
             this.set_bool("shifting", true);
         }
         else
         {
             this.set_bool("shifting", false);
         }
+    }
+    if (cmd == this.getCommandID("negentropy"))
+    {
+        CastNegentropy(this);
     }
 }
