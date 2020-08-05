@@ -129,17 +129,20 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orbDamage *= 0.5f;
 				}
 				break;
+
 				case medium_cast:
 				{
 					orbspeed *= (4.0f/5.0f);
 					orbDamage *= 0.7f;
 				}
 				break;
+
 				case complete_cast:
 				{
 					orbDamage *= 1.0f;
 				}
 				break;
+
 				case super_cast:
 				{
 					orbspeed *= 1.2f;
@@ -184,18 +187,21 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orbspeed *= (2.0f/3.0f);
 				}
 				break;
+
 				case medium_cast:
 				{
 					orbspeed *= 0.8f;
 					orbDamage *= 1.5f;
 				}
 				break;
+
 				case complete_cast:
 				{
 					orbspeed *= 1.0f;
 					orbDamage *= 2.0f;
 				}
 				break;
+
 				case super_cast:
 				{
 					orbspeed *= 1.2f;
@@ -242,6 +248,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orbDamage *= 1.0f;
 				}
 				break;
+
 				case super_cast:
 				{
 					orbspeed *= 1.0f;
@@ -326,6 +333,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orbDamage *= 1.0f;
 				}
 				break;
+
 				case super_cast:
 				{
 					orbspeed *= 1.2f;
@@ -371,6 +379,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orbDamage *= 1.0f;
 				}
 				break;
+
 				case super_cast:
 				{
 					orbDamage *= 1.5f;
@@ -418,6 +427,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orbDamage *= 1.0f;
 				}
 				break;
+
 				case super_cast:
 				{
 					orbspeed *= 1.2f;
@@ -464,18 +474,21 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orbspeed *= 0.5f;
 				}
 				break;
+
 				case medium_cast:
 				{
 					orbspeed *= 0.8f;
 					healAmount = 0.6f;
 				}
 				break;
+
 				case complete_cast:
 				{
 					orbspeed *= 1.0f;
 					healAmount = 0.8f;
 				}
 				break;
+
 				case super_cast:
 				{
 					Heal(this, healAmount);
@@ -522,6 +535,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orbspeed *= 1.0f;
 				}
 				break;
+
 				case super_cast:
 				{
 					orbspeed *= 1.2f;
