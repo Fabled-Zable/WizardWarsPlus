@@ -2018,7 +2018,7 @@ void CastNegentropy( CBlob@ this )
 			{
 				orb.set_Vec2f("aim pos", b.getPosition());
 				orb.set_f32("lifetime", 0.4f);
-				orb.Tag("stick");
+				orb.Tag("stick"); //enables stick-to-blob code in lightning2.as
 				if(incompatible)
 				{
 					orb.set_bool("repelled", true);

@@ -66,7 +66,7 @@ void onTick( CBlob@ this )
 	if(!this.get_bool("launch"))
 	{
 		Vec2f dir = this.get_Vec2f("target")-this.getPosition();
-		dir.RotateBy(30);
+		dir.RotateBy(25);
 		dir.Normalize();
 		this.set_Vec2f("dir", dir);
 	}

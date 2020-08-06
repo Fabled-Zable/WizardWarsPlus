@@ -12,7 +12,8 @@ void onTick(CBlob@ this)
     {
         return;
     }
-    if (this.getTickSinceCreated() < 2)
+
+    if (!this.hasTag("mana_calcs_done"))
     {
         ManaInfo@ manaInfo;
 		if (!this.get( "manaInfo", @manaInfo )) 
@@ -23,15 +24,32 @@ void onTick(CBlob@ this)
         //adjusting mana regen rate based on team balance
         uint team0 = 0;
         uint team1 = 0;
+        uint teamUnspecified = 0;
         for (u32 i = 0; i < getPlayersCount(); i++)//Get amount of players on each team
         {
             CPlayer@ p = getPlayer(i);
             if (p !is null)
             {
-                if (p.getTeamNum() == 0)
-                    team0++;
-                else if (p.getTeamNum() == 1)
-                    team1++;
+                switch(p.getTeamNum())
+                {
+                    case 0:
+                    {
+                        team0++;
+                    }
+                    break;
+
+                    case 1:
+                    {
+                        team1++;
+                    }
+                    break;
+
+                    default:
+                    {
+                        teamUnspecified++;
+                    }
+                    break;
+                }
             }
         }
         
@@ -59,6 +77,7 @@ void onTick(CBlob@ this)
         }
         
         this.set_u8("mana regen rate", manaRegenRate);//Set the mana regen rate
+        this.Tag("mana_calcs_done");
     }
 
 	if (getGameTime() % getTicksASecond() == 0)
