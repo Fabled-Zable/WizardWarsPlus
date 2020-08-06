@@ -11,7 +11,8 @@ void onInit(CBlob@ this)
 	shape.getConsts().mapCollisions = false;
 	//shape.SetStatic(true);
 	//shape.UpdateStaticBody();
-	
+	this.set_u16("lifetime", 3);
+
 	this.Tag("barrier");
 	this.Tag("solidblob");
 	this.Tag("counterable");

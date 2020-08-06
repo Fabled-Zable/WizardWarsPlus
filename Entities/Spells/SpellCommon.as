@@ -294,9 +294,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbDamage *= 0.0f;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -498,9 +497,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 			
@@ -545,9 +543,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 			
@@ -575,22 +572,27 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			f32 orbspeed = 4.0f;
 
-			if (charge_state == NecromancerParams::cast_1) 
+			switch(charge_state)
 			{
-				orbspeed *= (1.0f/2.0f);
-			}
-			else if (charge_state == NecromancerParams::cast_2) 
-			{
-				orbspeed *= (4.0f/5.0f);
-			}
-			else if (charge_state == NecromancerParams::extra_ready) 
-			{
-				orbspeed *= 1.2f;
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbspeed *= 1.0f;
+				}
+				break;
+				
+				case super_cast:
+				{
+					orbspeed *= 1.2f;
+				}
+				break;
+				
+				default:return;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;	
 			
@@ -621,18 +623,28 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			float spreadarc = 10;
 			//bool lowboid = false;
 
-			if (charge_state == NecromancerParams::cast_3) {
-				orbspeed *= 1.0f;
-			}
-			else if (charge_state == NecromancerParams::extra_ready) {
-				orbspeed *= 2.0f;
-				spreadarc = 5;
-				//lowboid = true;
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbspeed *= 1.0f;
+				}
+				break;
+				
+				case super_cast:
+				{
+					orbspeed *= 2.0f;
+					spreadarc = 5;
+				}
+				break;
+				
+				default:return;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;	
 			
@@ -671,19 +683,27 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 			f32 orbspeed = 6.0f;
 
-			if (charge_state == NecromancerParams::cast_1) {
-				orbspeed *= (1.0f/2.0f);
-			}
-			else if (charge_state == NecromancerParams::cast_2) {
-				orbspeed *= (4.0f/5.0f);
-			}
-			else if (charge_state == NecromancerParams::extra_ready) {
-				orbspeed *= 1.2f;
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbspeed *= 1.0f;
+				}
+				break;
+				
+				case super_cast:
+				{
+					orbspeed *= 1.2f;
+				}
+				break;
+				
+				default:return;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -704,9 +724,29 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			f32 orbspeed = 4.0f;
 			u16 effectTime = 600;
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbspeed *= 1.0f;
+					effectTime *= 1.0f;
+				}
+				break;
+				
+				case super_cast:
+				{
+					orbspeed *= 1.5f;
+					effectTime *= 1.2f;
+				}
+				break;
+				
+				default:return;
+			}
+
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 			
@@ -731,17 +771,33 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			f32 orbspeed = 4.0f;
 			u16 effectTime = 600;
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbspeed *= 1.0f;
+					effectTime *= 1.0f;
+				}
+				break;
+				
+				case super_cast:
+				{
+					Haste(this, effectTime);
+					return; //hastes self, doesn't send projectile
+				}
+				break;
+				
+				default:return;
+			}
+
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
-			if (charge_state == NecromancerParams::extra_ready)
-			{
-				Haste(this, effectTime);
-			}		
-			else if (isServer())
+			if (isServer())
 			{
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
@@ -761,18 +817,27 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			f32 orbspeed = 4.0f;
 
-			if (charge_state == WizardParams::cast_3) 
+			switch(charge_state)
 			{
-				orbspeed *= 0.8f;
-			}
-			else if (charge_state == WizardParams::extra_ready) 
-			{
-				orbspeed *= 1.2f;
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbspeed *= 0.8f;
+				}
+				break;
+				
+				case super_cast:
+				{
+					orbspeed *= 1.2f;
+				}
+				break;
+				
+				default:return;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;	
 			
@@ -797,13 +862,12 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			
 			u16 manaUsed = spell.mana;
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
-			if (charge_state == NecromancerParams::extra_ready)
+			if (charge_state == super_cast)
 			{
 				manaUsed += 1;
 			}
@@ -834,7 +898,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			u16 windTime = 40;
 
-			if (charge_state == NecromancerParams::extra_ready)
+			if (charge_state == super_cast)
 			{
 				windTime = 50;
 			}
@@ -848,17 +912,33 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			f32 orbspeed = 4.0f;
 			u16 effectTime = 600;
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbspeed *= 1.0f;
+					effectTime *= 1.0f;
+				}
+				break;
+				
+				case super_cast:
+				{
+					AirblastShield(this, effectTime);
+					return; //Airblast self, doesn't send projectile
+				}
+				break;
+				
+				default:return;
+			}
+
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
-			if (charge_state == NecromancerParams::extra_ready)
-			{
-				AirblastShield(this, effectTime);
-			}
-			else if (isServer())
+			if (isServer())
 			{
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
@@ -880,17 +960,33 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			f32 orbspeed = 4.0f;
 			u16 effectTime = 900;
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbspeed *= 1.0f;
+					effectTime *= 1.0f;
+				}
+				break;
+				
+				case super_cast:
+				{
+					FireWard(this, effectTime);
+					return; //Fireward self, doesn't send projectile
+				}
+				break;
+				
+				default:return;
+			}
+
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
-			if (charge_state == NecromancerParams::extra_ready)
-			{
-				FireWard(this, effectTime);
-			}
-			else if (isServer())
+			if (isServer())
 			{
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
@@ -912,9 +1008,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			f32 orbspeed = 4.0f;
 			u16 effectTime = 600;
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -978,7 +1073,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				
 				if (plant !is null)
 				{
-					if( charge_state == 5)//full charge
+					if( charge_state == super_cast )//full charge
 					{
 						lifetime = 15;
 					}
@@ -1003,7 +1098,30 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 382419657://rock_wall
 		{
-			u16 lifetime = 3;
+			u16 lifetime = 1;
+
+			switch(charge_state) //trickle down lifetime adder
+			{
+				case super_cast:
+				{
+					lifetime += 2;
+				}
+
+				case complete_cast:
+				{
+					lifetime++;
+				}
+
+				case medium_cast:
+				{
+					lifetime++;
+				}
+
+				case minimum_cast:
+				break;
+
+				default:return;
+			}
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f dirNorm = (targetPos - this.getPosition());
@@ -1196,24 +1314,40 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
            		return;
 			}
 
-			f32 orbspeed = NecromancerParams::shoot_max_vel * 1.1f;
-			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
-			f32 orbDamage = 0.6f * extraDamage;
-            
-            if (charge_state == NecromancerParams::cast_3) {
-				orbDamage *= 1.0f;
-			}
-			else if (charge_state == NecromancerParams::extra_ready) {
-				orbspeed *= 1.2f;
-				orbDamage *= 1.5f;
+			bool extra_damage = this.hasTag("extra_damage");
+			bool charged = false;
+			f32 extraDamage = extra_damage ? 1.3f : 1.0f;
+			f32 orbDamage = 0.4f * extraDamage;
+			f32 orbspeed = NecromancerParams::shoot_max_vel * 1.1f * extraDamage;
+			int numOrbs = 10;  //number of swords
+			
+            switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					numOrbs = extra_damage ? 15 : 10;
+				}
+				break;
+				
+				case super_cast:
+				{
+					orbspeed *= 1.3f;
+					orbDamage += 0.2f;
+					numOrbs = this.hasTag("extra_damage") ? 24 : 15; //24 swords if damage buff
+					charged = true;
+				}
+				break;
+				
+				default:return;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
-			const int numOrbs = 16;  //number of swords
+			Vec2f orbVel = (aimpos- orbPos);
+			
 			float anglePerOrb = 360/numOrbs;
-			float swordWheelRot = -(XORRandom(anglePerOrb) + 1);
+			float swordWheelRot = XORRandom(anglePerOrb);
 			for (int i = 0; i < numOrbs; i++)
 			{
 				CBlob@ orb = server_CreateBlob( "expunger" );
@@ -1230,7 +1364,18 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orb.server_setTeamNum( this.getTeamNum() );
 					orb.getShape().SetGravityScale(0);
 					orb.setPosition( orbPos );
-					Vec2f spawnVel = Vec2f(0,-3); //Spawn Speed
+
+					Vec2f spawnVel; //random sword spread system
+					if(extra_damage && charged)
+					{
+						float randomness = (XORRandom(40)/10)+1;
+						spawnVel = Vec2f( 0 , randomness );
+					}
+					else
+					{
+						spawnVel = Vec2f( 0 , 3 );
+					}
+
 					spawnVel.RotateBy(swordWheelRot + anglePerOrb*i, Vec2f());
 					orb.setVelocity(spawnVel);
 				}
@@ -1312,14 +1457,13 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbDamage *= 1.1f;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
 			//distance between you and the target
-			float stopLength = (targetPos - orbPos).Length() / 128;
+			float stopLength = (aimpos - orbPos).Length() / 128;
 			u32 lifetime = stopLength *15;
 
 			CBlob@ orb = server_CreateBlob("executioner",this.getTeamNum(),orbPos);
@@ -1375,9 +1519,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbDamage *= 1.5f;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -1493,6 +1636,11 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 							{
 								orb.set_u32("lifetime", other.get_u32("lifetime"));
 							}
+							if(other.hasTag("extra_damage"))
+							{
+                        		orb.Tag("extra_damage");
+							}
+
 							orb.IgnoreCollisionWhileOverlapped( other );
 							orb.SetDamageOwnerPlayer( this.getPlayer() );
 							orb.getShape().SetGravityScale(0);
@@ -1537,9 +1685,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbspeed *= 1.2f;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -1636,9 +1783,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbspeed *= 1.3f;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (targetPos- orbPos);
+			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 

@@ -55,7 +55,7 @@ namespace WizardParams
 			SpellType::other, 50, 40, 0, 360.0f, true),
 			 
 		Spell("magic_barrier", "Magic Barrier", 21, "Create a wall of pure magical energy in front of you that blocks most small projectiles.",
-			SpellType::other, 20, 7, 0, 32.0f, true),
+			SpellType::other, 18, 7, 0, 32.0f, true),
 			
 		Spell("slow", "Slow", 19, "Deprive a player of his speed and ability to teleport for a few moments.",
 			SpellType::other, 20, 10, 0, 360.0f, true), 

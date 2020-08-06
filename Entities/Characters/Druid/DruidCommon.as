@@ -46,7 +46,7 @@ namespace DruidParams
 			SpellType::other, 4, 10, 0, 360.0f, true),	
 				
 		Spell("rock_wall", "Rock Wall", 36, "Create a wall of ordinary rock in front of you that blocks most things both ways. Its not exactly durable though.",
-			SpellType::other, 12, 5, 0, 30.0f, true),
+			SpellType::other, 12, 15, 0, 30.0f),
 				
 		Spell("healing_plant", "Nature's Remedy", 37, "This blessing from nature will seal your wounds.",
 			SpellType::other, 12, 7, 4, 60.0f, true),
