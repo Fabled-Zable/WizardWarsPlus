@@ -1445,22 +1445,39 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
            		return;
 			}
 
-			f32 orbspeed = NecromancerParams::shoot_max_vel * 1.0f;
 			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
-			f32 orbDamage = 2.4f * extraDamage; 
+			f32 orbDamage = 2.0f * extraDamage; 
+
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbDamage *= 1.0f;
+				}
+				break;
+				
+				case super_cast:
+				{
+					orbDamage *= 1.2f;
+				}
+				break;
+				
+				default:return;
+			}
 
 			if (charge_state == NecromancerParams::cast_3) {
-				orbDamage *= 1.0f;
+				
 			}
 				else if (charge_state == NecromancerParams::extra_ready) {
-				orbspeed *= 1.0f;
-				orbDamage *= 1.1f;
+				
 			}
 
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
 			Vec2f orbVel = (aimpos- orbPos);
 			orbVel.Normalize();
-			orbVel *= orbspeed;
+			orbVel *= 8;
 
 			//distance between you and the target
 			float stopLength = (aimpos - orbPos).Length() / 128;
