@@ -12,6 +12,7 @@ void onInit(CBlob@ this)
 	this.Tag("counterable");
 	shape.SetGravityScale( 0.0f );
 	
+	this.set_u32("lifetime",0);
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
 
