@@ -401,3 +401,32 @@ s8 parryTargetIdentifier( CBlob@ b )
 	
 	return -1;
 }
+
+float undeadCounterspellDamage( CBlob@ b )
+{
+	if(b is null){return 0;}
+
+	string blobname = b.getName();
+	switch(blobname.getHash())
+	{
+		case 285410015: //zombie
+		{
+			return 3.0f;
+		}
+		break;
+
+		case -1320380562: //skeleton
+		case 643717442: //zombieknight
+		{
+			return 4.0f;
+		}
+		break;
+
+		default: //default damage to undead
+		{
+			return 1.8f;
+		}
+	}
+	
+	return 1.8f;
+}

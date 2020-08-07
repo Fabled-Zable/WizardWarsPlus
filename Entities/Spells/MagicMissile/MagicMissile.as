@@ -88,26 +88,6 @@ void onTick( CBlob@ this)
         this.AddForce(norm*HOMING_FACTOR);
     }
 
-    if(this.getDistanceTo(target) <= 5) //hit detection
-    {
-        if(target.getTeamNum() != this.getTeamNum())
-        {
-            float damage = 1.0f;
-            if (target.getName() == "knight")
-            {
-                damage = 0.8f;
-                if (target.hasTag("shielded"))
-                {
-                    if(isClient())
-                    {this.getSprite().PlaySound("ShieldHit.ogg");}
-                    damage = 0.2;
-                }
-            }
-            this.server_Hit(target,target.getPosition(),this.getVelocity()*3,damage,Hitters::water);
-			blast(this, 4);
-            this.server_Die();
-        }
-    }
 }
 
 void onTick(CSprite@ this)
@@ -147,12 +127,31 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 	if (blob is null)
 	{return;}
 
-	if (blob.hasTag("barrier"))
-	{
-		this.server_Hit(blob,blob.getPosition(),this.getVelocity(),2.4f,Hitters::water);
+	//hit detection
+    if(blob.getTeamNum() != this.getTeamNum())
+    {
+		float damage = 1.0f;
+
+		if (blob.hasTag("barrier"))
+		{
+			damage = 2.5f;
+		}
+		else if (blob.getName() == "knight")
+		{
+    		damage = 0.8f;
+            if (blob.hasTag("shielded"))
+            {
+                if(isClient())
+                {this.getSprite().PlaySound("ShieldHit.ogg");}
+                damage = 0.2;
+            }
+        }
+		else if (!blob.hasTag("flesh"))
+		{return;}
+        this.server_Hit(blob,blob.getPosition(),this.getVelocity()*3,damage,Hitters::water);
 		blast(this, 4);
-		this.server_Die();
-	}
+        this.server_Die();
+    }
 }
 
 bool doesCollideWithBlob( CBlob@ this, CBlob@ b )

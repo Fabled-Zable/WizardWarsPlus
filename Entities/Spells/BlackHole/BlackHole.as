@@ -1,10 +1,9 @@
 #include "Hitters.as";
 #include "MagicCommon.as";
 
-const f32 PULL_RADIUS = 128.0f;
-const f32 MAX_FORCE = 128.0f;
+const f32 PULL_RADIUS = 192.0f;
+const f32 MAX_FORCE = 100.0f;
 const int LIFETIME = 14;
-const f32 MANA_DRAIN = 2.0f;
 
 const int PARTICLE_TICKS = 6;
 
@@ -38,6 +37,10 @@ void onTick(CSprite@ this)
 void onTick(CBlob@ this)
 {
 	Vec2f thisPos = this.getPosition();
+
+	CMap@ map = this.getMap();
+	if (map is null)
+	return;
 	
 	if (this.getTickSinceCreated() < 1)
 	{		
@@ -45,17 +48,20 @@ void onTick(CBlob@ this)
 	}
 
 	CBlob@[] attracted;
-	this.getMap().getBlobsInRadius( thisPos, PULL_RADIUS, @attracted );
+	map.getBlobsInRadius( thisPos, PULL_RADIUS, @attracted );
 	for (uint i = 0; i < attracted.size(); i++)
 	{
 		CBlob@ attractedblob = attracted[i];
 		if (attractedblob is null)
-			continue;
+		continue;
+
+		Vec2f blobPos = attractedblob.getPosition();
+		if ( map.rayCastSolid(thisPos, blobPos) )
+		continue;
 		
-		if ( ((attractedblob.getTeamNum() != this.getTeamNum() || attractedblob.getConfig() == "arcane_circle") && !attractedblob.hasTag("dead"))
-				|| (attractedblob.hasTag("black hole")) )
+		if ( ((attractedblob.getTeamNum() != this.getTeamNum() || attractedblob.hasTag("magic_circle")) && !attractedblob.hasTag("dead"))
+		|| (attractedblob.hasTag("black hole")) )
 		{
-			Vec2f blobPos = attractedblob.getPosition();
 			Vec2f pullVec = thisPos - blobPos;
 			Vec2f pullNorm = pullVec;
 			pullNorm.Normalize();
@@ -68,82 +74,68 @@ void onTick(CBlob@ this)
 			ManaInfo@ manaInfo;
 			if (attractedblob.get("manaInfo", @manaInfo) && (getGameTime() % 24 == 0))
 			{
-				CMap@ map = this.getMap();
-				if (map is null)
-					return;
-			
-				if ( !map.rayCastSolid(thisPos, blobPos) )
+				s8 MANA_DRAIN = manaInfo.manaRegen - 1;
+				if (attractedblob.getName() == "entropist")
 				{
-					if (manaInfo.mana > 0.0)
+					if(manaInfo.mana > 1)
 					{
-						if (attractedblob.getName() == "entropist")
-						{
-							manaInfo.mana -= 1.0f;
-						}
-						else
-						{
-							manaInfo.mana -= MANA_DRAIN;
-						}
-						attractedblob.getSprite().PlaySound("ManaDraining.ogg", 0.5f, 1.0f + XORRandom(2)/10.0f);
-						makeManaDrainParticles( blobPos, 30 );
-					
-						CPlayer@ giventoplayer = this.getDamageOwnerPlayer(); // borked
-						if (giventoplayer !is null)
-						{
-							CBlob@ givento = giventoplayer.getBlob();
-							if (givento !is null)
-							{
-								ManaInfo@ ownerMana;
-								if (givento.get("manaInfo", @ownerMana))
-								{
-									ownerMana.mana = Maths::Min(ownerMana.maxMana, ownerMana.mana + MANA_DRAIN);
-									givento.getSprite().PlaySound("ManaGain.ogg", 0.5f, 1.0f + XORRandom(2)/10.0f);
-								}
-							}
-						}
+						manaInfo.mana -= 1;
 					}
 					else
 					{
-						manaInfo.mana = 0.0;
+						manaInfo.mana = 0;
 					}
 				}
-			}
-		}
-	}
-	
-	// combine with other black holes in random intervals
-	if ( XORRandom(4) == 0 )
-	{
-		CBlob@[] touching;
-		this.getMap().getBlobsInRadius( thisPos, 8.0f, @touching );
-		for (uint i = 0; i < touching.size(); i++)
-		{
-			CBlob@ touchingBlob = touching[i];
-			if (touchingBlob is null || touchingBlob is this)
-				continue;
-				
-			if ( touchingBlob.hasTag("black hole"))
-			{
-				touchingBlob.server_Die();
-				this.server_Die();
-
-				server_CreateBlob( "black_hole_big", this.getTeamNum(), thisPos ); // moved down here so we dont accidently make a blob before killing the last 2
-				break; // dont merge with the rest, we dont want more portals then what die off
+				else if (manaInfo.mana > MANA_DRAIN)
+				{
+					manaInfo.mana -= MANA_DRAIN;
+					
+					attractedblob.getSprite().PlaySound("ManaDraining.ogg", 0.5f, 1.0f + XORRandom(2)/10.0f);
+					makeManaDrainParticles( blobPos, 30 );
+				}
+				else
+				{
+					manaInfo.mana = 0.0;
+				}
+			
 			}
 		}
 	}
 	
 	if ( this.getTickSinceCreated() > LIFETIME*30 + 15 )
-		this.Tag("die");
+	this.Tag("dead");
 	
 	if ( getNet().isClient() && getGameTime() % PARTICLE_TICKS == 0 )
-		makeBlackHoleParticle( thisPos, Vec2f(0,0) );
+	makeBlackHoleParticle( thisPos, Vec2f(0,0) );
+}
+
+void onCollision( CBlob@ this, CBlob@ blob, bool solid )
+{
+	if(this is null || blob is null)
+	return;
+
+	if(this.hasTag("dead") || blob.hasTag("dead"))
+	return;
+
+	if ( blob.hasTag("black hole") ) //combine with other black holes
+	{
+		Vec2f thisPos = this.getPosition();
+		this.Tag("dead");
+		blob.Tag("dead");
+		this.server_Die();
+		blob.server_Die();
+
+		server_CreateBlob( "black_hole_big", -1, thisPos ); // moved down here so we dont accidently make a blob before killing the last 2
+	}
 }
 
 void updateBlackHoleParticle( CParticle@ p )
 {
 	if ( !getNet().isClient() )
-		return;
+	return;
+
+	if(p is null)
+	return;
 
 	CBlob@[] blackHoles;
 	if (getBlobsByName("black_hole", @blackHoles))
@@ -176,7 +168,7 @@ void updateBlackHoleParticle( CParticle@ p )
 				//p.velocity *= 0.5f;
 			}
 			
-			if ( dist < 16.0f || bHole.hasTag("die") )
+			if (dist < 16.0f || (bHole !is null && bHole.hasTag("dead")) )
 			{
 				p.frame = 7;
 				sparks(p.position, 2);
@@ -230,7 +222,7 @@ void makeManaDrainParticles( Vec2f pos, int amount )
         vel.RotateBy(_sprk_r2.NextFloat() * 360.0f);
 
         CParticle@ p = ParticlePixel( pos, vel, SColor( 255, 120+XORRandom(40), 0, 255), true );
-        if(p is null) return; //bail if we stop getting particles
+        if(p is null) continue; //bail if we stop getting particles
 
         p.timeout = 10 + _sprk_r2.NextRanged(30);
         p.scale = 1.0f + _sprk_r2.NextFloat();
@@ -263,7 +255,7 @@ void blast(Vec2f pos, int amount)
 									0.0f, 
 									false );
 									
-        if(p is null) return; //bail if we stop getting particles
+        if(p is null) continue; //bail if we stop getting particles
 		
         p.scale = 0.5f + _blast_r.NextFloat()*0.5f;
         p.damping = 0.9f;
@@ -285,7 +277,7 @@ void sparks(Vec2f pos, int amount)
 		
 		int colorShade = _sprk_r.NextRanged(128);
         CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, colorShade, colorShade), true );
-        if(p is null) return; //bail if we stop getting particles
+        if(p is null) continue; //bail if we stop getting particles
     	p.fastcollision = true;
         p.timeout = 40 + _sprk_r.NextRanged(20);
         p.scale = 0.5f + _sprk_r.NextFloat();

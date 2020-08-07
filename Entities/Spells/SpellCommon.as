@@ -2309,11 +2309,12 @@ void counterSpell( CBlob@ caster )
 					countered = true;
 				}
 				else if ( b.hasTag("zombie") && !sameTeam )
-				{					
-					if ( b.hasTag("Greg") )
-						caster.server_Hit(b, caster.getPosition(), Vec2f(0, 0), 0.25f, Hitters::fire, true);
-					else
-						caster.server_Hit(b, caster.getPosition(), Vec2f(0, 0), 4.0f, Hitters::fire, true);
+				{
+					float damage = undeadCounterspellDamage(b);
+					if(damage == 0)
+					{return;}
+
+					caster.server_Hit(b, caster.getPosition(), Vec2f(0, 0), damage, Hitters::fire, true);
 					
 					countered = true;
 				}

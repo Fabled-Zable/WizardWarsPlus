@@ -39,7 +39,7 @@ namespace NecromancerParams
 			SpellType::summoning, 15, 10, 0, 64.0f, true),
 			 
 		Spell("black_hole", "Black Hole", 18, "Open a portal into outer space, pulling your enemies into the airless void. Also drains the mana of enemies in the area and gives it to the caster.",
-			SpellType::other, 45, 150, 5, 180.0f, true),
+			SpellType::other, 45, 120, 5, 180.0f, true),
 			 
 		//Spell("greg", "Greg", 4, "Testing",
 			//SpellType::summoning, 20, 50, 15, 64.0f, true),

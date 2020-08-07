@@ -147,7 +147,6 @@ void onInit(CBlob@ this)
 	this.Tag("flesh");
 	this.Tag("zombie");
 	this.Tag("freezable");
-	this.Tag("Greg");
 	this.set_s16("mad timer", 0);
 
 	
