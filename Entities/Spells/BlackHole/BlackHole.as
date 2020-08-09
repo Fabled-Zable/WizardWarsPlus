@@ -38,7 +38,7 @@ void onTick(CBlob@ this)
 {
 	Vec2f thisPos = this.getPosition();
 
-	CMap@ map = this.getMap();
+	CMap@ map = getMap();
 	if (map is null)
 	return;
 	

@@ -33,18 +33,23 @@ void onInit(CBlob@ this)
 void onTick( CBlob@ this)
 {
 	//trail
-	if ( this.getTickSinceCreated() % 2 == 0 )
+	if ( isClient() && this.getTickSinceCreated() % 2 == 0 )
 	{
 		makeSmokeParticle(this);
 	}
-	
-	//logic 
-	CBlob@[] blobs;
-    getMap().getBlobsInRadius(this.getPosition(),SEARCH_RADIUS,@blobs);
-    CPlayer@ damageOwnerPlayer = this.getDamageOwnerPlayer();
 
-    int index = closestBlobIndex(this,blobs,this.getDamageOwnerPlayer());
-    if(index == -1) //if no target, accelerate normally.
+	bool homingEnabled = ( this.getTickSinceCreated() >= HOMING_DELAY ); //wait a bit before homing
+	CBlob@[] blobs;
+	int index = -1;
+
+	//logic
+	if(homingEnabled)
+	{
+    	getMap().getBlobsInRadius(this.getPosition(),SEARCH_RADIUS,@blobs);
+		index = closestBlobIndex(this,blobs);
+	}
+
+    if( !homingEnabled || index == -1 ) //if no target, accelerate normally.
 	{
 		Vec2f accel = this.getVelocity();
 		accel.Normalize();
@@ -52,12 +57,10 @@ void onTick( CBlob@ this)
 		this.AddForce(accel*0.4f);
 		return;
 	}
-
-    CBlob@ target = blobs[index];
-
-    int creaTicks = this.getTickSinceCreated();
-    if( creaTicks >= HOMING_DELAY )//wait a bit before homing
+	else
     {
+		CBlob@ target = blobs[index];
+
         Vec2f thisPos = this.getPosition();
 		Vec2f thisVelNorm = this.getVelocity();
 		Vec2f thisVel = thisVelNorm;
@@ -92,19 +95,32 @@ void onTick( CBlob@ this)
 
 void onTick(CSprite@ this)
 {
-    this.ResetTransform();
-    this.RotateBy(this.getBlob().getVelocity().getAngle() * -1,Vec2f_zero);
+	if(!isClient())
+	return;
+	if(this is null)
+	return;
+
+	if(this.getBlob() !is null)
+	{
+   		this.ResetTransform();
+    	this.RotateBy(this.getBlob().getVelocity().getAngle() * -1,Vec2f_zero);
+	}
 }
 
-int closestBlobIndex(CBlob@ this, CBlob@[] blobs, CPlayer@ caster)
+int closestBlobIndex(CBlob@ this, CBlob@[] blobs)
 {
+	if(this is null)
+	return -1;
+
     f32 bestDistance = 99999999;
     int bestIndex = -1;
 
     for(int i = 0; i < blobs.length; i++){
 		if (blobs[i] is null)
 		{continue;}
-        if ( this.getTeamNum() == blobs[i].getTeamNum() || (caster !is null && blobs[i] is caster.getBlob()) || !blobs[i].hasTag("flesh") || blobs[i].hasTag("dead") )
+		if (blobs[i] is this)
+		{continue;}
+        if ( this.getTeamNum() == blobs[i].getTeamNum() || !blobs[i].hasTag("flesh") || blobs[i].hasTag("dead") )
 		{continue;}
         f32 dist = this.getDistanceTo(blobs[i]);
         if(bestDistance > dist)
@@ -122,6 +138,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
     {
 		blast(this, 4);
         this.server_Die();
+		return;
     }
 
 	if (blob is null)
@@ -148,6 +165,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
         }
 		else if (!blob.hasTag("flesh"))
 		{return;}
+
         this.server_Hit(blob,blob.getPosition(),this.getVelocity()*3,damage,Hitters::water);
 		blast(this, 4);
         this.server_Die();
@@ -170,7 +188,6 @@ void makeSmokeParticle( CBlob@ this )
 {
 	if (this is null)
 	{ return; }
-	if(!isClient()) return;
 
 	const f32 rad = 1.0f;
 	Vec2f random = Vec2f( XORRandom(128)-64, XORRandom(128)-64 ) * 0.015625f * rad;

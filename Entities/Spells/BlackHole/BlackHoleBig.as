@@ -1,8 +1,8 @@
 #include "Hitters.as";
 #include "MagicCommon.as";
 
-const f32 PULL_RADIUS = 320.0f;
-const f32 MAX_FORCE = 100.0f;
+const f32 PULL_RADIUS = 256.0f;
+const f32 MAX_FORCE = 128.0f;
 const int LIFETIME = 14;
 
 void onInit(CBlob@ this)
@@ -34,7 +34,7 @@ void onTick(CBlob@ this)
 {
 	Vec2f thisPos = this.getPosition();
 
-	CMap@ map = this.getMap();
+	CMap@ map = getMap();
 	if (map is null)
 	return;
 
