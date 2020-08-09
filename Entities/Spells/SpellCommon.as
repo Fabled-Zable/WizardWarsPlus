@@ -28,6 +28,11 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		f32 orbDamage = X.Xf * extraDamage;
 	*/
 
+	if(isClient())
+	{
+		this.set_u16("focus", 0);
+	}
+
     string spellName = spell.typeName;
 	switch(spellName.getHash())
 	{
@@ -2047,15 +2052,22 @@ void CastNegentropy( CBlob@ this )
 		gatheredMana += absorbed;
 		
 	}
-	u8 maxMana = manaInfo.maxMana;
-	if (manaInfo.mana + gatheredMana >= maxMana)
-	{manaInfo.mana = maxMana;}
-	else
-	{manaInfo.mana += gatheredMana;}
 
 	if ( !isClient() )
 	{return;}
 
+	u8 maxMana = manaInfo.maxMana;
+	if(this.hasTag("focused")) //extra mana if focus mode
+	{
+		gatheredMana *= 1.3f;
+		this.Untag("focused");
+		this.set_u16("focus",0);
+	}
+	if (manaInfo.mana + gatheredMana >= maxMana)
+	{manaInfo.mana = maxMana;}
+	else
+	{manaInfo.mana += gatheredMana;}
+	
 	CSprite@ sprite = this.getSprite();
 	if (gatheredMana == 0)
 	{

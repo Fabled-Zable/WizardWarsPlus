@@ -1,9 +1,16 @@
 //recover mana
 #include "MagicCommon.as";
 
+const u8 MIN_FOCUS_TIME = 5; //in seconds
+
 void onInit(CBlob@ this)
 {
 	this.getCurrentScript().removeIfTag = "dead";
+
+    if(isClient())
+    {
+        this.set_u16("focus", 0);
+    }
 }
 
 void onTick(CBlob@ this)
@@ -13,13 +20,16 @@ void onTick(CBlob@ this)
         return;
     }
 
+    ManaInfo@ manaInfo;
+	if (!this.get( "manaInfo", @manaInfo )) 
+	{
+		return;
+	}
+
+    u8 ticksPerSecond = getTicksASecond();
+
     if (!this.hasTag("mana_calcs_done"))
     {
-        ManaInfo@ manaInfo;
-		if (!this.get( "manaInfo", @manaInfo )) 
-		{
-			return;
-		}
         u8 manaRegenRate = manaInfo.manaRegen;//Default mana regen
         //adjusting mana regen rate based on team balance
         uint team0 = 0;
@@ -43,6 +53,11 @@ void onTick(CBlob@ this)
                         team1++;
                     }
                     break;
+
+                    case 3:
+                    {
+                        manaRegenRate *= 3;
+                    }
 
                     default:
                     {
@@ -70,17 +85,13 @@ void onTick(CBlob@ this)
                 }
             }
         }
-
-        if ( this.getTeamNum() == 3 )
-        {
-            manaRegenRate *= 2;
-        }
         
         this.set_u8("mana regen rate", manaRegenRate);//Set the mana regen rate
+        this.set_u8("OG_manaRegen", manaRegenRate); //Reminder for the original value
         this.Tag("mana_calcs_done");
     }
 
-	if (getGameTime() % getTicksASecond() == 0)
+	if (getGameTime() % ticksPerSecond == 0)
 	{
 		ManaInfo@ manaInfo;
 		if (!this.get( "manaInfo", @manaInfo )) 
@@ -103,5 +114,49 @@ void onTick(CBlob@ this)
                 manaInfo.mana = maxMana;
         }
 
+    }
+
+    if( this is null || !this.hasTag("mana_calcs_done") )
+    return;
+
+    u8 ogRegen = this.get_u8("OG_manaRegen");
+
+    if(this.getVelocity() == Vec2f_zero)
+    {
+        if(this.get_u16("focus") > (ticksPerSecond * MIN_FOCUS_TIME) )
+        {
+            if(ogRegen != 0)
+            {
+                this.set_u8("mana regen rate", ogRegen+1);
+            }
+            else
+            {
+                this.Tag("focused");
+            }
+            Vec2f thisPos = this.getPosition();
+            for (int i = 0; i < 3; i++)
+            {
+                Vec2f pixelPos = thisPos + Vec2f( XORRandom(26)-13,XORRandom(26)-13 );
+                CParticle@ p = ParticlePixel( pixelPos , Vec2f_zero , SColor( 255, 120+XORRandom(40), 0, 255) , true , XORRandom(7)+3);
+                if(p !is null)
+                {
+                    p.gravity = Vec2f(0,-0.3f);
+                }
+            }
+        }
+        else
+        {
+            if(ogRegen == 0 && this.hasTag("focused"))
+            {
+                this.Untag("focused");
+            }
+            this.set_u16("focus", this.get_u16("focus")+1);
+        }
+    }
+    else
+    {
+        this.set_u16("focus", 0);
+        this.set_u8("mana regen rate", ogRegen);
+        return;
     }
 }

@@ -56,7 +56,7 @@ void onTick(CBlob@ this)
 		continue;
 
 		Vec2f blobPos = attractedblob.getPosition();
-		if ( map.rayCastSolid(thisPos, blobPos) )
+		if ( map.rayCastSolidNoBlobs(thisPos, blobPos) )
 		continue;
 		
 		if ( ((attractedblob.getTeamNum() != this.getTeamNum() || attractedblob.hasTag("magic_circle")) && !attractedblob.hasTag("dead"))

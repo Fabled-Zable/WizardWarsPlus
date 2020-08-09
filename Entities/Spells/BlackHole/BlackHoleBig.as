@@ -3,11 +3,11 @@
 
 const f32 PULL_RADIUS = 256.0f;
 const f32 MAX_FORCE = 128.0f;
-const int LIFETIME = 14;
+const int LIFETIME = 15;
 
 void onInit(CBlob@ this)
 {
-	this.server_SetTimeToDie(LIFETIME+1);
+	this.server_SetTimeToDie(LIFETIME);
 	this.getShape().SetGravityScale(0.0);
 	this.Tag("counterable");
 	this.Tag("black hole");
@@ -52,11 +52,8 @@ void onTick(CBlob@ this)
 		continue;
 
 		Vec2f blobPos = attractedblob.getPosition();
-		if ( map.rayCastSolid(thisPos, blobPos) )
-		return;
 		
-		if ( !attractedblob.hasTag("dead")
-				|| (attractedblob.hasTag("black hole")) )
+		if ( !attractedblob.hasTag("dead") )
 		{
 			Vec2f pullVec = thisPos - blobPos;
 			Vec2f pullNorm = pullVec;
@@ -68,7 +65,7 @@ void onTick(CBlob@ this)
 			attractedblob.AddForce(finalForce);
 			
 			ManaInfo@ manaInfo;
-			if (attractedblob.get("manaInfo", @manaInfo) && (getGameTime() % 24 == 0))
+			if ( (getGameTime() % 24 == 0) && attractedblob.get("manaInfo", @manaInfo) && !map.rayCastSolidNoBlobs(thisPos, blobPos) )
 			{
 				s8 MANA_DRAIN = manaInfo.manaRegen + 1;
 				if (attractedblob.getName() == "entropist")
@@ -97,7 +94,7 @@ void onTick(CBlob@ this)
 		}
 	}
 	
-	if ( this.getTickSinceCreated() > LIFETIME*30 + 15 )
+	if ( this.getTickSinceCreated() > LIFETIME*getTicksASecond() - 15 )
 	this.Tag("dead");
 }
 
@@ -124,7 +121,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 Random _sprk_r2(12432);
 void makeManaDrainParticles( Vec2f pos, int amount )
 {
-	if ( !getNet().isClient() )
+	if ( !isClient() )
 	return;
 	
 	for (int i = 0; i < amount; i++)
@@ -146,7 +143,7 @@ void makeManaDrainParticles( Vec2f pos, int amount )
 Random _blast_r(0x10002);
 void blast(Vec2f pos, int amount)
 {
-	if ( !getNet().isClient() )
+	if ( !isClient() )
 		return;
 
 	for (int i = 0; i < amount; i++)
@@ -178,7 +175,7 @@ void blast(Vec2f pos, int amount)
 Random _sprk_r(2354);
 void sparks(Vec2f pos, int amount)
 {
-	if ( !getNet().isClient() )
+	if ( !isClient() )
 		return;
 
 	for (int i = 0; i < amount; i++)
