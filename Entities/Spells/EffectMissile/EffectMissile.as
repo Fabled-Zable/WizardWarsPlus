@@ -239,15 +239,15 @@ void onTick( CBlob@ this)
 		}
 	}
 
-	if(!getNet().isClient()) 
-		return;
+	if(!isClient()) 
+	return;
 		
 	//face towards target like a ballista bolt
 	f32 angle = thisVel.Angle();	
 	thisSprite.ResetTransform();
 	thisSprite.RotateBy( -angle, Vec2f(0,0) );
 	
-	//makeSmokePuff(this);
+	makeSmokePuff(this.getPosition());
 }
 
 bool followsAllies( CBlob@ this )
@@ -351,16 +351,21 @@ void makeSmokeParticle(CBlob@ this, const Vec2f vel, const string filename = "Sm
 	//warn("smoke made");
 }
 
-void makeSmokePuff(CBlob@ this, const f32 velocity = 1.0f, const int smallparticles = 10, const bool sound = true)
+void makeSmokePuff(Vec2f thisPos)
 {
+	CParticle@ p = ParticlePixel( thisPos , Vec2f_zero , SColor( 255, 255, 255, 255) , true , 10);
+	if(p !is null)
+    {
+        p.gravity = Vec2f_zero;
+    }
 
 	//makeSmokeParticle(this, Vec2f(), "Smoke");
-	//for (int i = 0; i < smallparticles; i++)
+	/*for (int i = 0; i < smallparticles; i++)
 	{
 		f32 randomness = (XORRandom(32) + 32)*0.015625f * 0.5f + 0.75f;
 		Vec2f vel = getRandomVelocity( -90, velocity * randomness, 360.0f );
 		makeSmokeParticle(this, vel);
-	}
+	}*/
 }
 
 Random _sprk_r(2345);
