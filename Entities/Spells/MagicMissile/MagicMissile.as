@@ -6,148 +6,166 @@ const int LIFETIME = 10;
 const f32 SEARCH_RADIUS = 128.0f;
 const f32 HOMING_FACTOR = 2.1f;
 //const f32 CORRECTION_FACTOR = 0.1f;
-const int HOMING_DELAY = 15;	
+const int HOMING_DELAY = 15; // before first tick
+const int SEARCH_DELAY = 5; // how often to tick to try search for new targets
 
 
 void onInit(CBlob@ this)
 {
 	this.Tag("phase through spells");
-    this.Tag('counterable');
+    this.Tag("counterable");
+	this.set_f32("damage", 1.0f);
     this.getShape().SetGravityScale(0);
 	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath) ); //dont collide with edge of the map
 
-    if(isServer())
-    {this.server_SetTimeToDie(LIFETIME);}
+    if (isServer())
+    {
+		this.server_SetTimeToDie(LIFETIME);
+	}
     
 	//burning sound	    
-	if(isClient())
+	if (isClient())
 	{
-		CSprite@ thisSprite = this.getSprite();
-    	thisSprite.SetEmitSound("MolotovBurning.ogg");
-    	thisSprite.SetEmitSoundVolume(5.0f);
-    	thisSprite.SetEmitSoundPaused(false);
-		thisSprite.getConsts().accurateLighting = false;
+		CSprite@ sprite = this.getSprite();
+
+    	sprite.SetEmitSound("MolotovBurning.ogg");
+    	sprite.SetEmitSoundVolume(5.0f);
+    	sprite.SetEmitSoundPaused(false);
+		sprite.getConsts().accurateLighting = false;
 	}
+
+	this.getCurrentScript().tickFrequency = HOMING_DELAY; // when we first load, dont tick for 15 ticks
 }
 
-void onTick( CBlob@ this)
+void onTick(CSprite@ this) // note to glitch - this only runs on client, onTick is never called if blob is null
 {
-	//trail
-	if ( isClient() && this.getTickSinceCreated() % 2 == 0 )
+	CBlob@ blob = this.getBlob();
+	if (blob.getTickSinceCreated() % 2 == 0)
 	{
-		makeSmokeParticle(this);
+		makeSmokeParticle(blob);
 	}
 
-	bool homingEnabled = ( this.getTickSinceCreated() >= HOMING_DELAY ); //wait a bit before homing
-	CBlob@[] blobs;
-	int index = -1;
+	this.ResetTransform();
+    this.RotateBy(blob.getVelocity().getAngle() * -1,Vec2f_zero);
+}
 
-	//logic
-	if(homingEnabled)
+void onTick(CBlob@ this)
+{
+	/// Delay check
+	ScriptData@ script = this.getCurrentScript();
+	Vec2f pos = this.getPosition();
+
+	if (script.tickFrequency == HOMING_DELAY)
 	{
-    	getMap().getBlobsInRadius(this.getPosition(),SEARCH_RADIUS,@blobs);
-		index = closestBlobIndex(this,blobs);
+		script.tickFrequency = SEARCH_DELAY;
+		this.Tag("searching");
 	}
 
-    if( !homingEnabled || index == -1 ) //if no target, accelerate normally.
+	/// Chase target if it exists
+	if (this.exists("target"))
 	{
-		Vec2f accel = this.getVelocity();
-		accel.Normalize();
-		this.getShape().setDrag(0.01f);
-		this.AddForce(accel*0.4f);
-		return;
-	}
-	else
-    {
-		CBlob@ target = blobs[index];
+		uint16 netid = this.get_netid("target");
+		CBlob@ target = getBlobByNetworkID(netid);
 
-        Vec2f thisPos = this.getPosition();
-		Vec2f thisVelNorm = this.getVelocity();
-		Vec2f thisVel = thisVelNorm;
-		thisVelNorm.Normalize();
-        Vec2f targetPos = target.getPosition();
-		Vec2f targetVel = target.getVelocity();
-		Vec2f predictedTrajectory = targetPos+targetVel;
-        Vec2f norm = predictedTrajectory - thisPos;
-
-		//Trajectory correction algorithm
-		float direcAngle = norm.getAngle();
-		float targetAngle = thisVel.getAngle();
-		float difference = targetAngle-direcAngle;
-		difference = Maths::Abs(difference);
-		float CORRECTION_FACTOR = difference/500;
-		
-		//collision deterrant algorithm
-		CMap@ map = getMap();
-		if(map.rayCastSolidNoBlobs(thisPos, thisPos+(thisVelNorm*10)))
+		if (netid == 0 || target is null)
 		{
-			CORRECTION_FACTOR += 0.6f;
+			script.tickFrequency = SEARCH_DELAY;
+			this.Tag("searching");
+			this.set_netid("target", 0);
+		}
+		else 
+		{
+			script.tickFrequency = 1;
+			
+			/// note (vam) - I'm not touching this, looks confusing and spooky
+			Vec2f pos = this.getPosition();
+			Vec2f thisVelNorm = this.getVelocity();
+			Vec2f thisVel = thisVelNorm;
+			thisVelNorm.Normalize();
+			Vec2f targetPos = target.getPosition();
+			Vec2f targetVel = target.getVelocity();
+			Vec2f predictedTrajectory = targetPos+targetVel;
+			Vec2f norm = predictedTrajectory - pos;
+
+			//Trajectory correction algorithm
+			float direcAngle = norm.getAngle();
+			float targetAngle = thisVel.getAngle();
+			float difference = targetAngle-direcAngle;
+			difference = Maths::Abs(difference);
+			float CORRECTION_FACTOR = difference/500;
+			
+			//collision deterrant algorithm
+			CMap@ map = getMap();
+			if(map.rayCastSolidNoBlobs(pos, pos+(thisVelNorm*10)))
+			{
+				CORRECTION_FACTOR += 0.6f;
+			}
+
+			norm.Normalize();
+			norm -= (thisVel * CORRECTION_FACTOR);
+
+			this.getShape().setDrag(1.0f);
+			this.AddForce(norm*HOMING_FACTOR);
+			/// end note (vam)
 		}
 
-        norm.Normalize();
-		norm -= (thisVel * CORRECTION_FACTOR);
+	}
 
-		this.getShape().setDrag(1.0f);
-        this.AddForce(norm*HOMING_FACTOR);
-    }
 
-}
+	/// Searching for target
+	if (!this.hasTag("searching")) { print("returning"); return; }
 
-void onTick(CSprite@ this)
-{
-	if(!isClient())
-	return;
-	if(this is null)
-	return;
-
-	if(this.getBlob() !is null)
+	CBlob@[] list;
+	if (getMap().getBlobsInRadius(pos, SEARCH_RADIUS, @list))
 	{
-   		this.ResetTransform();
-    	this.RotateBy(this.getBlob().getVelocity().getAngle() * -1,Vec2f_zero);
+		CBlob@ targetBlob = ClosestBlob(this, list);
+		if (targetBlob is null) { return; }
+
+		this.Untag("searching");
+		this.set_netid("target", targetBlob.getNetworkID());
 	}
 }
 
-int closestBlobIndex(CBlob@ this, CBlob@[] blobs)
+/// Want to optimize this? use kd-tree
+CBlob@ ClosestBlob(CBlob@ this, CBlob@[]@ blobs)
 {
-	if(this is null)
-	return -1;
+	float distanceToClosestTarget = 10000000;
+	Vec2f pos = this.getPosition();
+	CBlob@ target = null;
 
-    f32 bestDistance = 99999999;
-    int bestIndex = -1;
+	for (int a = 0; a < blobs.length; a++)
+	{
+		CBlob@ blob = blobs[a];
+		if (blob is null) { continue; }
+		if (this.getTeamNum() == blob.getTeamNum() || !blob.hasTag("flesh") ||  blob.hasTag("dead")) { continue; }
 
-    for(int i = 0; i < blobs.length; i++){
-		if (blobs[i] is null)
-		{continue;}
-		if (blobs[i] is this)
-		{continue;}
-        if ( this.getTeamNum() == blobs[i].getTeamNum() || !blobs[i].hasTag("flesh") || blobs[i].hasTag("dead") )
-		{continue;}
-        f32 dist = this.getDistanceTo(blobs[i]);
-        if(bestDistance > dist)
-        {
-            bestDistance = dist;
-            bestIndex = i;
-        }
-    }
-    return bestIndex;
+		float distance = (blob.getPosition() - pos).LengthSquared();
+		if (distance < distanceToClosestTarget)
+		{
+			distanceToClosestTarget = distance;
+			@target = blob;
+		}
+	}
+
+	return target;
 }
 
+/// note (vam) -> I'm not touching these
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {
-    if ( solid && (this.getTickSinceCreated() > (HOMING_DELAY * 2) ) )
+    if (solid && (this.getTickSinceCreated() > (HOMING_DELAY * 2) ))
     {
 		blast(this, 4);
         this.server_Die();
 		return;
     }
 
-	if (blob is null)
-	{return;}
+	if (blob is null) { return; }
 
 	//hit detection
     if(blob.getTeamNum() != this.getTeamNum())
     {
-		float damage = 1.0f;
+		float damage = this.get_f32("damage");
 
 		if (blob.hasTag("barrier"))
 		{
@@ -163,8 +181,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
                 damage = 0.2;
             }
         }
-		else if (!blob.hasTag("flesh"))
-		{return;}
+		else if (!blob.hasTag("flesh")){ return; }
 
         this.server_Hit(blob,blob.getPosition(),this.getVelocity()*3,damage,Hitters::water);
 		blast(this, 4);
@@ -236,3 +253,4 @@ void blast( CBlob@ this , int amount)
 		p.lighting = false;
     }
 }
+/// end (vam note)

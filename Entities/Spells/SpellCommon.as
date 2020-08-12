@@ -662,10 +662,14 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					CBlob@ orb = server_CreateBlob( "magic_missile", this.getTeamNum(), orbPos ); 
 					if (orb !is null)
 					{	
-                        if(this.hasTag("extra_damage"))
-                            orb.Tag("extra_damage");//Remember to change this in MagicMissile.as
-						//if(lowboid)
-						//	orb.Tag("lowboid"); //reduces intensity of random path variation.
+                        if(!this.hasTag("extra_damage"))
+						{
+                        	this.set_f32("damage", 1.0f);
+						}
+						else
+						{
+							this.set_f32("damage", 1.2f);
+						}
 
                         orb.IgnoreCollisionWhileOverlapped( this );
 						orb.SetDamageOwnerPlayer( this.getPlayer() );
