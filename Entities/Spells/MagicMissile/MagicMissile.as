@@ -183,7 +183,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
         }
 		else if (!blob.hasTag("flesh")){ return; }
 
-        this.server_Hit(blob,blob.getPosition(),this.getVelocity()*3,damage,Hitters::water);
+        this.server_Hit(blob,blob.getPosition(),this.getVelocity()*4,damage,Hitters::water);
 		blast(this, 4);
         this.server_Die();
     }

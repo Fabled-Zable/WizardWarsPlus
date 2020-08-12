@@ -625,7 +625,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -1214504009://magic_missile
 		{
-			f32 orbspeed = 1.8f;
+			f32 orbspeed = 2.0f;
 			float spreadarc = 10;
 			//bool lowboid = false;
 
