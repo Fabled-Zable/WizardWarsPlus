@@ -1791,13 +1791,24 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
            		return;
 			}
 			f32 orbspeed = necro_shoot_speed*0.5f;
-            bool extraDamage = this.hasTag("extra_damage") ? true : false;
 
-            if (charge_state == NecromancerParams::cast_3) {
-				orbspeed *= 1.0f;
-			}
-			else if (charge_state == NecromancerParams::extra_ready) {
-				orbspeed *= 1.3f;
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbspeed *= 1.0f;
+				}
+				break;
+				
+				case super_cast:
+				{
+					orbspeed *= 1.3f;
+				}
+				break;
+				
+				default:return;
 			}
 
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
@@ -1816,6 +1827,12 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orb.server_setTeamNum( this.getTeamNum() );
 				orb.setPosition( orbPos );
 				orb.setVelocity( orbVel );
+
+				if(this.get_bool("shifting"))
+				{
+					orb.set_Vec2f("target", aimpos);
+					orb.set_bool("launch", true);
+				}
 			}
 		}
 		break;

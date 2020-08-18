@@ -24,6 +24,7 @@ void onTick( CBlob@ this )
 {     
 	if(this.getCurrentScript().tickFrequency == 1)
 	{
+		if(isClient())
 		this.getSprite().PlaySound("SpriteFire1.ogg", 0.2f, 1.5f + XORRandom(10)/10.0f);
 		// done post init
 		this.getCurrentScript().tickFrequency = 2;
@@ -38,11 +39,17 @@ void onTick( CBlob@ this )
 			{
 				if(b.get_bool("shifting"))
 				{
-					this.set_Vec2f("target", b.getAimPos());
-					this.set_bool("launch", true);
+					if(!b.get_bool("shiftCooldown"))
+					{
+						b.set_bool("shiftCooldown", true);
+						this.set_Vec2f("target", b.getAimPos());
+						this.set_bool("launch", true);
+					}
 				}
 				else
 				{
+					if(b.get_bool("shiftCooldown"))
+					b.set_bool("shiftCooldown", false);
 					this.set_Vec2f("target", b.getPosition());
 				}
 			}
