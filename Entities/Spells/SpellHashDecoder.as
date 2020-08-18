@@ -58,6 +58,11 @@ void decreaseNegatisphereLife( CBlob@ this , CBlob@ b )
 			this.set_s8("lifepoints", (life - 6));
 		}
 		break;
+		case -1037635552: //plasma_shot
+		{
+			this.set_s8("lifepoints", (life - 6));
+		}
+		break;
 		default: //anything that one-shots it
 		{
 			this.set_s8("lifepoints", 0);
@@ -125,6 +130,11 @@ s8 negentropyDecoder( CBlob@ b )
 		case -1214504009: //magic missile
 		{
 			return 10;
+		}
+		break;
+		case -1037635552: //plasma_shot
+		{
+			return 20;
 		}
 		break;
 		case -2014033180: //magic_barrier
@@ -381,6 +391,7 @@ s8 parryTargetIdentifier( CBlob@ b )
 		case -286128466: //ice_prison
 		case 770505718: //leech
 		case -1661937901: //impaler
+		case -1037635552: //plasma_shot
 		{
 			return -1; //doesn't affect
 		}

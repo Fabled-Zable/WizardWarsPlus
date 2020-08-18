@@ -123,7 +123,7 @@ void explode( CBlob@ this )
 
 		if (blob.hasTag("barrier"))
 		{
-			finalDamage *= 2.0f;
+			finalDamage *= 1.5f;
 		}
 		else if (blob.getName() == "knight")
 		{
