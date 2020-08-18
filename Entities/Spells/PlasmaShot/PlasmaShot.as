@@ -69,7 +69,11 @@ void onTick(CBlob@ this)
 
 	if( dist < 2.0f )
 	{
-		blast(this, 10); //boom effects
+		if(isClient())
+		{
+			this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
+			blast(this.getPosition(), 10);
+		}
 		explode(this);
 	}
 }
@@ -79,7 +83,11 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {
     if (solid)
     {
-		blast(this, 10);
+		if(isClient())
+		{
+			this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
+			blast(this.getPosition(), 10);
+		}
         explode(this);
 		return;
     }
@@ -90,7 +98,11 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
     {
 		if (blob.hasTag("barrier") || blob.hasTag("flesh") || blob.getName() == "plasma_shot")
 		{
-			blast(this, 10);
+			if(isClient())
+			{
+				this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
+				blast(this.getPosition(), 10);
+			}
 			explode(this);
 		}
     }
@@ -189,17 +201,8 @@ void makeSmokeParticle( CBlob@ this , Vec2f targetPos )
 
 
 Random _blast_r(0x10002);
-void blast( CBlob@ this , int amount)
+void blast( Vec2f pos , int amount)
 {
-	if ( !isClient() )
-		return;
-	if ( this is null )
-		return;
-
-	this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
-
-	Vec2f pos = this.getPosition();
-
 	for (int i = 0; i < amount; i++)
     {
         Vec2f vel(_blast_r.NextFloat() * 3.0f, 0);
