@@ -113,7 +113,7 @@ void onTick(CBlob@ this)
 
 
 	/// Searching for target
-	if (!this.hasTag("searching")) { print("returning"); return; }
+	if (!this.hasTag("searching")) { return; }
 
 	CBlob@[] list;
 	if (getMap().getBlobsInRadius(pos, SEARCH_RADIUS, @list))

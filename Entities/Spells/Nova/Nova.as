@@ -3,6 +3,8 @@
 #include "TeamColour.as";
 #include "MakeDustParticle.as";
 
+const float STANDARD_SPEED = 64.0f;
+
 void onInit( CBlob@ this )
 {
     this.set_u8("custom_hitter", Hitters2::orb);
@@ -80,34 +82,42 @@ void onTick( CBlob@ this )
 	
 	if(targetSet)
 	{
-		Vec2f end = this.getPosition();
-		this.setVelocity(Vec2f_zero); //standard 0 velocity reset
+		Vec2f thisPos = this.getPosition();
+		Vec2f moveDir = target - thisPos;
+		float dist = moveDir.Length();
 
-		CMap@ map = getMap();
-		if(map.rayCastSolid(this.getPosition(), target, end))
+		Vec2f finalSpeed = moveDir;
+		finalSpeed.Normalize();
+		finalSpeed *= STANDARD_SPEED;
+
+		if( dist > STANDARD_SPEED )
 		{
-			Vec2f endVec = end - this.getPosition();
-			endVec.Normalize();
-			endVec *= 8;
-			this.setPosition(end-endVec);
-			this.server_Die();
-			return;
+			this.setVelocity(finalSpeed); //if farther away, use standard speed
 		}
 		else
 		{
-			if (isServer()) //lightning trail effect
-			{
-				CBlob@ orb = server_CreateBlob( "lightning2", this.getTeamNum(), this.getPosition() ); 
-				if (orb !is null)
-				{
-					orb.set_Vec2f("aim pos", target);
-					orb.set_f32("lifetime", 0.1f);
-					orb.IgnoreCollisionWhileOverlapped( this );
-					orb.SetDamageOwnerPlayer( p );
-				}
-			}
-			this.setPosition(target);
+			this.setVelocity(moveDir); //if closer than needed, jump to that spot
 		}
+
+		if(isClient())
+		{
+			Vec2f pPos = thisPos;
+			Vec2f pVector = moveDir;
+			pVector.Normalize();
+
+			for(int i = 0; i < dist; i += 2)
+			{
+				CParticle@ p = ParticleAnimated( "Flash2.png",
+						pPos + pVector*i,
+						Vec2f_zero,
+						float(XORRandom(360)),
+						0.7f, 
+						1, 
+						0.0f, true );
+			}
+		}
+
+		print(""+float(XORRandom(1)));
 	}
 	else
 	{
