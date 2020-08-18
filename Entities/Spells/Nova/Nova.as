@@ -116,8 +116,6 @@ void onTick( CBlob@ this )
 						0.0f, true );
 			}
 		}
-
-		print(""+float(XORRandom(1)));
 	}
 	else
 	{

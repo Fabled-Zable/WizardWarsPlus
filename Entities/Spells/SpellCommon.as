@@ -1854,16 +1854,6 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -595243942://voltage_field
 		{
-			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
-			f32 orbDamage = 0.2f * extraDamage;
-            
-			if (charge_state == NecromancerParams::cast_3) {
-				orbDamage *= 1.0f;
-			}
-				else if (charge_state == NecromancerParams::extra_ready) {
-				orbDamage *= 1.0f;
-			}
-
 			if(this.hasScript("VoltageField.as"))
 			{
 				return;
@@ -1889,8 +1879,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
 			f32 orbDamage = 2.0f * extraDamage;
 
-			if (charge_state == NecromancerParams::extra_ready) {
-				orbDamage = 3.0f;
+			if (charge_state == super_cast) {
+				orbDamage += 1.0f;
 			}
 
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
@@ -1908,6 +1898,56 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orb.SetDamageOwnerPlayer( this.getPlayer() );
 				orb.server_setTeamNum( this.getTeamNum() );
 				orb.setPosition( orbPos );
+			}
+		}
+		break;
+
+		case -1037635552: //plasma_shot
+		{
+			if(isClient())
+			{
+				this.getSprite().PlaySound("MagicMissile.ogg", 0.8f, 1.0f + XORRandom(3)/10.0f);
+			}
+
+			if (!isServer()){
+           		return;
+			}
+			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
+			f32 orbspeed = 2.0f;
+			f32 orbDamage = 3.0f * extraDamage;
+
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbspeed *= 1.0f;
+					orbDamage *= 1.0f;
+				}
+				break;
+
+				case super_cast:
+				{
+					orbspeed *= 1.2f;
+					orbDamage *= 1.5f;
+				}
+				break;
+				default:return;
+			}
+
+			CBlob@ orb = server_CreateBlob( "plasma_shot" );
+			if (orb !is null)
+			{
+				orb.set_f32("damage", orbDamage);
+				orb.set_f32("move_Speed", orbspeed);
+				orb.set_Vec2f("target", aimpos);
+
+				orb.IgnoreCollisionWhileOverlapped( this );
+				orb.SetDamageOwnerPlayer( this.getPlayer() );
+				orb.server_setTeamNum( this.getTeamNum() );
+				orb.setPosition( this.getPosition() );
+				orb.setVelocity( Vec2f_zero );
 			}
 		}
 		break;
