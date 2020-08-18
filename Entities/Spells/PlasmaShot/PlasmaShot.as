@@ -69,6 +69,7 @@ void onTick(CBlob@ this)
 
 	if( dist < 2.0f )
 	{
+		blast(this, 10); //boom effects
 		explode(this);
 	}
 }
@@ -78,16 +79,21 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {
     if (solid)
     {
+		blast(this, 10);
         explode(this);
 		return;
     }
 
 	if (blob is null) { return; }
 
-	if(blob.getTeamNum() != this.getTeamNum() && blob.getName() != "mana_obelisk")
+	if(blob.getTeamNum() != this.getTeamNum())
     {
-		explode(this);
-	}
+		if (blob.hasTag("barrier") || blob.hasTag("flesh") || blob.getName() == "plasma_shot")
+		{
+			blast(this, 10);
+			explode(this);
+		}
+    }
 }
 
 void explode( CBlob@ this )
@@ -96,23 +102,22 @@ void explode( CBlob@ this )
 	if (map is null)
 	return;
 
+	float damage = this.get_f32("damage");
+
 	CBlob@[] attacked;
 	map.getBlobsInRadius( this.getPosition(), 30.0f, @attacked );
-	float damage = this.get_f32("damage");
 	for (uint i = 0; i < attacked.size(); i++)
 	{
-		if(attacked[i] is null)
-		{continue;}
 		CBlob@ blob = attacked[i];
+		if(blob is null) {continue;}
 
 		CBlob@ caster = this.getDamageOwnerPlayer().getBlob();
 		if(caster !is null && blob is caster)
 		{
-			this.server_Hit(blob,this.getPosition(),Vec2f_zero,damage,Hitters::water);
+			this.server_Hit(blob, blob.getPosition(), Vec2f_zero, damage, Hitters::water, true);
 		}
 
-		if(blob.getTeamNum() == this.getTeamNum())
-		{continue;}
+		if(blob.getTeamNum() == this.getTeamNum()) {continue;}
 
 		float finalDamage = damage;
 
@@ -130,15 +135,13 @@ void explode( CBlob@ this )
                 finalDamage *= 0.2;
             }
         }
-		else if (!blob.hasTag("flesh")){ continue; }
+		else if (!blob.hasTag("flesh")) {continue;}
 
 		Vec2f attackNorm = blob.getPosition() - this.getPosition();
 		attackNorm.Normalize();
 		blob.AddForce(attackNorm*100);
         this.server_Hit(blob,this.getPosition(),Vec2f_zero,finalDamage,Hitters::water);
 	}
-
-	blast(this, 10); //boom effects
 
 	this.server_Die();
 }

@@ -2300,7 +2300,7 @@ void makeReviveParticles(CBlob@ this, const f32 velocity = 1.0f, const int small
 		
 		const f32 rad = 12.0f;
 		Vec2f random = Vec2f( XORRandom(128)-64, XORRandom(128)-64 ) * 0.015625f * rad;
-		CParticle@ p = ParticleAnimated( "MissileFire4.png", this.getPosition() + random, Vec2f(0,0), float(XORRandom(360)), 1.0f, 2 + XORRandom(3), 0.0f, false );
+		CParticle@ p = ParticleAnimated( "MissileFire3.png", this.getPosition() + random, Vec2f(0,0), float(XORRandom(360)), 1.0f, 2 + XORRandom(3), 0.0f, false );
 		if ( p !is null)
 		{
 			p.bounce = 0;

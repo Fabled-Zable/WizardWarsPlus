@@ -73,7 +73,7 @@ namespace WizardParams
 				SpellType::other, 15, 10, 2, 360.0f, true),
 				
 		Spell("plasma_shot", "Plasma Shot", 17, "Fires a burst of slow moving plasma that explodes on impact or after reaching its destination.",
-				SpellType::other, 10, 10, 0, 360.0f, true),
+				SpellType::other, 15, 30, 0, 360.0f, true),
 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
