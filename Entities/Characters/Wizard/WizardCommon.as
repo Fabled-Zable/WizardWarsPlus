@@ -33,9 +33,6 @@ namespace WizardParams
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
 			SpellType::other, 15, 10, 0, 8.0f, true),
 			
-		Spell("magic_missile", "Magic Missile", 17, "Barrage your nearest foes with deadly homing missiles. Does minor damage, is slow moving and easily countered.",
-			SpellType::other, 25, 10, 3, 360.0f, true),
-			
 		Spell("frost_ball", "Ball of Frost", 13, "Send forth a slow travelling ball of pure cold essence to freeze your enemies in place and deal a small amount of damage. Freeze duration increases as your own health declines.",
 			SpellType::other, 18, 25, 0, 360.0f, true),
 			
@@ -74,6 +71,9 @@ namespace WizardParams
 
 		Spell("negatisphere", "NegatiSphere", 50, "Moving magic field that negates other counterable spells. Press SHIFT to launch them in the direction of your aim.",
 				SpellType::other, 15, 10, 2, 360.0f, true),
+				
+		Spell("", "", 0, "Empty spell.",
+				SpellType::other, 1, 1, 0, 0.0f),
 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
