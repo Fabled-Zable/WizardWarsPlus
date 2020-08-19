@@ -619,7 +619,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -456270322://counter_spell
 		{
-			counterSpell(this);
+			counterSpell(this, aimpos);
 		}
 		break;
 
@@ -2313,19 +2313,25 @@ void makeReviveParticles(CBlob@ this, const f32 velocity = 1.0f, const int small
 	}
 }
 
-void counterSpell( CBlob@ caster )
+void counterSpell( CBlob@ caster , Vec2f aimpos)
 {		
 	CMap@ map = caster.getMap();
 	
-	if (map is null)
-		return;
+	if (map is null){return;}
 
-	CBlob@[] blobsInRadius;
-	if (map.getBlobsInRadius(caster.getPosition(), 64.0f, @blobsInRadius))
+	Vec2f thisPos = caster.getPosition();
+	Vec2f aimVec = aimpos - thisPos;
+	float aimAngle = aimVec.getAngleDegrees();
+
+	//CBlob@[] blobsInRadius;
+	HitInfo@[] hitsInArc;
+
+	//if (map.getBlobsInRadius(thisPos, 64.0f, @blobsInRadius))
+	if (map.getHitInfosFromArc(thisPos, -aimAngle, 40.0f, 64.0f, caster, @hitsInArc))
 	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
+		for (uint i = 0; i < hitsInArc.length; i++)
 		{
-			CBlob @b = blobsInRadius[i];
+			CBlob@ b = hitsInArc[i].blob;
 			if (b !is null)
 			{
 				bool sameTeam = b.getTeamNum() == caster.getTeamNum();
@@ -2435,10 +2441,10 @@ void counterSpell( CBlob@ caster )
 	
 	if ( isClient() )
 	{
-		CParticle@ p = ParticleAnimated( "Shockwave2.png",
+		CParticle@ p = ParticleAnimated( "Shockwave2Arc.png",
 						caster.getPosition(),
 						Vec2f(0,0),
-						float(XORRandom(360)),
+						-aimAngle,
 						1.0f, 
 						2, 
 						0.0f, true );    

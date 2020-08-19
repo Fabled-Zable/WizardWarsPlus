@@ -31,7 +31,7 @@ namespace DruidParams
 			SpellType::other, 20, 6, 0, 270.0f, true), 
 			
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
-			SpellType::other, 15, 10, 0, 8.0f, true),
+			SpellType::other, 15, 10, 0, 64.0f, true),
 			 
 		Spell("revive", "Revive", 15, "Fully bring trusty allies back from the dead by aiming a reviving missile at their gravestone.",
 			SpellType::other, 70, 40, 0, 360.0f, true),

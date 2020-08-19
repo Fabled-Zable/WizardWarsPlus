@@ -36,7 +36,7 @@ namespace EntropistParams
 				SpellType::other, 30, 30, 2, 360.0f, true),
 			 
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
-			SpellType::other, 10, 10, 0, 8.0f, true),
+			SpellType::other, 10, 10, 0, 64.0f, true),
 			 
 		Spell("sidewind", "Sidewind", 53, "Temporarily accelerate your own time by transporting yourself to another dimension for a few moments. Harder to damage while in this dimension.",
 				SpellType::other, 10, 10, 3, 1.0f, true),

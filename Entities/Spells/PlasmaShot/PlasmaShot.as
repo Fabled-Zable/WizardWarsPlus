@@ -117,7 +117,7 @@ void explode( CBlob@ this )
 	float damage = this.get_f32("damage");
 
 	CBlob@[] attacked;
-	map.getBlobsInRadius( this.getPosition(), 30.0f, @attacked );
+	map.getBlobsInRadius( this.getPosition(), 40.0f, @attacked );
 	for (uint i = 0; i < attacked.size(); i++)
 	{
 		CBlob@ blob = attacked[i];

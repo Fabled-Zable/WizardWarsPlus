@@ -30,7 +30,7 @@ namespace NecromancerParams
 			SpellType::other, 25, 10, 0, 270.0f, true),
 			
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
-			SpellType::other, 15, 10, 0, 8.0f, true),
+			SpellType::other, 15, 10, 0, 64.0f, true),
 			 
 		Spell("slow", "Slow", 19, "Deprive a player of his speed and ability to teleport for a few moments.",
 			SpellType::other, 12, 30, 5, 360.0f, true), 

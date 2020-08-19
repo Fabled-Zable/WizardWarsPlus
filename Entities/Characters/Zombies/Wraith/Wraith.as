@@ -430,6 +430,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		server_setFireOn(this);
 		
-		counterSpell(this);
+		counterSpell(this, this.getAimPos());
 	}
 }

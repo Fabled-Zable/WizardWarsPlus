@@ -15,7 +15,7 @@ namespace WizardParams
 		}
 
 	const ::f32 shoot_max_vel = 8.0f;
-	const ::f32 MAX_ATTACK_DIST = 360.0f;
+	const ::f32 MAX_ATTACK_DIST = 500.0f;
 	const ::s32 MAX_MANA = 150;
 	const ::s32 MANA_REGEN = 3;
 	
@@ -31,7 +31,7 @@ namespace WizardParams
 			SpellType::other, 20, 6, 0, 270.0f, true), 
 			
 		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
-			SpellType::other, 15, 10, 0, 8.0f, true),
+			SpellType::other, 15, 10, 0, 64.0f, true),
 			
 		Spell("frost_ball", "Ball of Frost", 13, "Send forth a slow travelling ball of pure cold essence to freeze your enemies in place and deal a small amount of damage. Freeze duration increases as your own health declines.",
 			SpellType::other, 18, 25, 0, 360.0f, true),
@@ -73,7 +73,7 @@ namespace WizardParams
 				SpellType::other, 15, 10, 2, 360.0f, true),
 				
 		Spell("plasma_shot", "Plasma Shot", 17, "Fires a burst of slow moving plasma that explodes on impact or after reaching its destination.",
-				SpellType::other, 12, 15, 0, 360.0f, true),
+				SpellType::other, 10, 15, 0, 500.0f, true),
 
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
