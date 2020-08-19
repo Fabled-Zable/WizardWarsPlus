@@ -2323,15 +2323,20 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 	Vec2f aimVec = aimpos - thisPos;
 	float aimAngle = aimVec.getAngleDegrees();
 
-	//CBlob@[] blobsInRadius;
+	CBlob@[] blobsInRadius;
 	HitInfo@[] hitsInArc;
 
-	//if (map.getBlobsInRadius(thisPos, 64.0f, @blobsInRadius))
+	map.getBlobsInRadius(thisPos, 5.0f, @blobsInRadius);
 	if (map.getHitInfosFromArc(thisPos, -aimAngle, 40.0f, 64.0f, caster, @hitsInArc))
 	{
 		for (uint i = 0; i < hitsInArc.length; i++)
 		{
-			CBlob@ b = hitsInArc[i].blob;
+			blobsInRadius.push_back( hitsInArc[i].blob );
+		}
+
+		for (uint i = 0; i < blobsInRadius.length; i++)
+		{
+			CBlob@ b = blobsInRadius[i];
 			if (b !is null)
 			{
 				bool sameTeam = b.getTeamNum() == caster.getTeamNum();
@@ -2349,7 +2354,7 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 				}
 				else if ( b.get_u16("slowed") > 0 && sameTeam )
 				{				
-					b.set_u16("slowed", 2);
+					b.set_u16("slowed", 1);
 					b.Sync("slowed", true);
 					
 					countered = true;
@@ -2363,7 +2368,7 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 				{
 					if(b.get_u16("hastened") > 0)
 					{
-						b.set_u16("hastened", 2);
+						b.set_u16("hastened", 1);
 						b.Sync("hastened", true);
 					}
 
@@ -2464,7 +2469,7 @@ void Slow( CBlob@ blob, u16 slowTime )
 {	
 	if ( blob.get_u16("hastened") > 0 )
 	{
-		blob.set_u16("hastened", 2);
+		blob.set_u16("hastened", 1);
 		blob.Sync("hastened", true);
 	}
 	else
@@ -2479,7 +2484,7 @@ void Haste( CBlob@ blob, u16 hasteTime )
 {	
 	if ( blob.get_u16("slowed") > 0 )
 	{
-		blob.set_u16("slowed", 2);
+		blob.set_u16("slowed", 1);
 		blob.Sync("slowed", true);
 	}
 	else

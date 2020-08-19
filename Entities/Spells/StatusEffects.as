@@ -68,7 +68,7 @@ void onTick( CBlob@ this)
 			}
 		}
 		
-		if ( slowed == 1 )
+		if ( slowed == 0 )
 		{
 			thisSprite.PlaySound("SlowOff.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);
 			this.Sync("slowed", true);
@@ -110,7 +110,7 @@ void onTick( CBlob@ this)
 			}
 		}
 		
-		if ( hastened == 1 )
+		if ( hastened == 0 )
 		{
 			thisSprite.PlaySound("HasteOff.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);
 			this.Sync("hastened", true);

@@ -42,7 +42,7 @@ namespace EntropistParams
 				SpellType::other, 10, 10, 3, 1.0f, true),
 			 
 		Spell("voltage_field", "Voltage Field", 54, "Releases a bubble of electricity that knocks away projectiles and enemies that collide with it. Cannot cast spells while active.",
-				SpellType::other, 30, 120, 6, 1.0f),
+				SpellType::other, 30, 90, 6, 1.0f),
 			
 		Spell("nova", "Nova", 55, "Releases a homing, concentrated energy star. Explodes on contact.",
 				SpellType::other, 30, 40, 5, 100.0f),
