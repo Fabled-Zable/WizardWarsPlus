@@ -30,6 +30,7 @@ void onInit( CBlob @ this )
 	this.set_bool("initialized", false);
 	this.set_bool("segments updating", false);
 	this.set_u32("dead segment", 0);
+	this.set_u8("target_type", 3);
 	
 	this.set_bool("target found", false);
 	
@@ -81,9 +82,8 @@ void onTick( CBlob@ this)
 			thisSprite.SetFrame(7);
 		}
 		this.set_bool("setupDone",true);
+		this.set_u8("target_type", targetIdentifier(this));
 	}
-	
-	bool isDead = this.get_bool("dead");
 	
 	bool onCollisionTriggered = this.get_bool("onCollision triggered");	//used to sync server and client onCollision 
 	
@@ -119,49 +119,63 @@ void onTick( CBlob@ this)
 
 				if (other is this) continue; //lets not run away from / try to eat ourselves...
 				
-				//TODO: flags for these...
-				if ( followsAllies(this) )
-				{		
-					if (other.getTeamNum() == this.getTeamNum() && !isOwnerBlob(this, other) && other.hasTag("player") && !other.hasTag("dead")) //home in on living allies
-					{
-						Vec2f tpos = other.getPosition();									  
-						f32 dist = (tpos - thisPos).getLength();
-						if (dist < best_dist)
-						{
-							this.set_netid("target", other.getNetworkID());
-							best_dist=dist;
-							this.getShape().setDrag(2.0f);
-						}
-					}
-				}
-				else if ( followsDeadAllies(this) )
-				{		
-					if (other.getTeamNum() == this.getTeamNum() && other.hasTag("gravestone") ) //home in on gravestones
-					{
-						Vec2f tpos = other.getPosition();									  
-						f32 dist = (tpos - thisPos).getLength();
-						if (dist < best_dist)
-						{
-							this.set_netid("target", other.getNetworkID());
-							best_dist=dist;
-							this.getShape().setDrag(2.0f);
-						}
-					}
-				}
-				else	//follow enemies
+				//does action according to targetting type
+				switch(this.get_u8("target_type"))
 				{
-					if (other.getTeamNum() != this.getTeamNum() && other.hasTag("player") && !other.hasTag("dead")) //home in on enemies
+					case 0: //follows allies
 					{
-						Vec2f tpos = other.getPosition();									  
-						f32 dist = (tpos - thisPos).getLength();
-						if (dist < best_dist)
+						if (other.getTeamNum() == this.getTeamNum() && !isOwnerBlob(this, other) && other.hasTag("player") && !other.hasTag("dead")) //home in on living allies
 						{
-							this.set_netid("target", other.getNetworkID());
-							best_dist=dist;
-							this.getShape().setDrag(2.0f);
+							Vec2f tpos = other.getPosition();									  
+							f32 dist = (tpos - thisPos).getLength();
+							if (dist < best_dist)
+							{
+								this.set_netid("target", other.getNetworkID());
+								best_dist=dist;
+								this.getShape().setDrag(2.0f);
+							}
 						}
 					}
-				}
+					break;
+				
+					case 1: //follows dead allies
+					{
+						if (other.getTeamNum() == this.getTeamNum() && other.hasTag("gravestone") ) //home in on gravestones
+						{
+							Vec2f tpos = other.getPosition();									  
+							f32 dist = (tpos - thisPos).getLength();
+							if (dist < best_dist)
+							{
+								this.set_netid("target", other.getNetworkID());
+								best_dist=dist;
+								this.getShape().setDrag(2.0f);
+							}
+						}
+					}
+					break;
+				
+					case 2: //follows enemies
+					{
+						if (other.getTeamNum() != this.getTeamNum() && other.hasTag("player") && !other.hasTag("dead")) //home in on enemies
+						{
+							Vec2f tpos = other.getPosition();									  
+							f32 dist = (tpos - thisPos).getLength();
+							if (dist < best_dist)
+							{
+								this.set_netid("target", other.getNetworkID());
+								best_dist=dist;
+								this.getShape().setDrag(2.0f);
+							}
+						}
+					}
+					break;
+
+					default:
+					{
+						this.server_Die();
+						return;
+					}
+				} //switch end
 			}
 		}
 		else
@@ -169,6 +183,7 @@ void onTick( CBlob@ this)
 			this.set_bool("target found", true);
 		
 			Vec2f tpos = target.getPosition();
+			selectedTargetIndicator( this , tpos );
 			Vec2f targetNorm = tpos - thisPos;
 			targetNorm.Normalize();
 			
@@ -177,30 +192,31 @@ void onTick( CBlob@ this)
 	}
 	
 	//delayed death
-	if ( !isDead )
+	if ( this !is null )
 	{
 		if ( this.get_bool("target found") && this.getTickSinceCreated() > (LIFETIME + EXTENDED_LIFETIME)*30 )
 		{
-			Die( this );
+			this.server_Die();
 		}
 		else if ( !this.get_bool("target found") && this.getTickSinceCreated() > LIFETIME*30 )
 		{
-			Die( this );
+			this.server_Die();
 		}
 	}
 	
 	//activate onCollision events
-	if ( onCollisionTriggered == true && !isDead )
+	if ( onCollisionTriggered == true && this !is null)
 	{
 		CBlob@ blob = getBlobByNetworkID( this.get_netid("onCollision blob") );
 		
 		if ( blob !is null )
 		{	
 			string effectType = this.get_string("effect");
+			u8 targetType = this.get_u8("target_type");
 			
 			if (blob.hasTag("player") && !blob.hasTag("dead"))
 			{	
-				if ( !isEnemy(this, blob) && followsAllies( this ) && !isOwnerBlob(this, blob) )	//buff status effects
+				if ( !isEnemy(this, blob) && targetType == 0 && !isOwnerBlob(this, blob) )	//buff status effects
 				{
 					if ( effectType == "heal" )
 						Heal(blob, this.get_f32("heal_amount"));
@@ -214,17 +230,17 @@ void onTick( CBlob@ this)
 						FireWard(blob, this.get_u16("effect_time"));
 					else if ( effectType == "stoneSkin" )
 						StoneSkin(blob, this.get_u16("effect_time"));
-					Die( this );
+					this.server_Die();
 				}
-				else if ( isEnemy(this, blob) && followsEnemies( this ) )	//curse status effects
+				else if ( isEnemy(this, blob) && targetType == 2 )	//curse status effects
 				{
 					if ( effectType == "slow" )
 						Slow(blob, this.get_u16("effect_time"));
 						
-					Die( this );
+					this.server_Die();
 				}
 			}
-			else if ( blob.getName() == "gravestone" && blob.getTeamNum() == this.getTeamNum() && followsDeadAllies( this ) )	//ally revive spells
+			else if ( blob.getName() == "gravestone" && blob.getTeamNum() == this.getTeamNum() && targetType == 1 )	//ally revive spells
 			{
 				if ( effectType == "revive" )
 					Revive(blob);
@@ -232,7 +248,7 @@ void onTick( CBlob@ this)
 				if ( effectType == "unholy_res" )
 					UnholyRes(blob);
 					
-				Die( this );
+				this.server_Die();
 			}
 			
 			this.set_bool("onCollision triggered", false);
@@ -247,34 +263,32 @@ void onTick( CBlob@ this)
 	thisSprite.ResetTransform();
 	thisSprite.RotateBy( -angle, Vec2f(0,0) );
 	
-	makeSmokePuff(this.getPosition());
+	sparks(this, this.getPosition(), 1);
 }
 
-bool followsAllies( CBlob@ this )
+u8 targetIdentifier( CBlob@ this )
 {		
 	string effectType = this.get_string("effect");
 	
-	return ( 
-		effectType == "heal"
-	 || effectType == "haste" 
-	 || effectType == "mana" 
-	 || effectType == "airblastShield"
-	 || effectType == "fireProt"
-	 || effectType == "stoneSkin");
-}
+	if  
+	(  effectType == "heal"
+	|| effectType == "haste" 
+	|| effectType == "mana" 
+	|| effectType == "airblastShield"
+	|| effectType == "fireProt"
+	|| effectType == "stoneSkin" )
+	{return 0;}
 
-bool followsEnemies( CBlob@ this )
-{		
-	string effectType = this.get_string("effect");
-	
-	return ( effectType == "slow" );
-}
+	else if
+	(  effectType == "revive"
+	|| effectType == "unholy_res" )
+	{return 1;}
 
-bool followsDeadAllies( CBlob@ this )
-{		
-	string effectType = this.get_string("effect");
-	
-	return ( effectType == "revive" || effectType == "unholy_res" );
+	else if( effectType == "slow" )
+	{return 2;}
+
+
+	return 3; //default
 }
 
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
@@ -292,17 +306,6 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 	
 	this.Sync("onCollision triggered", true);
 	this.Sync("onCollision blob", true);
-}
-
-void Die(CBlob@ this)
-{
-
-	this.shape.SetStatic(true);
-	this.getSprite().SetVisible(false);
-	
-	this.server_SetTimeToDie(3);	
-	
-	this.set_bool("dead", true);
 }
 
 bool isOwnerBlob(CBlob@ this, CBlob@ target)
@@ -351,27 +354,30 @@ void makeSmokeParticle(CBlob@ this, const Vec2f vel, const string filename = "Sm
 	//warn("smoke made");
 }
 
-void makeSmokePuff(Vec2f thisPos)
+void onDie( CBlob@ this )
 {
-	CParticle@ p = ParticlePixel( thisPos , Vec2f_zero , SColor( 255, 255, 255, 255) , true , 10);
-	if(p !is null)
-    {
-        p.gravity = Vec2f_zero;
-    }
+	if(!isClient()) {return;}
 
-	//makeSmokeParticle(this, Vec2f(), "Smoke");
-	/*for (int i = 0; i < smallparticles; i++)
+	Vec2f initVec = Vec2f(2.0f,0);
+	for(u16 i = 0; i < 45; i++)
 	{
-		f32 randomness = (XORRandom(32) + 32)*0.015625f * 0.5f + 0.75f;
-		Vec2f vel = getRandomVelocity( -90, velocity * randomness, 360.0f );
-		makeSmokeParticle(this, vel);
-	}*/
+		Vec2f pVec = initVec.RotateByDegrees(i*8);
+
+		CParticle@ p = ParticlePixel( this.getPosition() , pVec , SColor( 255, 255, 255, 255) , true , 15);
+		if(p !is null)
+    	{
+    	    p.gravity = Vec2f_zero;
+			p.damping = 0.85f;
+			p.fastcollision = false;
+    	}
+	}
+	
 }
 
 Random _sprk_r(2345);
 void sparks(CBlob@ this, Vec2f pos, int amount)
 {
-	if ( !getNet().isClient() )
+	if ( !isClient() )
 		return;
 
 	for (int i = 0; i < amount; i++)
@@ -380,31 +386,89 @@ void sparks(CBlob@ this, Vec2f pos, int amount)
         vel.RotateBy(_sprk_r.NextFloat() * 360.0f);
 		
 		int colorShade = 255 - _sprk_r.NextRanged(128);
-		CParticle@ p;
-		if ( followsAllies( this ) )
+		switch(this.get_u8("target_type"))
 		{
-			CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, colorShade, colorShade ), true );
-			if(p !is null) //bail if we stop getting particles
+			case 0: //allies
+			case 1: //dead allies
 			{
-				p.timeout = 40 + _sprk_r.NextRanged(20);
-				p.scale = 0.5f + _sprk_r.NextFloat();
-    			p.fastcollision = true;
-				p.damping = 0.95f;
-				p.gravity = Vec2f(0,0);
+		
+				CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, colorShade, colorShade ), true );
+				if(p !is null) //bail if we stop getting particles
+				{
+					p.timeout = 40 + _sprk_r.NextRanged(20);
+					p.scale = 0.5f + _sprk_r.NextFloat();
+    				p.fastcollision = true;
+					p.damping = 0.95f;
+					p.gravity = Vec2f(0,0);
+				}
 			}
-		}
-		else if ( followsEnemies( this ) )
-		{
-			CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, colorShade, 0 ), true );
-			if(p !is null) //bail if we stop getting particles
+			break;
+		
+			case 2: //enemies
 			{
-				p.timeout = 40 + _sprk_r.NextRanged(20);
-				p.scale = 0.5f + _sprk_r.NextFloat();
-    			p.fastcollision = true;
-				p.damping = 0.95f;
-				p.gravity = Vec2f(0,0);
+				CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, colorShade, 0 ), true );
+				if(p !is null) //bail if we stop getting particles
+				{
+					p.timeout = 40 + _sprk_r.NextRanged(20);
+					p.scale = 0.5f + _sprk_r.NextFloat();
+    				p.fastcollision = true;
+					p.damping = 0.95f;
+					p.gravity = Vec2f(0,0);
+				}
 			}
-		}
+			break;
+
+			default:
+			{
+				return;
+			}
+
+		} //switch end
     }
 }
 
+void selectedTargetIndicator( CBlob@ this , Vec2f pos )
+{
+	if ( !isClient() ) {return;}
+
+	Vec2f initVec = Vec2f(2.0f,0);
+	Vec2f pVec = initVec.RotateByDegrees(XORRandom(360));
+	
+	switch(this.get_u8("target_type"))
+	{
+		case 0: //allies
+		case 1: //dead allies
+		{
+			CParticle@ p = ParticlePixel( pos, pVec, SColor( 255, 240, 240, 240 ), true );
+			if(p !is null) //bail if we stop getting particles
+			{
+				p.timeout = 40 + _sprk_r.NextRanged(20);
+				p.scale = 0.5f + _sprk_r.NextFloat();
+    			p.fastcollision = true;
+				p.damping = 0.8f;
+				p.gravity = Vec2f(0,0);
+			}
+		}
+		break;
+
+		case 2: //enemies
+		{
+			CParticle@ p = ParticlePixel( pos, pVec, SColor( 255, 255, 165, 0 ), true );
+			if(p !is null) //bail if we stop getting particles
+			{
+				p.timeout = 40 + _sprk_r.NextRanged(20);
+				p.scale = 0.5f + _sprk_r.NextFloat();
+    			p.fastcollision = true;
+				p.damping = 0.8f;
+				p.gravity = Vec2f(0,0);
+			}
+		}
+		break;
+
+		default:
+		{
+			return;
+		}
+
+	} //switch end
+}
