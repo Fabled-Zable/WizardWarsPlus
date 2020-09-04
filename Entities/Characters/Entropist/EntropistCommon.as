@@ -39,7 +39,7 @@ namespace EntropistParams
 			SpellType::other, 10, 10, 0, 64.0f, true),
 			 
 		Spell("sidewind", "Sidewind", 53, "Temporarily accelerate your own time by transporting yourself to another dimension for a few moments. Harder to damage while in this dimension.",
-				SpellType::other, 10, 10, 3, 1.0f, true),
+				SpellType::other, 8, 2, 3, 1.0f, true),
 			 
 		Spell("voltage_field", "Voltage Field", 54, "Releases a bubble of electricity that knocks away projectiles and enemies that collide with it. Cannot cast spells while active.",
 				SpellType::other, 30, 90, 6, 1.0f),

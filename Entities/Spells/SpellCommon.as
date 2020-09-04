@@ -2326,12 +2326,13 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 	CBlob@[] blobsInRadius;
 	HitInfo@[] hitsInArc;
 
-	map.getBlobsInRadius(thisPos, 5.0f, @blobsInRadius);
+	map.getBlobsInRadius(thisPos, 10.0f, @blobsInRadius);
 	if (map.getHitInfosFromArc(thisPos, -aimAngle, 40.0f, 64.0f, caster, @hitsInArc))
 	{
 		for (uint i = 0; i < hitsInArc.length; i++)
 		{
 			blobsInRadius.push_back( hitsInArc[i].blob );
+			blobsInRadius.push_back( caster );
 		}
 
 		for (uint i = 0; i < blobsInRadius.length; i++)
