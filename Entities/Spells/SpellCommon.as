@@ -574,49 +574,6 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 
-		case 1998653938://unholy_resurrection
-		{
-			f32 orbspeed = 4.0f;
-
-			switch(charge_state)
-			{
-				case minimum_cast:
-				case medium_cast:
-				case complete_cast:
-				{
-					orbspeed *= 1.0f;
-				}
-				break;
-				
-				case super_cast:
-				{
-					orbspeed *= 1.2f;
-				}
-				break;
-				
-				default:return;
-			}
-
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
-			orbVel.Normalize();
-			orbVel *= orbspeed;	
-			
-			if (isServer())
-			{
-				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
-				if (orb !is null)
-				{
-					orb.set_string("effect", "unholy_res");
-
-					orb.IgnoreCollisionWhileOverlapped( this );
-					orb.SetDamageOwnerPlayer( this.getPlayer() );
-					orb.setVelocity( orbVel );
-				}
-			}
-		}
-		break;
-
 		case -456270322://counter_spell
 		{
 			counterSpell(this, aimpos);
@@ -762,11 +719,32 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			
 			if (isServer())
 			{
+				bool targetless = true;
+
+				CBlob@[] blobs;
+				getBlobsByTag("player",@blobs);
+				int bestIndex = closestBlobIndex(this,blobs,false);
+
+				if(bestIndex != -1)
+				{
+					targetless = false;
+				}
+
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
 					orb.set_string("effect", "slow");
 					orb.set_u16("effect_time", effectTime);
+
+					if(!targetless)
+					{
+						CBlob@ target = blobs[bestIndex];
+						if(target !is null)
+						{
+							orb.set_netid("target", target.getNetworkID());
+							orb.set_bool("target found", true);
+						}
+					}
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -809,11 +787,32 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 			if (isServer())
 			{
+				bool targetless = true;
+
+				CBlob@[] blobs;
+				getBlobsByTag("player",@blobs);
+				int bestIndex = closestBlobIndex(this,blobs,true);
+
+				if(bestIndex != -1)
+				{
+					targetless = false;
+				}
+
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
 					orb.set_string("effect", "haste");
 					orb.set_u16("effect_time", effectTime);
+					
+					if(!targetless)
+					{
+						CBlob@ target = blobs[bestIndex];
+						if(target !is null)
+						{
+							orb.set_netid("target", target.getNetworkID());
+							orb.set_bool("target found", true);
+						}
+					}
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -853,10 +852,95 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			
 			if (isServer())
 			{
+				bool targetless = true;
+
+				CBlob@[] blobs;
+				getBlobsByTag("gravestone",@blobs);
+				int bestIndex = closestBlobIndex(this,blobs,true);
+
+				if(bestIndex != -1)
+				{
+					targetless = false;
+				}
+
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
 					orb.set_string("effect", "revive");
+
+					if(!targetless)
+					{
+						CBlob@ target = blobs[bestIndex];
+						if(target !is null)
+						{
+							orb.set_netid("target", target.getNetworkID());
+							orb.set_bool("target found", true);
+						}
+					}
+
+					orb.IgnoreCollisionWhileOverlapped( this );
+					orb.SetDamageOwnerPlayer( this.getPlayer() );
+					orb.setVelocity( orbVel );
+				}
+			}
+		}
+		break;
+
+		case 1998653938://unholy_resurrection
+		{
+			f32 orbspeed = 4.0f;
+
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					orbspeed *= 1.0f;
+				}
+				break;
+				
+				case super_cast:
+				{
+					orbspeed *= 1.2f;
+				}
+				break;
+				
+				default:return;
+			}
+
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos- orbPos);
+			orbVel.Normalize();
+			orbVel *= orbspeed;	
+			
+			if (isServer())
+			{
+				bool targetless = true;
+
+				CBlob@[] blobs;
+				getBlobsByTag("gravestone",@blobs);
+				int bestIndex = closestBlobIndex(this,blobs,true);
+
+				if(bestIndex != -1)
+				{
+					targetless = false;
+				}
+
+				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
+				if (orb !is null)
+				{
+					orb.set_string("effect", "unholy_res");
+
+					if(!targetless)
+					{
+						CBlob@ target = blobs[bestIndex];
+						if(target !is null)
+						{
+							orb.set_netid("target", target.getNetworkID());
+							orb.set_bool("target found", true);
+						}
+					}
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -888,6 +972,17 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 			if (isServer())
 			{
+				bool targetless = true;
+
+				CBlob@[] blobs;
+				getBlobsByTag("player",@blobs);
+				int bestIndex = closestBlobIndex(this,blobs,true);
+
+				if(bestIndex != -1)
+				{
+					targetless = false;
+				}
+
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
@@ -895,6 +990,16 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orb.set_u8("mana_used", manaUsed);
 					orb.set_u8("caster_mana", casterMana);
 					orb.set_bool("silent", false);
+
+					if(!targetless)
+					{
+						CBlob@ target = blobs[bestIndex];
+						if(target !is null)
+						{
+							orb.set_netid("target", target.getNetworkID());
+							orb.set_bool("target found", true);
+						}
+					}
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -950,11 +1055,32 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 			if (isServer())
 			{
+				bool targetless = true;
+
+				CBlob@[] blobs;
+				getBlobsByTag("player",@blobs);
+				int bestIndex = closestBlobIndex(this,blobs,true);
+
+				if(bestIndex != -1)
+				{
+					targetless = false;
+				}
+
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
 					orb.set_string("effect", "airblastShield");
 					orb.set_u16("effect_time", effectTime);
+
+					if(!targetless)
+					{
+						CBlob@ target = blobs[bestIndex];
+						if(target !is null)
+						{
+							orb.set_netid("target", target.getNetworkID());
+							orb.set_bool("target found", true);
+						}
+					}
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -998,11 +1124,32 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 			if (isServer())
 			{
+				bool targetless = true;
+
+				CBlob@[] blobs;
+				getBlobsByTag("player",@blobs);
+				int bestIndex = closestBlobIndex(this,blobs,true);
+
+				if(bestIndex != -1)
+				{
+					targetless = false;
+				}
+
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
 					orb.set_string("effect", "fireProt");
 					orb.set_u16("effect_time", effectTime);
+
+					if(!targetless)
+					{
+						CBlob@ target = blobs[bestIndex];
+						if(target !is null)
+						{
+							orb.set_netid("target", target.getNetworkID());
+							orb.set_bool("target found", true);
+						}
+					}
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -2602,4 +2749,47 @@ u32 getLandHeight(Vec2f pos)
 		tilesdown += 1;
 	}
 	return 0;
+}
+
+int closestBlobIndex(CBlob@ this, CBlob@[] blobs, bool friendly)
+{
+    f32 bestDistance = 99999999;
+    int bestIndex = -1;
+
+	if(friendly)
+	{
+		for(int i = 0; i < blobs.length; i++)
+		{
+			CBlob@ currentBlob = blobs[i];
+    	    if(currentBlob is null || currentBlob is this || currentBlob.getTeamNum() != this.getTeamNum())
+			{continue;}
+
+    		//f32 dist = this.getDistanceTo(currentBlob);
+			f32 dist = Vec2f( currentBlob.getPosition() - this.getAimPos() ).getLength();
+    		if(bestDistance > dist)
+    		{
+    	    	bestDistance = dist;
+    	        bestIndex = i;
+    	    }
+    	}
+	}
+	else
+	{
+		for(int i = 0; i < blobs.length; i++)
+		{
+			CBlob@ currentBlob = blobs[i];
+    	    if(currentBlob is null || currentBlob is this || currentBlob.getTeamNum() == this.getTeamNum())
+			{continue;}
+
+    		//f32 dist = this.getDistanceTo(currentBlob);
+			f32 dist = Vec2f( currentBlob.getPosition() - this.getAimPos() ).getLength();
+    		if(bestDistance > dist)
+    		{
+    	    	bestDistance = dist;
+    	        bestIndex = i;
+    	    }
+    	}
+	}
+    
+    return bestIndex;
 }

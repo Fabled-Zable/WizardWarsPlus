@@ -103,7 +103,7 @@ void onTick( CBlob@ this)
 	}
 	
 	//targetting 
-	if ( this.getTickSinceCreated() > HOMING_DELAY )
+	if ( this.getTickSinceCreated() > HOMING_DELAY)
 	{	
 		// try to find player target	
 		CBlob@ target = getBlobByNetworkID(this.get_netid("target"));
@@ -299,13 +299,18 @@ bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
 	if ( blob is null )
-		return;
-		
-	this.set_bool("onCollision triggered", true);
-	this.set_netid("onCollision blob", blob.getNetworkID());
+	return;
 	
-	this.Sync("onCollision triggered", true);
-	this.Sync("onCollision blob", true);
+	CBlob@ target = getBlobByNetworkID(this.get_netid("target"));
+	
+	if(this.get_bool("target found") && target !is null && target is blob)
+	{
+		this.set_bool("onCollision triggered", true);
+		this.set_netid("onCollision blob", blob.getNetworkID());
+	
+		this.Sync("onCollision triggered", true);
+		this.Sync("onCollision blob", true);
+	}
 }
 
 bool isOwnerBlob(CBlob@ this, CBlob@ target)
@@ -431,37 +436,27 @@ void selectedTargetIndicator( CBlob@ this , Vec2f pos )
 {
 	if ( !isClient() ) {return;}
 
-	Vec2f initVec = Vec2f(2.0f,0);
-	Vec2f pVec = initVec.RotateByDegrees(XORRandom(360));
-	
+	Vec2f thisPos = this.getPosition();
+	Vec2f targetPos = pos;
+	Vec2f moveDir = targetPos - thisPos;
+	float dist = moveDir.Length();
+	Vec2f pVector = moveDir;
+	pVector.Normalize();
+
+	SColor color = SColor(255, 0, 0, 0);
+
 	switch(this.get_u8("target_type"))
 	{
 		case 0: //allies
 		case 1: //dead allies
 		{
-			CParticle@ p = ParticlePixel( pos, pVec, SColor( 255, 240, 240, 240 ), true );
-			if(p !is null) //bail if we stop getting particles
-			{
-				p.timeout = 40 + _sprk_r.NextRanged(20);
-				p.scale = 0.5f + _sprk_r.NextFloat();
-    			p.fastcollision = true;
-				p.damping = 0.8f;
-				p.gravity = Vec2f(0,0);
-			}
+			color = SColor(255, 240, 240, 240);
 		}
 		break;
 
 		case 2: //enemies
 		{
-			CParticle@ p = ParticlePixel( pos, pVec, SColor( 255, 255, 165, 0 ), true );
-			if(p !is null) //bail if we stop getting particles
-			{
-				p.timeout = 40 + _sprk_r.NextRanged(20);
-				p.scale = 0.5f + _sprk_r.NextFloat();
-    			p.fastcollision = true;
-				p.damping = 0.8f;
-				p.gravity = Vec2f(0,0);
-			}
+			color = SColor( 255, 255, 165, 0 );
 		}
 		break;
 
@@ -469,6 +464,18 @@ void selectedTargetIndicator( CBlob@ this , Vec2f pos )
 		{
 			return;
 		}
-
 	} //switch end
+
+	for(int i = 0; i < dist; i += 2)
+	{
+		CParticle@ p = ParticlePixel( thisPos + pVector*i, Vec2f_zero, color, true );
+		if(p !is null) //bail if we stop getting particles
+		{
+			p.timeout = _sprk_r.NextRanged(5);
+			p.scale = 0.5f + _sprk_r.NextFloat();
+    		p.fastcollision = true;
+			p.damping = 0.8f;
+			p.gravity = Vec2f(0,0);
+		}
+	}
 }
