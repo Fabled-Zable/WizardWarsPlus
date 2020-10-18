@@ -2157,14 +2157,28 @@ void CastNegentropy( CBlob@ this )
 	if (!this.get( "manaInfo", @manaInfo ))
 	{return;}
 
-	CMap@ map = this.getMap();
+	CMap@ map = getMap();
 	if (map is null)
 	{return;}
 
 	u32 gatheredMana = 0;
-			
+
+	Vec2f thisPos = this.getPosition();
+	Vec2f aimVec = this.getAimPos() - thisPos;
+	float aimAngle = aimVec.getAngleDegrees();
+
 	CBlob@[] blobsInRadius;
-	if (map.getBlobsInRadius(this.getPosition(), 64.0f, @blobsInRadius))
+	HitInfo@[] hitsInArc;
+
+	map.getBlobsInRadius(thisPos, 15.0f, @blobsInRadius);
+	if (map.getHitInfosFromArc(thisPos, -aimAngle, 90.0f, 64.0f, this, @hitsInArc))
+	{
+		for (uint i = 0; i < hitsInArc.length; i++)
+		{
+			blobsInRadius.push_back( hitsInArc[i].blob );
+		}
+	}
+
 	for (uint i = 0; i < blobsInRadius.length; i++)
 	{
 		CBlob @b = blobsInRadius[i];
@@ -2270,9 +2284,10 @@ void CastNegentropy( CBlob@ this )
 	}
 
 	SColor color = SColor(255,255,255,XORRandom(191));
-	for(int i = 0; i < 360; i ++)
+	for(int i = 0; i < 90; i ++)
 	{
-		Vec2f particlePos = Vec2f(XORRandom(5)+62 , 0).RotateByDegrees(XORRandom(361));
+		float particleDegrees = -aimAngle + i - 45;
+		Vec2f particlePos = Vec2f(XORRandom(64) , 0).RotateByDegrees(particleDegrees);
 		Vec2f particleVel = Vec2f( 0.4f ,0).RotateByDegrees(XORRandom(361));
 		CParticle@ p = ParticlePixel( this.getPosition() + particlePos , particleVel , color , false , XORRandom(16) + 15 );
 		if(p !is null)
@@ -2441,7 +2456,7 @@ void makeReviveParticles(CBlob@ this, const f32 velocity = 1.0f, const int small
 
 void counterSpell( CBlob@ caster , Vec2f aimpos)
 {		
-	CMap@ map = caster.getMap();
+	CMap@ map = getMap();
 	
 	if (map is null){return;}
 
