@@ -2288,7 +2288,7 @@ void CastNegentropy( CBlob@ this )
 	{
 		float particleDegrees = -aimAngle + i - 45;
 		Vec2f particlePos = Vec2f(XORRandom(64) , 0).RotateByDegrees(particleDegrees);
-		Vec2f particleVel = Vec2f( 0.4f ,0).RotateByDegrees(XORRandom(361));
+		Vec2f particleVel = Vec2f( 0.4f ,0).RotateByDegrees(XORRandom(360));
 		CParticle@ p = ParticlePixel( this.getPosition() + particlePos , particleVel , color , false , XORRandom(16) + 15 );
 		if(p !is null)
 		{

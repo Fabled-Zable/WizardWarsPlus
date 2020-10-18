@@ -29,13 +29,35 @@ void onTick(CBlob@ this)
 	
 	Vec2f pos = this.getPosition();
 	if ( pos.x < 0.1f ||
-	 pos.x > (getMap().tilemapwidth * getMap().tilesize) - 0.1f)
+	pos.x > (getMap().tilemapwidth * getMap().tilesize) - 0.1f)
 	{
 		this.server_Die();
 		return;
 	}
-        angle = (this.getVelocity()).Angle();
-		this.setAngleDegrees(-angle);
+
+    angle = (this.getVelocity()).Angle();
+	this.setAngleDegrees(-angle);
+
+	if(!isClient())
+	{return;}
+
+	for(int i = 0; i < 5; i ++)
+	{
+		float randomPVel = XORRandom(10) / 10.0f;
+		Vec2f particleVel = Vec2f( randomPVel ,0).RotateByDegrees(XORRandom(360));
+		particleVel += this.getVelocity();
+
+    	CParticle@ p = ParticlePixelUnlimited(this.getPosition(), particleVel, SColor(255,10,5,5), true);
+   		if(p !is null)
+    	{
+    	    p.collides = false;
+    	    p.gravity = Vec2f_zero;
+    	    p.bounce = 1;
+    	    p.lighting = false;
+    	    p.timeout = 60;
+			p.damping = 0.95;
+    	}
+	}
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
