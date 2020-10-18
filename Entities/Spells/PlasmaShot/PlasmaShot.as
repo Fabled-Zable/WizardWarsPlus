@@ -111,7 +111,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 void explode( CBlob@ this )
 {
 	CMap@ map = getMap();
-	if (map is null)
+	if (map is null || this is null)
 	return;
 
 	float damage = this.get_f32("damage");
