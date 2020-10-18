@@ -9,6 +9,8 @@ void onInit(CBlob@ this)
 	CShape@ shape = this.getShape();
 	shape.SetGravityScale(0.0f);
 	shape.getConsts().mapCollisions = false;
+
+	this.set_u16("lifetime", 30);
 	
 	this.Tag("barrier");
 	this.Tag("counterable");
