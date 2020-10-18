@@ -1828,7 +1828,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 			else if (charge_state == NecromancerParams::extra_ready) {
 				orbspeed *= 1.2f;
-				orbDamage *= 1.2f;
+				orbDamage *= 1.5f;
 			}
 
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
@@ -2173,16 +2173,15 @@ void CastNegentropy( CBlob@ this )
 	float aimAngle = aimVec.getAngleDegrees();
 
 	CBlob@[] blobsInRadius;
-	HitInfo@[] hitsInArc;
-
 	map.getBlobsInRadius(thisPos, 15.0f, @blobsInRadius);
-	if (map.getHitInfosFromArc(thisPos, -aimAngle, 90.0f, 64.0f, this, @hitsInArc))
-	{
-		for (uint i = 0; i < hitsInArc.length; i++)
-		{
-			blobsInRadius.push_back( hitsInArc[i].blob );
-		}
-	}
+
+	float negentropyRange = 64.0f;
+
+	aimVec.Normalize();
+	aimVec *= negentropyRange/2;
+
+	Vec2f circlePos = aimVec+thisPos;
+	map.getBlobsInRadius(circlePos, aimVec.getLength(), @blobsInRadius);
 
 	for (uint i = 0; i < blobsInRadius.length; i++)
 	{
@@ -2303,6 +2302,7 @@ void CastNegentropy( CBlob@ this )
 			p.fastcollision = true;
 			p.bounce = 0;
 			p.lighting = false;
+			p.Z = 500;
 		}
 	}
 }
@@ -2470,126 +2470,139 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 	float aimAngle = aimVec.getAngleDegrees();
 
 	CBlob@[] blobsInRadius;
-	HitInfo@[] hitsInArc;
-
 	map.getBlobsInRadius(thisPos, 10.0f, @blobsInRadius);
-	if (map.getHitInfosFromArc(thisPos, -aimAngle, 90.0f, 64.0f, caster, @hitsInArc))
+
+	//code past this point is not very customizable. Handle with care.
+
+	Vec2f aimDir = aimVec;
+	aimDir.Normalize();
+	aimDir.RotateByDegrees(-45);
+
+	float scanDensity = 4.0f;
+
+	float fractionsOfArc = 90.0f/scanDensity;
+	float counterspellRange = 64.0f/scanDensity;
+
+	for(int a = 1; a < 4; a++)
 	{
-		for (uint i = 0; i < hitsInArc.length; i++)
+		for(int b = 1; b < 4; b++)
 		{
-			blobsInRadius.push_back( hitsInArc[i].blob );
-			blobsInRadius.push_back( caster );
+			Vec2f circleDir = aimDir;
+			circleDir.RotateByDegrees(b*fractionsOfArc);
+			Vec2f circlePos = (circleDir*counterspellRange*a)+thisPos;
+			map.getBlobsInRadius(circlePos, 5.0f*a, @blobsInRadius);
 		}
+	}
 
-		for (uint i = 0; i < blobsInRadius.length; i++)
+	for (uint i = 0; i < blobsInRadius.length; i++)
+	{
+		CBlob@ b = blobsInRadius[i];
+		if (b !is null)
 		{
-			CBlob@ b = blobsInRadius[i];
-			if (b !is null)
-			{
-				bool sameTeam = b.getTeamNum() == caster.getTeamNum();
+			bool sameTeam = b.getTeamNum() == caster.getTeamNum();
 			
-				bool countered = false;
-				bool retribution = false;
-				if ( b.hasTag("counterable") && (!sameTeam || b.hasTag("alwayscounter")) )
-				{
-					b.Untag("exploding");
-					b.server_Die();
-					if (b.getName() == "plant_aura")
-					{retribution = true;}
+			bool countered = false;
+			bool retribution = false;
+			if ( b.hasTag("counterable") && (!sameTeam || b.hasTag("alwayscounter")) )
+			{
+				b.Untag("exploding");
+				b.server_Die();
+				if (b.getName() == "plant_aura")
+				{retribution = true;}
 					
-					countered = true;
-				}
-				else if ( b.get_u16("slowed") > 0 && sameTeam )
-				{				
-					b.set_u16("slowed", 1);
-					b.Sync("slowed", true);
+				countered = true;
+			}
+			else if ( b.get_u16("slowed") > 0 && sameTeam )
+			{				
+				b.set_u16("slowed", 1);
+				b.Sync("slowed", true);
 					
-					countered = true;
-				}
-				else if (
-				(	b.get_u16("hastened") > 0
-				 || b.get_u16("fireProt") > 0 
-				 || b.get_u16("airblastShield") > 0 
-				 || b.get_u16("stoneSkin") > 0 )
-				 && !sameTeam )
+				countered = true;
+			}
+			else if (
+			(	b.get_u16("hastened") > 0
+			 || b.get_u16("fireProt") > 0 
+			 || b.get_u16("airblastShield") > 0 
+			 || b.get_u16("stoneSkin") > 0 )
+			 && !sameTeam )
+			{
+				if(b.get_u16("hastened") > 0)
 				{
-					if(b.get_u16("hastened") > 0)
-					{
-						b.set_u16("hastened", 1);
-						b.Sync("hastened", true);
-					}
+					b.set_u16("hastened", 1);
+					b.Sync("hastened", true);
+				}
 
-					if(b.get_u16("fireProt") > 0)
-					{
-						b.set_u16("fireProt", 1);
-						b.Sync("fireProt", true);
-					}
+				if(b.get_u16("fireProt") > 0)
+				{
+					b.set_u16("fireProt", 1);
+					b.Sync("fireProt", true);
+				}
 
-					if(b.get_u16("airblastShield") > 0)
-					{
-						b.set_u16("airblastShield", 1);
-						b.Sync("airblastShield", true);
-					}
+				if(b.get_u16("airblastShield") > 0)
+				{
+					b.set_u16("airblastShield", 1);
+					b.Sync("airblastShield", true);
+				}
 
-					if(b.get_u16("stoneSkin") > 0)
-					{
-						b.set_u16("stoneSkin", 1);
-						b.Sync("stoneSkin", true);
-					}
+				if(b.get_u16("stoneSkin") > 0)
+				{
+					b.set_u16("stoneSkin", 1);
+					b.Sync("stoneSkin", true);
+				}
 					
-					countered = true;
-				}
-				else if ( b.hasTag("zombie") && !sameTeam )
-				{
-					float damage = undeadCounterspellDamage(b);
-					if(damage == 0)
-					{return;}
+				countered = true;
+			}
+			else if ( b.hasTag("zombie") && !sameTeam )
+			{
+				float damage = undeadCounterspellDamage(b);
+				if(damage == 0)
+				{return;}
 
-					caster.server_Hit(b, caster.getPosition(), Vec2f(0, 0), damage, Hitters::fire, true);
+				caster.server_Hit(b, caster.getPosition(), Vec2f(0, 0), damage, Hitters::fire, true);
 					
-					countered = true;
-				}
-				else if(b.hasTag("circle"))
-				{
-					b.add_u8("despelled",1);
-					countered = true;
-				}
+				countered = true;
+			}
+			else if(b.hasTag("circle"))
+			{
+				b.add_u8("despelled",1);
+				countered = true;
+			}
 				
-				if ( retribution == true )
-				{
-					/*ManaInfo@ manaInfo;
-					if (!caster.get( "manaInfo", @manaInfo )) {
-						return;
-					}
-					manaInfo.mana += 10;*/
-					if(caster !is null)
-					{Heal(caster, 1.0f);}
+			if ( retribution == true )
+			{
+				/*ManaInfo@ manaInfo;
+				if (!caster.get( "manaInfo", @manaInfo )) {
+					return;
 				}
+				manaInfo.mana += 10;*/
+				if(caster !is null)
+				{Heal(caster, 1.0f);}
+			}
 
-				if ( countered == true )
+			if ( countered == true )
+			{
+				if ( isClient() )
 				{
-					if ( isClient() )
+					Vec2f bPos = b.getPosition();
+					CParticle@ p = ParticleAnimated( "Flash2.png",
+									bPos,
+									Vec2f(0,0),
+									0,
+									1.0f, 
+									8, 
+									0.0f, true ); 	
+									
+					if ( p !is null)
 					{
-						Vec2f bPos = b.getPosition();
-						CParticle@ p = ParticleAnimated( "Flash2.png",
-										bPos,
-										Vec2f(0,0),
-										0,
-										1.0f, 
-										8, 
-										0.0f, true ); 	
-										
-						if ( p !is null)
-						{
-							p.bounce = 0;
-    						p.fastcollision = true;
-							p.Z = 600.0f;
-						}
+						p.bounce = 0;
+    					p.fastcollision = true;
+						p.Z = 600.0f;
 					}
 				}
 			}
 		}
 	}
+	
 	
 	if ( isClient() )
 	{

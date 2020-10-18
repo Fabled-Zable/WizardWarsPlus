@@ -79,7 +79,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 
 			if(blob.hasTag("flesh"))
 			{
-				kickDir *= 0.2f;
+				kickDir *= 0.5f;
 			}
 
 			blob.AddForceAtPosition(kickDir, this.getPosition());
@@ -92,7 +92,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 			{return;}
 
 			CBlob@[] blobsInRadius;
-			map.getBlobsInRadius(this.getPosition(), 16.0f, @blobsInRadius);
+			map.getBlobsInRadius(this.getPosition(), 18.0f, @blobsInRadius);
 			for (uint i = 0; i < blobsInRadius.length; i++)
 			{
 				if(blobsInRadius[i] is null)
