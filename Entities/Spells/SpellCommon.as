@@ -1819,13 +1819,16 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
            		return;
 			}
 			f32 orbspeed = necro_shoot_speed*0.3f;
-            bool extraDamage = this.hasTag("extra_damage") ? true : false;
+            f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
+			f32 orbDamage = 1.0f * extraDamage;
 
             if (charge_state == NecromancerParams::cast_3) {
 				orbspeed *= 1.0f;
+				orbDamage *= 1.0f;
 			}
 			else if (charge_state == NecromancerParams::extra_ready) {
 				orbspeed *= 1.2f;
+				orbDamage *= 1.2f;
 			}
 
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
@@ -1836,7 +1839,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			CBlob@ orb = server_CreateBlob( "bunker_buster" );
 			if (orb !is null)
 			{
-				if(extraDamage)  //if buffed, more blast power
+				if(this.hasTag("extra_damage"))  //if buffed, more blast power
 				{
 					orb.set_f32("blastStr", 1.2f);
 				}
@@ -1844,6 +1847,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				{
 					orb.set_f32("blastStr", 1.0f);
 				}
+
+				orb.set_f32("damage", orbDamage);
 
 				orb.IgnoreCollisionWhileOverlapped( this );
 				orb.SetDamageOwnerPlayer( this.getPlayer() );

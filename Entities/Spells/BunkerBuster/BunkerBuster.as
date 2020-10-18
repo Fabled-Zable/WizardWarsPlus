@@ -15,6 +15,8 @@ void onInit(CBlob@ this)
 	this.Tag("counterable");
 	shape.SetGravityScale( 0.05f );
 
+	this.set_f32("damage", 1.0f);
+
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
 
@@ -67,54 +69,70 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 		float blastStr = this.get_f32("blastStr");
 		if (isEnemy(this, blob))
 		{
-			if (blob.hasTag("barrier"))
+			//Vec2f selfPos = this.getPosition();
+			//Vec2f othPos = blob.getPosition();
+			//Vec2f kickDir = othPos - selfPos;
+			Vec2f kickDir = this.getVelocity();
+			kickDir.Normalize();
+			kickDir *= (2500.0f * blastStr);
+			kickDir += Vec2f(0,-1);
+
+			if(blob.hasTag("flesh"))
 			{
-				//Vec2f selfPos = this.getPosition();
-				//Vec2f othPos = blob.getPosition();
-				//Vec2f kickDir = othPos - selfPos;
-				Vec2f kickDir = this.getVelocity();
-				kickDir.Normalize();
-				kickDir *= (2500.0f * blastStr);
-				kickDir += Vec2f(0,-1);
-				blob.AddForceAtPosition(kickDir, this.getPosition());
-				this.getSprite().PlaySound("bunkerbust.ogg", 100.0f);
-				
-				if ( isClient() ) //temporary Counterspell effect
-				{
-					CParticle@ pb = ParticleAnimated( "Shockwave3WIP.png",
-						this.getPosition(),
-						Vec2f(0,0),
-						float(XORRandom(360)),
-						0.25f, 
-						2, 
-						0.0f, true );    
-					if ( pb !is null)
-					{
-						pb.bounce = 0;
-    					pb.fastcollision = true;
-						pb.Z = -10.0f;
-					}
-				}
-				this.server_Die();
+				kickDir *= 0.2f;
 			}
+
+			blob.AddForceAtPosition(kickDir, this.getPosition());
+			this.getSprite().PlaySound("bunkerbust.ogg", 100.0f);
+
+			float damage = this.get_f32("damage");
+
+			CMap@ map = getMap();
+			if (map is null)
+			{return;}
+
+			CBlob@[] blobsInRadius;
+			map.getBlobsInRadius(this.getPosition(), 16.0f, @blobsInRadius);
+			for (uint i = 0; i < blobsInRadius.length; i++)
+			{
+				if(blobsInRadius[i] is null)
+				{continue;}
+
+				CBlob@ radiusBlob = blobsInRadius[i];
+
+				if(!isEnemy(this, radiusBlob))
+				{continue;}
+
+				this.server_Hit(radiusBlob, radiusBlob.getPosition(), Vec2f_zero, damage, Hitters::water, false);
+			}
+			
+			if ( isClient() ) //temporary Counterspell effect
+			{
+				CParticle@ pb = ParticleAnimated( "Shockwave3WIP.png",
+					this.getPosition(),
+					Vec2f(0,0),
+					float(XORRandom(360)),
+					0.25f, 
+					2, 
+					0.0f, true );    
+				if ( pb !is null)
+				{
+					pb.bounce = 0;
+    				pb.fastcollision = true;
+					pb.Z = -10.0f;
+				}
+			}
+			this.server_Die();
 		}
 	}
 }
 
 bool isEnemy( CBlob@ this, CBlob@ target )
 {
-	CBlob@ friend = getBlobByNetworkID(target.get_netid("brain_friend_id"));
 	return 
 	(
 		(
-			target.hasTag("barrier") ||
-			(
-				target.hasTag("flesh") 
-				&& !target.hasTag("dead") 
-				&& (friend is null
-					|| friend.getTeamNum() != this.getTeamNum()
-					)
-			)
+			target.hasTag("barrier") || (target.hasTag("flesh") && !target.hasTag("dead") )
 		)
 		&& target.getTeamNum() != this.getTeamNum() 
 	);
