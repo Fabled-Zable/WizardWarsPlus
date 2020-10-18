@@ -713,38 +713,17 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 			
 			if (isServer())
 			{
-				bool targetless = true;
-
-				CBlob@[] blobs;
-				getBlobsByTag("player",@blobs);
-				int bestIndex = closestBlobIndex(this,blobs,false);
-
-				if(bestIndex != -1)
-				{
-					targetless = false;
-				}
-
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
 					orb.set_string("effect", "slow");
 					orb.set_u16("effect_time", effectTime);
-
-					if(!targetless)
-					{
-						CBlob@ target = blobs[bestIndex];
-						if(target !is null)
-						{
-							orb.set_netid("target", target.getNetworkID());
-							orb.set_bool("target found", true);
-						}
-					}
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -2474,7 +2453,7 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 	HitInfo@[] hitsInArc;
 
 	map.getBlobsInRadius(thisPos, 10.0f, @blobsInRadius);
-	if (map.getHitInfosFromArc(thisPos, -aimAngle, 40.0f, 64.0f, caster, @hitsInArc))
+	if (map.getHitInfosFromArc(thisPos, -aimAngle, 90.0f, 64.0f, caster, @hitsInArc))
 	{
 		for (uint i = 0; i < hitsInArc.length; i++)
 		{
@@ -2594,10 +2573,10 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 	
 	if ( isClient() )
 	{
-		CParticle@ p = ParticleAnimated( "Shockwave2Arc.png",
+		CParticle@ p = ParticleAnimated( "Shockwave90deg.png",
 						caster.getPosition(),
 						Vec2f(0,0),
-						-aimAngle,
+						-aimAngle + 45,
 						1.0f, 
 						2, 
 						0.0f, true );    
