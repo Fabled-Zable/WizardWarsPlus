@@ -2172,23 +2172,28 @@ void CastNegentropy( CBlob@ this )
 	Vec2f aimVec = this.getAimPos() - thisPos;
 	float aimAngle = aimVec.getAngleDegrees();
 
-	CBlob@[] blobsInRadius;
-	map.getBlobsInRadius(thisPos, 15.0f, @blobsInRadius);
-
 	float negentropyRange = 64.0f;
+	float negentropyAngle = 90.0f;
 
-	aimVec.Normalize();
-	aimVec *= negentropyRange/2;
+	float arcLimitDegrees = (negentropyAngle/2)+5.0f;
 
-	Vec2f circlePos = aimVec+thisPos;
-	map.getBlobsInRadius(circlePos, aimVec.getLength(), @blobsInRadius);
-
+	CBlob@[] blobsInRadius;
+	map.getBlobsInRadius(thisPos, negentropyRange, @blobsInRadius);
+	
 	for (uint i = 0; i < blobsInRadius.length; i++)
 	{
-		CBlob @b = blobsInRadius[i];
+		CBlob@ b = blobsInRadius[i];
 		if (b is null)
 		{continue;}
 		if (this.getTeamNum() == b.getTeamNum())
+		{continue;}
+
+		Vec2f bPos = b.getPosition();
+		Vec2f bVec = bPos - thisPos;
+		float bAngle = bVec.getAngle();
+		bAngle -= aimAngle;
+
+		if( (bAngle > arcLimitDegrees || bAngle < -arcLimitDegrees) && bVec.getLength() > 16.0f)
 		{continue;}
 		
 		bool incompatible = false;
@@ -2226,7 +2231,7 @@ void CastNegentropy( CBlob@ this )
 			CBlob@ orb = server_CreateBlob( "lightning2", this.getTeamNum(), this.getPosition() ); 
 			if (orb !is null)
 			{
-				orb.set_Vec2f("aim pos", b.getPosition());
+				orb.set_Vec2f("aim pos", bPos);
 				orb.set_f32("lifetime", 0.4f);
 				orb.Tag("stick"); //enables stick-to-blob code in lightning2.as
 				if(incompatible)
@@ -2469,36 +2474,27 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 	Vec2f aimVec = aimpos - thisPos;
 	float aimAngle = aimVec.getAngleDegrees();
 
+	float counterspellRange = 64.0f;
+	float counterspellAngle = 90.0f;
+
+	float arcLimitDegrees = (counterspellAngle/2)+5.0f;
+
 	CBlob@[] blobsInRadius;
-	map.getBlobsInRadius(thisPos, 10.0f, @blobsInRadius);
-
-	//code past this point is not very customizable. Handle with care.
-
-	Vec2f aimDir = aimVec;
-	aimDir.Normalize();
-	aimDir.RotateByDegrees(-45);
-
-	float scanDensity = 4.0f;
-
-	float fractionsOfArc = 90.0f/scanDensity;
-	float counterspellRange = 64.0f/scanDensity;
-
-	for(int a = 1; a < 4; a++)
-	{
-		for(int b = 1; b < 4; b++)
-		{
-			Vec2f circleDir = aimDir;
-			circleDir.RotateByDegrees(b*fractionsOfArc);
-			Vec2f circlePos = (circleDir*counterspellRange*a)+thisPos;
-			map.getBlobsInRadius(circlePos, 5.0f*a, @blobsInRadius);
-		}
-	}
+	map.getBlobsInRadius(thisPos, counterspellRange, @blobsInRadius);
 
 	for (uint i = 0; i < blobsInRadius.length; i++)
 	{
 		CBlob@ b = blobsInRadius[i];
 		if (b !is null)
 		{
+			Vec2f bPos = b.getPosition();
+			Vec2f bVec = bPos - thisPos;
+			float bAngle = bVec.getAngle();
+			bAngle -= aimAngle;
+
+			if( (bAngle > arcLimitDegrees || bAngle < -arcLimitDegrees) && bVec.getLength() > 16.0f)
+			{continue;}
+
 			bool sameTeam = b.getTeamNum() == caster.getTeamNum();
 			
 			bool countered = false;
