@@ -78,6 +78,10 @@ class WWPlayerClassButton
 			spells = NecromancerParams::spells;
 		else if ( _configFilename == "swordcaster" )
 			spells = SwordCasterParams::spells;
+		else if ( _configFilename == "entropist" )
+			spells = EntropistParams::spells;
+		else if ( _configFilename == "frigate" )
+			spells = FrigateParams::spells;
 		
 		int spellsLength = spells.length;
 		for (uint i = 0; i < spellsLength; i++)
@@ -344,32 +348,45 @@ void intitializeClasses()
 													"necromancer", 1, 0, 3, 5, "WizardWars");
 	
 	playerClassButtons.registerWWPlayerClassButton("Knight", 
-													"     A shit class really... All he can do is hack and slash. His shield is surprisingly quite ineffective. Maybe one day he will prove to be as great as the mighty wizard." +
-													"\n\n     Health: 60" +
+													"     A shit class really... All he can do is hack and slash. His shield is surprisingly effective. Maybe one day he will prove to be as great as the mighty wizard." +
+													"\n\n     Health: 90" +
 													"\n     Mana: 0" +
 													"\n     Mana Regen: 0 mana/sec",
 													"knight", 2, 10, 0, 0, "WizardWars");
 
 	playerClassButtons.registerWWPlayerClassButton("Druid", 
-													"     Work In Progress. " +
-													"\n\n     Health: 70" +
-													"\n     Mana: 100" +
-													"\n     Mana Regen: 3 mana/sec",
+													"     A healing bastard. Druids claim to be in tune with nature, but they fail to mention how annoying bees can be. " +
+													"\n\n     Health: 75" +
+													"\n     Mana: 150" +
+													"\n     Mana Regen: 4 mana/sec",
 													"druid", 3, 20, 4, 0, "WizardWars");
 													
 	playerClassButtons.registerWWPlayerClassButton("SwordCaster", 
 													"     \"This is a good day for SwordCasters all around the world.\" " +
+													"\n\n     Health: 70" +
+													"\n     Mana: 120" +
+													"\n     Mana Regen: 5 mana/sec",
+													"swordcaster", 4, 0, 5, 0, "WizardWars");
+	playerClassButtons.registerWWPlayerClassButton("Entropist", 
+													"     There is no better feeling than giving the enemy a taste of their own medicine." +
 													"\n\n     Health: 75" +
-													"\n     Mana: 100" +
-													"\n     Mana Regen: 3 mana/sec",
-													"swordcaster", 4, 0, 0, 0, "WizardWars");
+													"\n     Mana: 200" +
+													"\n     Mana is obtained by absorbing enemy spells.",
+													"entropist", 5, 0, 6, 0, "WizardWars");
 													
-	/*playerClassButtons.registerWWPlayerClassButton("Archer", 
+/*	playerClassButtons.registerWWPlayerClassButton("Spaceship Combat Initiative", 
+													"     Frigate Prototype. In highly fragile state. " +
+													"\n\n     Health: 10" +
+													"\n     Mana: 300" +
+													"\n     Mana Regen: 0 mana/sec",
+													"frigate", 6, 0, 6, 0, "WizardWars");
+
+	playerClassButtons.registerWWPlayerClassButton("Archer", 
 													"     The most powerful class ever with over 1000 mana fit for taking on the Gods. Too bad they skipped magic class. " +
 													"\n\n     Health: 40" +
 													"\n     Mana: 1001" +
 													"\n     Mana Regen: 100 mana/sec",
-													"archer", 3, 20, 1, 0, "WizardWars");*/
+													"archer", 6, 0, 6, 0, "WizardWars");*/
 }
 
 void SwapButtonHandler(int x , int y , int button, IGUIItem@ sender)	//Button click handler for KGUI
@@ -486,6 +503,10 @@ void SpellButtonHandler(int x , int y , int button, IGUIItem@ sender)	//Button c
 					sSpell = NecromancerParams::spells[Maths::Min( s,(NecromancerParams::spells.length-1) )];
 				else if ( cButton.name == "swordcaster" )
 					sSpell = SwordCasterParams::spells[Maths::Min( s,(SwordCasterParams::spells.length-1) )];
+				else if ( cButton.name == "entropist" )
+					sSpell = EntropistParams::spells[Maths::Min( s,(EntropistParams::spells.length-1) )];
+				else if ( cButton.name == "frigate" )
+					sSpell = FrigateParams::spells[Maths::Min( s,(FrigateParams::spells.length-1) )];
 					
 				playerClassButtons.list[c].spellDescText.setText(playerClassButtons.list[c].spellDescText.textWrap("-- " + sSpell.name + " --" + 
 																													"\n     " + sSpell.spellDesc + 
@@ -980,6 +1001,241 @@ void RenderClassMenus()		//very light use of KGUI
 				if ( canCustomizeHotbar && (mouseScreenPos - (aux2Pos + Vec2f(16,16))).Length() < 16.0f )
 				{
 					assignHotkey(localPlayer, 17, playerPrefsInfo.customSpellID, "swordcaster");	//hotkey 17 is the auxiliary2 fire hotkey
+					hotbarClicked = true;
+				}
+				
+				GUI::DrawText("Auxiliary2 - "+controls.getActionKeyKeyName( AK_TAUNTS ), aux2Pos + Vec2f(32,8), color_white );					
+				
+				if ( canCustomizeHotbar == true )	//play sound, keep menu open by refreshing, and update selected spell 
+				{
+					if ( hotbarClicked )
+					{
+						lastHotbarPressTime = controls.lastKeyPressTime;
+						Sound::Play( "MenuSelect1.ogg" );	
+					}
+				}
+			}
+			if ( iButton.name == "entropist" )
+			{
+				CControls@ controls = localPlayer.getControls();
+				Vec2f mouseScreenPos = controls.getMouseScreenPos();
+			
+				u8[] primaryHotkeys = playerPrefsInfo.hotbarAssignments_Entropist;
+			
+				//PRIMARY SPELL HUD
+				Vec2f offset = Vec2f(264.0f, 350.0f);
+				Vec2f primaryPos = helpWindow.position + Vec2f( 16.0f, 0.0f ) + offset;
+				
+				bool canCustomizeHotbar = controls.mousePressed1 && controls.lastKeyPressTime != lastHotbarPressTime;
+				bool hotbarClicked = false;
+				int spellsLength = EntropistParams::spells.length;
+				for (uint i = 0; i < 15; i++)	//only 15 total spells held inside primary hotbar
+				{
+					u8 primarySpellID = Maths::Min(primaryHotkeys[i], spellsLength-1);
+					Spell spell = EntropistParams::spells[primarySpellID];
+					
+					if ( i < 5 )		//spells 0 through 4
+					{
+						GUI::DrawFramedPane(primaryPos + Vec2f(0,64) + Vec2f(32,0)*i, primaryPos + Vec2f(32,96) + Vec2f(32,0)*i);
+						GUI::DrawIcon("SpellIcons.png", spell.iconFrame, Vec2f(16,16), primaryPos + Vec2f(0,64) + Vec2f(32,0)*i);
+						GUI::DrawText(""+((i+1)%10), primaryPos + Vec2f(8,-16) + Vec2f(32,0)*i, color_white );
+							
+						if ( canCustomizeHotbar && ( mouseScreenPos - (primaryPos + Vec2f(16,80) + Vec2f(32,0)*i) ).Length() < 16.0f )
+						{
+							assignHotkey(localPlayer, i, playerPrefsInfo.customSpellID, "entropist");
+							hotbarClicked = true;
+						}			
+					}
+					else if ( i < 10 )	//spells 5 through 9	
+					{
+						GUI::DrawFramedPane(primaryPos + Vec2f(0,32) + Vec2f(32,0)*(i-5), primaryPos + Vec2f(32,64) + Vec2f(32,0)*(i-5));
+						GUI::DrawIcon("SpellIcons.png", spell.iconFrame, Vec2f(16,16), primaryPos + Vec2f(0,32) + Vec2f(32,0)*(i-5));
+							
+						if ( canCustomizeHotbar && ( mouseScreenPos - (primaryPos + Vec2f(16,48) + Vec2f(32,0)*(i-5)) ).Length() < 16.0f )
+						{
+							assignHotkey(localPlayer, i, playerPrefsInfo.customSpellID, "entropist");
+							hotbarClicked = true;
+						}
+					}
+					else				//spells 10 through 14
+					{
+						GUI::DrawFramedPane(primaryPos + Vec2f(32,0)*(i-10), primaryPos + Vec2f(32,32) + Vec2f(32,0)*(i-10));
+						GUI::DrawIcon("SpellIcons.png", spell.iconFrame, Vec2f(16,16), primaryPos + Vec2f(32,0)*(i-10));			
+							
+						if ( canCustomizeHotbar && ( mouseScreenPos - (primaryPos + Vec2f(16,16) + Vec2f(32,0)*(i-10)) ).Length() < 16.0f )
+						{
+							assignHotkey(localPlayer, i, playerPrefsInfo.customSpellID, "entropist");
+							hotbarClicked = true;
+						}
+					}
+				}
+				
+				GUI::DrawText("Primary - "+controls.getActionKeyKeyName( AK_ACTION1 ), primaryPos + Vec2f(0,-32), color_white );
+				
+				//SECONDARY SPELL HUD
+				Vec2f secondaryPos = helpWindow.position + Vec2f( 192.0f, 0.0f ) + offset;
+				
+				u8 secondarySpellID = Maths::Min(playerPrefsInfo.hotbarAssignments_Entropist[15], spellsLength-1);
+				Spell secondarySpell = EntropistParams::spells[secondarySpellID];
+				
+				GUI::DrawFramedPane(secondaryPos, secondaryPos + Vec2f(32,32));
+				GUI::DrawIcon("SpellIcons.png", secondarySpell.iconFrame, Vec2f(16,16), secondaryPos);
+					
+				if ( canCustomizeHotbar && (mouseScreenPos - (secondaryPos + Vec2f(16,16))).Length() < 16.0f )
+				{
+					assignHotkey(localPlayer, 15, playerPrefsInfo.customSpellID, "entropist");	//hotkey 15 is the secondary fire hotkey
+					hotbarClicked = true;
+				}
+				
+				GUI::DrawText("Secondary - "+controls.getActionKeyKeyName( AK_ACTION2 ), secondaryPos + Vec2f(32,8), color_white );	
+				
+				//AUXILIARY1 SPELL HUD
+				Vec2f aux1Pos = helpWindow.position + Vec2f( 192.0f, 64.0f ) + offset;
+				
+				u8 aux1SpellID = Maths::Min(playerPrefsInfo.hotbarAssignments_Entropist[16], spellsLength-1);
+				Spell aux1Spell = EntropistParams::spells[aux1SpellID];
+				
+				GUI::DrawFramedPane(aux1Pos, aux1Pos + Vec2f(32,32));
+				GUI::DrawIcon("SpellIcons.png", aux1Spell.iconFrame, Vec2f(16,16), aux1Pos);
+					
+				if ( canCustomizeHotbar && (mouseScreenPos - (aux1Pos + Vec2f(16,16))).Length() < 16.0f )
+				{
+					assignHotkey(localPlayer, 16, playerPrefsInfo.customSpellID, "entropist");	//hotkey 16 is the auxiliary1 fire hotkey
+					hotbarClicked = true;
+				}
+				
+				GUI::DrawText("Auxiliary1 - "+controls.getActionKeyKeyName( AK_ACTION3 ), aux1Pos + Vec2f(32,8), color_white );
+
+				//AUXILIARY2 SPELL HUD
+				Vec2f aux2Pos = helpWindow.position + Vec2f( 364.0f, 0.0f ) + offset;
+				
+				u8 aux2SpellID = Maths::Min(playerPrefsInfo.hotbarAssignments_Entropist[17], spellsLength-1);
+				Spell aux2Spell = EntropistParams::spells[aux2SpellID];
+				
+				GUI::DrawFramedPane(aux2Pos, aux2Pos + Vec2f(32,32));
+				GUI::DrawIcon("SpellIcons.png", aux2Spell.iconFrame, Vec2f(16,16), aux2Pos);
+					
+				if ( canCustomizeHotbar && (mouseScreenPos - (aux2Pos + Vec2f(16,16))).Length() < 16.0f )
+				{
+					assignHotkey(localPlayer, 17, playerPrefsInfo.customSpellID, "entropist");	//hotkey 17 is the auxiliary2 fire hotkey
+					hotbarClicked = true;
+				}
+				
+				GUI::DrawText("Auxiliary2 - "+controls.getActionKeyKeyName( AK_TAUNTS ), aux2Pos + Vec2f(32,8), color_white );					
+				
+				if ( canCustomizeHotbar == true )	//play sound, keep menu open by refreshing, and update selected spell 
+				{
+					if ( hotbarClicked )
+					{
+						lastHotbarPressTime = controls.lastKeyPressTime;
+						Sound::Play( "MenuSelect1.ogg" );	
+					}
+				}
+			}
+			if ( iButton.name == "frigate" )
+			{
+				CControls@ controls = localPlayer.getControls();
+				Vec2f mouseScreenPos = controls.getMouseScreenPos();
+			
+				u8[] primaryHotkeys = playerPrefsInfo.hotbarAssignments_Frigate;
+			
+				//PRIMARY SPELL HUD
+				Vec2f offset = Vec2f(264.0f, 350.0f);
+				Vec2f primaryPos = helpWindow.position + Vec2f( 16.0f, 0.0f ) + offset;
+				
+				bool canCustomizeHotbar = controls.mousePressed1 && controls.lastKeyPressTime != lastHotbarPressTime;
+				bool hotbarClicked = false;
+				int spellsLength = FrigateParams::spells.length;
+				for (uint i = 0; i < 15; i++)	//only 15 total spells held inside primary hotbar
+				{
+					u8 primarySpellID = Maths::Min(primaryHotkeys[i], spellsLength-1);
+					Spell spell = FrigateParams::spells[primarySpellID];
+					
+					if ( i < 5 )		//spells 0 through 4
+					{
+						GUI::DrawFramedPane(primaryPos + Vec2f(0,64) + Vec2f(32,0)*i, primaryPos + Vec2f(32,96) + Vec2f(32,0)*i);
+						GUI::DrawIcon("SpellIcons.png", spell.iconFrame, Vec2f(16,16), primaryPos + Vec2f(0,64) + Vec2f(32,0)*i);
+						GUI::DrawText(""+((i+1)%10), primaryPos + Vec2f(8,-16) + Vec2f(32,0)*i, color_white );
+							
+						if ( canCustomizeHotbar && ( mouseScreenPos - (primaryPos + Vec2f(16,80) + Vec2f(32,0)*i) ).Length() < 16.0f )
+						{
+							assignHotkey(localPlayer, i, playerPrefsInfo.customSpellID, "frigate");
+							hotbarClicked = true;
+						}			
+					}
+					else if ( i < 10 )	//spells 5 through 9	
+					{
+						GUI::DrawFramedPane(primaryPos + Vec2f(0,32) + Vec2f(32,0)*(i-5), primaryPos + Vec2f(32,64) + Vec2f(32,0)*(i-5));
+						GUI::DrawIcon("SpellIcons.png", spell.iconFrame, Vec2f(16,16), primaryPos + Vec2f(0,32) + Vec2f(32,0)*(i-5));
+							
+						if ( canCustomizeHotbar && ( mouseScreenPos - (primaryPos + Vec2f(16,48) + Vec2f(32,0)*(i-5)) ).Length() < 16.0f )
+						{
+							assignHotkey(localPlayer, i, playerPrefsInfo.customSpellID, "frigate");
+							hotbarClicked = true;
+						}
+					}
+					else				//spells 10 through 14
+					{
+						GUI::DrawFramedPane(primaryPos + Vec2f(32,0)*(i-10), primaryPos + Vec2f(32,32) + Vec2f(32,0)*(i-10));
+						GUI::DrawIcon("SpellIcons.png", spell.iconFrame, Vec2f(16,16), primaryPos + Vec2f(32,0)*(i-10));			
+							
+						if ( canCustomizeHotbar && ( mouseScreenPos - (primaryPos + Vec2f(16,16) + Vec2f(32,0)*(i-10)) ).Length() < 16.0f )
+						{
+							assignHotkey(localPlayer, i, playerPrefsInfo.customSpellID, "frigate");
+							hotbarClicked = true;
+						}
+					}
+				}
+				
+				GUI::DrawText("Primary - "+controls.getActionKeyKeyName( AK_ACTION1 ), primaryPos + Vec2f(0,-32), color_white );
+				
+				//SECONDARY SPELL HUD
+				/*Vec2f secondaryPos = helpWindow.position + Vec2f( 192.0f, 0.0f ) + offset;
+				
+				u8 secondarySpellID = Maths::Min(playerPrefsInfo.hotbarAssignments_Frigate[15], spellsLength-1);
+				Spell secondarySpell = FrigateParams::spells[secondarySpellID];
+				
+				GUI::DrawFramedPane(secondaryPos, secondaryPos + Vec2f(32,32));
+				GUI::DrawIcon("SpellIcons.png", secondarySpell.iconFrame, Vec2f(16,16), secondaryPos);
+					
+				if ( canCustomizeHotbar && (mouseScreenPos - (secondaryPos + Vec2f(16,16))).Length() < 16.0f )
+				{
+					assignHotkey(localPlayer, 15, playerPrefsInfo.customSpellID, "frigate");	//hotkey 15 is the secondary fire hotkey
+					hotbarClicked = true;
+				}
+				
+				GUI::DrawText("Secondary - "+controls.getActionKeyKeyName( AK_ACTION2 ), secondaryPos + Vec2f(32,8), color_white );	
+				*/
+
+				//AUXILIARY1 SPELL HUD
+				Vec2f aux1Pos = helpWindow.position + Vec2f( 192.0f, 64.0f ) + offset;
+				
+				u8 aux1SpellID = Maths::Min(playerPrefsInfo.hotbarAssignments_Frigate[15], spellsLength-1);
+				Spell aux1Spell = FrigateParams::spells[aux1SpellID];
+				
+				GUI::DrawFramedPane(aux1Pos, aux1Pos + Vec2f(32,32));
+				GUI::DrawIcon("SpellIcons.png", aux1Spell.iconFrame, Vec2f(16,16), aux1Pos);
+					
+				if ( canCustomizeHotbar && (mouseScreenPos - (aux1Pos + Vec2f(16,16))).Length() < 16.0f )
+				{
+					assignHotkey(localPlayer, 15, playerPrefsInfo.customSpellID, "frigate");	//hotkey 15 is the auxiliary1 fire hotkey
+					hotbarClicked = true;
+				}
+				
+				GUI::DrawText("Auxiliary1 - "+controls.getActionKeyKeyName( AK_ACTION3 ), aux1Pos + Vec2f(32,8), color_white );
+
+				//AUXILIARY2 SPELL HUD
+				Vec2f aux2Pos = helpWindow.position + Vec2f( 192.0f, 0.0f ) + offset;
+				
+				u8 aux2SpellID = Maths::Min(playerPrefsInfo.hotbarAssignments_Frigate[16], spellsLength-1);
+				Spell aux2Spell = FrigateParams::spells[aux2SpellID];
+				
+				GUI::DrawFramedPane(aux2Pos, aux2Pos + Vec2f(32,32));
+				GUI::DrawIcon("SpellIcons.png", aux2Spell.iconFrame, Vec2f(16,16), aux2Pos);
+					
+				if ( canCustomizeHotbar && (mouseScreenPos - (aux2Pos + Vec2f(16,16))).Length() < 16.0f )
+				{
+					assignHotkey(localPlayer, 16, playerPrefsInfo.customSpellID, "frigate");	//hotkey 16 is the auxiliary2 fire hotkey
 					hotbarClicked = true;
 				}
 				

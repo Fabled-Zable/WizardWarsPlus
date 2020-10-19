@@ -30,7 +30,7 @@ void onInit( CBlob@ this )
 
 bool canBePickedUp( CBlob@ this, CBlob@ byBlob )
 {
-    return this.getTeamNum() == byBlob.getTeamNum(); 
+    return true; 
 }
 
 void onTick( CBlob@ this )

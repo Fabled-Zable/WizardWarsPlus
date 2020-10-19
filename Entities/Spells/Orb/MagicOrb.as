@@ -85,7 +85,10 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 		
 		if(blob !is null && isEnemy(this, blob) )
 		{
-			this.server_Die();
+			if(!blob.hasScript("BladedShell.as"))
+			{
+				this.server_Die();
+			}
 		} 
 	}
 }

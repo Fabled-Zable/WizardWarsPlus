@@ -18,6 +18,7 @@ Random _laser_r(45354);
 void onInit( CBlob @ this )
 {
 	this.Tag("phase through spells");
+	this.Tag("counterable");
 
 	//dont collide with edge of the map
 	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath) );
@@ -90,7 +91,7 @@ void updateLaserPositions(CBlob@ this)
 		this.set_Vec2f("aim pos", destination);
 	}
 	else
-		this.set_Vec2f("aim pos", Vec2f(destination.x, map.tilemapheight * map.tilesize));
+	this.set_Vec2f("aim pos", Vec2f(destination.x, map.tilemapheight * map.tilesize));
 	
 	Vec2f aimPos = destination;
 	Vec2f aimVec = aimPos - thisPos;

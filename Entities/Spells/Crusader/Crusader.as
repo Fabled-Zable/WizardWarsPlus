@@ -19,7 +19,7 @@ void onInit(CBlob@ this)
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
 
-    this.server_SetTimeToDie(10);
+    this.server_SetTimeToDie(20);
 
 	this.setAngleDegrees(90);
 
@@ -59,7 +59,7 @@ void onTick(CBlob@ this)
 
 	if (!this.hasTag("canStickNow"))
 	{
-		u32 fTime = shooTime + 15;
+		u32 fTime = shooTime + 14;
 		if (lTime > fTime)  //timer system for collision with walls
 		{
 		this.Tag("canStickNow"); //stops
@@ -118,21 +118,9 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 
 	this.Tag("collided");
 
-	//kill any grain plants we shot the base of
-	CBlob@[] blobsInRadius;
-	if (this.getMap().getBlobsInRadius(worldPoint, this.getRadius() * 1.3f, @blobsInRadius))
-	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
-		{
-			CBlob @b = blobsInRadius[i];
-			if (b.getName() == "grain_plant")
-			{
-				this.server_Hit(b, worldPoint, Vec2f(0, 0), velocity.Length() / 7.0f, Hitters::arrow);
-				break;
-			}
-		}
-	}
 	this.getShape().SetStatic(true);
+	this.getCurrentScript().tickFrequency = 0;
+	
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
@@ -140,16 +128,25 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 	
 	if (blob !is null)
 	{
-		if (isEnemy(this, blob) && this.hasTag("cruiseMode"))
+		if (isEnemy(this, blob))
 		{
 			float expundamage = this.get_f32("damage");
 			if (!blob.hasTag("barrier"))
 			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
+				if(!blob.hasTag("zombie"))
+				{
+					if(this.hasTag("collided"))
+					{this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);}
+				}
+				else
+				{
+					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.4, Hitters::arrow, true);
+				}
+				
 			}
 			else
 			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), (expundamage / 2) , Hitters::arrow, true);
+				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage , Hitters::arrow, true);
 				this.server_Die();
 			}
 		}

@@ -171,7 +171,7 @@ bool isKnockable( CBlob@ blob )
 	return blob.hasTag(knocked_tag);
 }
 
-void SetKnocked( CBlob@ blob, int ticks, bool sync = false )
+void setKnocked( CBlob@ blob, int ticks, bool sync = false )
 {
 	if(blob.hasTag("invincible") && ticks != 0)
 		return; //do nothing

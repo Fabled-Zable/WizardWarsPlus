@@ -1,354 +1,528 @@
-﻿
-//script for a bison
+#include "EmotesCommon.as"
+#include "KnockedCommon.as"
 
-#include "AnimalConsts.as";
+Random gregRand(Time());
 
-const u8 DEFAULT_PERSONALITY = AGGRO_BIT;
-const s16 GRAB_TIME = 100;
-const s16 MAD_TIME = 600;
-const s16 STARVE_TIME = 100;
-
-const string chomp_tag = "chomping";
-
-//sprite
-
-void onInit(CSprite@ this)
+void resetTimeout(CBlob@ this)
 {
-	CBlob@ blob = this.getBlob();
-    this.ReloadSprites(blob.getTeamNum(),0); 
-	
-    this.SetEmitSound("Wings.ogg");
-    this.SetEmitSoundVolume(1.0f);
-    this.SetEmitSoundPaused(false);
-	
-	if ( XORRandom(2) == 0 )
-		this.PlaySound( "GregCry.ogg" );
-	else
-		this.PlaySound( "GregRoar.ogg" );
+    this.set_u32("timeout", getGameTime());
+
 }
 
-void onTick(CSprite@ this)
+u32 getElapsedTime(CBlob@ this)
 {
-	CBlob@ blob = this.getBlob();
-	
-    if (this.isAnimation("revive") && !this.isAnimationEnded()) return;
-	if (this.isAnimation("bite") && !this.isAnimationEnded()) return;
-	
-    if (blob.getHealth() > 0.0)
+    return getGameTime() - this.get_u32("timeout");
+
+}
+
+void pickRandTargetPos(CBlob@ this)
+{
+    CMap@ map = this.getMap();
+    int width = map.tilemapwidth*8;
+    Vec2f npos(Maths::Abs(gregRand.Next())%width, 20.0f + gregRand.Next()%40);
+    this.set_Vec2f("target pos", npos);
+    //printVec2f("greg go to", npos);
+
+    this.set_bool("use pos", true);
+    resetTimeout(this);
+
+}
+
+void pickRandPlayer(CBlob@ this)
+{
+    this.Untag("doneparis");
+    this.Untag("paris");
+
+    CBlob@[] players;
+    getBlobsByTag("player", players);
+    if (players.size() == 0)
     {
-		f32 x = blob.getVelocity().x;
-		
-		if (this.isAnimation("dead"))
-		{
-			this.SetAnimation("revive");
-		}
-		else
-		{
-			if (!this.isAnimation("fly")) {
-				this.SetAnimation("fly");
-			}
-		}
-	}
-	else 
-	{
-		if (!this.isAnimation("dead"))
-		{
-			this.SetAnimation("dead");
-			this.PlaySound( "/SkeletonBreak1" );
-		}
-		this.getCurrentScript().runFlags |= Script::remove_after_this;
-	}
+        this.set_bool("no target", true);
+        pickRandTargetPos(this);
+        return;
+
+    }
+    u16 targetId = players[gregRand.Next()%players.size()].getNetworkID();
+    this.set_u16("targetId", targetId);
+    this.set_bool("no target", false);
+    this.set_bool("use pos", false);
+    resetTimeout(this);
+
 }
 
-//blob
-void onInit(CBrain@ this)
+CBlob@ getTarget(CBlob@ this)
 {
-	this.getCurrentScript().runFlags |= Script::tick_attached;
-	this.getCurrentScript().runFlags |= Script::tick_not_attached;
-	this.getCurrentScript().runFlags = 0;
+    if (this.get_bool("no target") || this.get_bool("use pos"))
+    {
+        return null;
+
+    }
+
+    u16 targetId = this.get_u16("targetId");
+    CBlob@ target = getBlobByNetworkID(targetId);
+    return target;
+
+}
+
+Vec2f getTargetPos(CBlob@ this)
+{
+    return this.get_Vec2f("target pos");
+
+}
+
+bool useTargetPos(CBlob@ this)
+{
+    return this.get_bool("use pos");
+
 }
 
 void onInit(CBlob@ this)
 {
-	//for EatOthers
-	string[] tags = {"player"};
-	this.set("tags to eat", tags);
-	
-	this.set_f32("bite damage", 0.125f);
-	
-	//brain
-	this.set_u8(personality_property, DEFAULT_PERSONALITY);
-	this.set_u8("random move freq",8);
-	this.set_f32(target_searchrad_property, 560.0f);
-	this.set_f32(terr_rad_property, 185.0f);
-	this.set_u8(target_lose_random,34);
-	
-	//for steaks
-	//this.set_u8("number of steaks", 1);
-	
-	//for shape
-	this.getShape().SetRotationsAllowed(false);
-	
-	//for flesh hit
-	this.set_f32("gib health", -0.0f);
-	
-	this.Tag("flesh");
-	this.Tag("zombie");
-	this.Tag("Greg");
-	this.Tag("freezable");
-	this.set_s16("mad timer", 0);
-	this.set_s16("grab timer", 0);
+    pickRandTargetPos(this);
+    this.getCurrentScript().tickFrequency = 5;
 
-//	this.getShape().SetOffset(Vec2f(0,8));
-	
-//	this.getCurrentScript().runFlags = Script::tick_blob_in_proximity;
-//	this.getCurrentScript().runProximityTag = "player";
-//	this.getCurrentScript().runProximityRadius = 320.0f;
-	this.getCurrentScript().runFlags |= Script::tick_not_attached;
-	this.getCurrentScript().runFlags |= Script::tick_attached;
-	this.getCurrentScript().runFlags = 0;
-}
+    CSprite@ sprite = this.getSprite();
+    if (sprite !is null)
+    {
+        sprite.SetRelativeZ(2.0f);
 
-bool canBePickedUp( CBlob@ this, CBlob@ byBlob )
-{
-    return false; //maybe make a knocked out state? for loading to cata?
+    }
+
+    Sound::Play("GregCry.ogg", this.getPosition());
+    this.server_setTeamNum(255); //greg team
+    //this.addCommandID("legomyego");
+    this.addCommandID("dropstatue");
+    this.addCommandID("unstatue");
+    this.set_s32("statue time", 0);
+
+    this.Tag("zombie");
+    this.Tag("flesh");
+
+    this.getShape().setFriction(0.7);
+
 }
 
 void onTick(CBlob@ this)
 {
-	CPlayer@ thisPlayer = this.getPlayer();
-	if ( this.getTickSinceCreated() == 10 && thisPlayer is null )
-		this.getBrain().server_SetActive( true );
+    CSprite@ sprite = this.getSprite();
+    if (sprite !is null)
+    {
+        if (this.hasTag("statue"))
+        {
+            if (sprite.animation.name == "default")
+            {
+                sprite.SetAnimation("statue");
 
-	if ( getGameTime() % STARVE_TIME == 0 )
-		this.server_Hit( this, this.getPosition(), Vec2f(0,0), 0.5f, Hitters::bite, true);
-		
-	if ( this.isKeyJustPressed(key_action1) )
-	{
-		this.server_DetachAll();
-	}
+            }
 
-	f32 x = this.getVelocity().x;
-	if (this.hasAttached())
-	{
-		s16 grabTimer = this.get_s16("grab timer");
-	
-		Vec2f pos = this.getPosition();
-		CMap@ map = this.getMap();
-		const f32 radius = this.getRadius();
-		
-		f32 x = pos.x;
-		Vec2f top = Vec2f(x, map.tilesize);
-		Vec2f bottom = Vec2f(x, map.tilemapheight * map.tilesize);
-		Vec2f end;
-		
-		if (map.rayCastSolid(top,bottom,end))
-		{
-			f32 y = end.y;
-			
-			if ( grabTimer > GRAB_TIME )
-			{	
-				this.server_DetachAll();
-			}
-		}
-		
-		this.set_s16("grab timer", grabTimer+1);
-	}
-	else
-		this.set_s16("grab timer", 0);
+        }
+        else
+        {
+            if (sprite.animation.name == "statue")
+            {
+                sprite.SetAnimation("default");
 
-	if (Maths::Abs(x) > 1.0f)
-	{
-		this.SetFacingLeft( x > 0 );
-	}
-	else
-	{
-		if (this.isKeyPressed(key_left)) {
-			this.SetFacingLeft( false );
-		}
-		if (this.isKeyPressed(key_right)) {
-			this.SetFacingLeft( true );
-		}
-	}
+            }
 
-	// footsteps
+        }
 
-	if (this.isOnGround() && (this.isKeyPressed(key_left) || this.isKeyPressed(key_right)) )
-	{
-		if (XORRandom(20)==0)
-		{
-			Vec2f tp = this.getPosition() + (Vec2f( XORRandom(16)-8, XORRandom(16)-8 )/8.0)*(this.getRadius() + 4.0f);
-			TileType tile = this.getMap().getTile( tp ).type;
-			if ( this.getMap().isTileWood( tile ) ) {		
-			//this.getMap().server_DestroyTile(tp, 0.1);
-			}
-		}	
-		if (this.isKeyPressed(key_right))
-		{
-			TileType tile = this.getMap().getTile( this.getPosition() + Vec2f( this.getRadius() + 4.0f, 0.0f )).type;
-			if (this.getMap().isTileCastle( tile )) {		
-			//this.getMap().server_DestroyTile(this.getPosition() + Vec2f( this.getRadius() + 4.0f, 0.0f ), 0.1);
-			}
-		}
-		if ((this.getNetworkID() + getGameTime()) % 9 == 0)
-		{
-			f32 volume = Maths::Min( 0.1f + Maths::Abs(this.getVelocity().x)*0.1f, 1.0f );
-			TileType tile = this.getMap().getTile( this.getPosition() + Vec2f( 0.0f, this.getRadius() + 4.0f )).type;
+    }
 
-			if (this.getMap().isTileGroundStuff( tile )) {
-				this.getSprite().PlaySound("/EarthStep", volume, 0.75f );
-			}
-			else {
-				this.getSprite().PlaySound("/StoneStep", volume, 0.75f );
-			}
-		}
-	}
-	
-	if(getNet().isServer() && getGameTime() % 10 == 0)
-	{
-		if(this.get_u8(state_property) == MODE_TARGET )
-		{
-			CBlob@ b = getBlobByNetworkID(this.get_netid(target_property));
-			if(b !is null && this.getDistanceTo(b) < 106.0f)
-			{
-				this.Tag(chomp_tag);
-			}
-			else
-			{
-				this.Untag(chomp_tag);
-			}
-		}
-		else
-		{
-			this.Untag(chomp_tag);
-		}
-		this.Sync(chomp_tag,true);
-	}
-	
+    if (this.hasTag("statue"))
+    {
+        if (this.isOnGround())
+        {
+            s32 statuetime = this.get_s32("statue time");
+            if (statuetime == 0)
+            {
+                this.set_s32("statue time", getGameTime() + 45);
+                Vec2f pos = this.getPosition();
+                pos.y += 16;
+
+
+                CMap@ map = getMap();
+                pos.x -= 8;
+                TileType t = map.getTile(pos).type;
+                float dmg = map.isTileWood(t) || map.isTileCastle(t) ? 100.0f : 1.0f;
+                map.server_DestroyTile(pos, dmg, this);
+                pos.x += 8;
+                t = map.getTile(pos).type;
+                dmg =  map.isTileWood(t) || map.isTileCastle(t) ? 100.0f : 1.0f;
+                map.server_DestroyTile(pos, dmg, this);
+                pos.x += 8;
+                t = map.getTile(pos).type;
+                dmg = map.isTileWood(t) || map.isTileCastle(t) ? 100.0f : 1.0f;
+                map.server_DestroyTile(pos, dmg, this);
+
+            }
+            else
+            {
+                if (statuetime < getGameTime())
+                {
+                    this.set_s32("statue time", 0);
+                    ParticleZombieLightning(this.getPosition());
+                    this.Untag("statue");
+                    pickRandTargetPos(this);
+                    this.SendCommand(this.getCommandID("unstatue"));
+
+                    this.server_Hit(this, this.getPosition(), Vec2f(1, 1), 1.0f, 0);
+
+                }
+
+            }
+
+        }
+
+        return;
+
+    }
+    else
+    {
+        u16 id = this.getNetworkID();
+        if ((getGameTime()+id)%70 == 0)
+            Sound::Play("Wings.ogg", this.getPosition(), 0.5);
+
+        Vec2f vel = this.getVelocity();
+
+        bool faceLeft = (vel.x > 0);
+        this.SetFacingLeft(faceLeft);
+
+    }
+
+    //do knocking logic
+    DoKnockedUpdate(this);
+
+    if (getNet().isServer())
+    {
+
+        CBlob@ target = getTarget(this);
+        Vec2f targetP = getTargetPos(this);
+        bool usepos = useTargetPos(this);
+
+        bool targetAttached = this.isAttachedTo(target);
+
+        //check if we need a new target.
+        if ((target is null || target.hasTag("dead")) && !usepos)
+        {
+            pickRandTargetPos(this);
+            return;
+
+        }
+
+        //in case greg gets stuck start doing something else
+        if (!targetAttached)
+        {
+            u32 elapsed = getElapsedTime(this);
+            if (usepos && elapsed > 30*10)
+            {
+                pickRandPlayer(this);
+
+            }
+            else if (target !is null && elapsed > 30*30) //go after player for a long time
+            {
+                pickRandTargetPos(this);
+
+            }
+
+        }
+
+        u8 knocked = this.get_u8("knocked");
+        if (knocked > 0)
+        {
+            if (targetAttached)
+            {
+                this.server_DetachAll();
+                pickRandTargetPos(this);
+
+
+            }
+
+            return;
+
+        }
+
+        //if on fire drop target
+        s16 burn_time = this.get_s16("burn timer");
+        if (this.isInFlames() || burn_time > 0)
+        {
+            if (targetAttached)
+            {
+                this.server_DetachAll();
+
+            }
+
+           pickRandTargetPos(this);
+
+        }
+
+        Vec2f vel = this.getVelocity();
+
+        //set the facing of the greg towards the target
+        if (!targetAttached)
+        {
+            bool faceLeft = (vel.x > 0);
+            this.SetFacingLeft(faceLeft);
+
+        }
+
+        /*if (targetAttached)
+        {
+	        CPlayer@ local = getLocalPlayer();
+	        if (local !is null)
+	        {
+
+                CControls@ controls = getControls();
+
+                u16 count = this.get_u16("struggle count");
+
+                count += controls.isKeyJustPressed(KEY_KEY_A) ? 1 : 0;
+                count += controls.isKeyJustPressed(KEY_KEY_D) ? 1 : 0;
+                count += controls.isKeyJustPressed(KEY_KEY_W) ? 1 : 0;
+                count += controls.isKeyJustPressed(KEY_KEY_S) ? 1 : 0;
+                count += controls.isKeyJustPressed(KEY_SPACE) ? 1 : 0;
+                count += controls.isKeyJustPressed(KEY_KEY_C) ? 1 : 0;
+                count += controls.isKeyJustPressed(KEY_KEY_F) ? 1 : 0;
+                count += controls.isKeyJustPressed(KEY_KEY_E) ? 1 : 0;
+
+                this.set_u16("struggle count", count);
+                //print("oggly booogly count: " + count);
+
+                if (count > 65)
+                {
+                    this.SendCommand(this.getCommandID("legomyego"));
+                    this.set_u16("struggle count", 0);
+
+                }
+
+            }
+
+        }*/
+
+        Vec2f targetPos = usepos ? targetP : target.getPosition();
+
+        if (!usepos) //hack so gregs don't have to fly low
+        {
+            targetPos.y = 45;
+
+        }
+
+        bool targetAbove = targetPos.y < this.getPosition().y;
+        float flapVel = targetAbove || targetAttached ? 4 : 5;
+
+        if (vel.y > flapVel) //flap to slow decent
+        {
+            float rat = flapVel/4.0f;
+            //120 is enough for a strong flap which actually caries the greg up
+            this.setVelocity(Vec2f(vel.x, flapVel*0.96));
+
+            //if we have our target flap into the air.
+            f32 force = 70.0f*rat;
+            if (targetAttached || targetAbove)
+            {
+                force += 35.0f;
+
+            }
+
+            this.AddForce(Vec2f(0, -force));
+
+        }
+        else if (this.isOnGround()) //get off the ground
+        {
+            this.setVelocity(Vec2f(vel.x, 0.0f));
+            this.AddForce(Vec2f(0, -70.0f));
+
+        }
+
+        Vec2f gregPos = this.getPosition();
+
+        //if we are close to our node
+        Vec2f dif = targetPos - gregPos;
+        if (usepos && dif.Length() < 25.0f)
+        {
+            pickRandPlayer(this);
+
+        }
+
+        if (getNet().isServer() && target !is null)
+        {
+            CMap@ map = getMap();
+            Vec2f fpos;
+            Vec2f dpos(this.getPosition().x, target.getPosition().y);
+            map.rayCastSolidNoBlobs(this.getPosition(), dpos, fpos);
+            Vec2f len = target.getPosition() - fpos;
+            if (len.getLength() <= 4.0)
+            {
+                this.Tag("statue");
+                this.SendCommand(this.getCommandID("dropstatue"));
+                this.setVelocity(Vec2f(target.getVelocity().x*0.95, 0));
+                return;
+
+            }
+
+        }
+
+        /*if (targetAttached)
+        {
+            //drop the player
+            CMap@ map = this.getMap();
+            f32 distToGround = map.getLandYAtX(gregPos.x/8.0f)*8.0f - gregPos.y;
+            if (distToGround > 240.0f && !is_emote(this, Emotes::troll) && !this.hasTag("doneparis"))
+            {
+                if (this.hasTag("paris"))
+                {
+                    this.Tag("doneparis");
+                    this.Chat("i lied.");
+                }
+
+                set_emote(this, Emotes::troll);
+
+            }
+
+            if (distToGround > 260.0f)
+            {
+                //detach and add some velocity so they hopefully die.
+                this.server_DetachAll();
+                this.set_bool("no target", true);
+                target.setVelocity(Vec2f(0, 8.0f));
+
+            }
+
+        }*/
+
+        f32 absVelx = Maths::Abs(vel.x);
+        //don't accelarte to quickly
+        if (absVelx < 5)
+        {
+            //calculate a rough distance factor to mult by
+            f32 xdist = (gregPos.x - targetPos.x)/50.0f;
+            xdist = Maths::Min(Maths::Abs(xdist), 1.0f);
+
+            f32 force = xdist*5.0f;
+
+            f32 stopping = absVelx/8.0f;
+
+            //move towards target
+            if (gregPos.x > targetPos.x)
+            {
+                this.AddForce(Vec2f(-force, 0));
+
+                //apply a stopping force so we start going the other dir quicker
+                if (vel.x > 0)
+                {
+                    this.AddForce(Vec2f(-40.0f*stopping, 0));
+
+                }
+
+            }
+            else if (gregPos.x < targetPos.x)
+            {
+                this.AddForce(Vec2f(force, 0));
+
+                if (vel.x < 0)
+                {
+                    this.AddForce(Vec2f(40.0f*stopping, 0));
+
+                }
+
+
+            }
+
+        }
+
+    }
+
 }
 
-void MadAt( CBlob@ this, CBlob@ hitterBlob )
+void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {
-	const u16 damageOwnerId = (hitterBlob.getDamageOwnerPlayer() !is null && hitterBlob.getDamageOwnerPlayer().getBlob() !is null) ? 
-		hitterBlob.getDamageOwnerPlayer().getBlob().getNetworkID() : 0;
+    u8 knocked = this.get_u8("knocked");
+    if (knocked > 0 || blob is null)
+    {
+        return;
 
-	const u16 friendId = this.get_netid(friend_property);
-	if (friendId == hitterBlob.getNetworkID() || friendId == damageOwnerId) // unfriend
-		this.set_netid(friend_property, 0);
-	else // now I'm mad!
-	{
-//		if (this.get_s16("mad timer") <= MAD_TIME/8)
-//			this.getSprite().PlaySound("/BisonMad");
-		this.set_s16("mad timer", MAD_TIME);
-		this.set_u8(personality_property, DEFAULT_PERSONALITY | AGGRO_BIT);
-		this.set_u8(state_property, MODE_TARGET);
-		if (hitterBlob.hasTag("player"))
-			this.set_netid(target_property, hitterBlob.getNetworkID() );
-		else
-			if (damageOwnerId > 0) {
-				this.set_netid(target_property, damageOwnerId );
-			}
-	}
+    }
+
+    if (this.hasTag("statue"))
+    {
+        if (blob !is null && blob.hasTag("flesh") && !this.isOnGround())
+        {
+            if (getNet().isServer())
+            {
+                this.server_Hit(blob, blob.getPosition(), Vec2f(1, 1), 500.0f, 0);
+                if (gregRand.Next()%3 == 0)
+                    set_emote(this, Emotes::troll);
+
+            }
+
+        }
+
+    }
+
+    /*CBlob@ target = getTarget(this);
+    if (target is blob)
+    {
+        this.set_u16("struggle count", 0);
+        this.server_AttachTo(blob, this.getAttachmentPoint(0));
+        this.setVelocity(Vec2f_zero);
+        this.AddForce(Vec2f(0, -30.0f)); //get a little hop up into the air going.
+
+        if (gregRand.Next()%5 == 0)
+        {
+            this.Tag("paris");
+            this.Chat("we're going to paris.");
+            Sound::Play(getTranslatedString("MigrantSayHello") + ".ogg", this.getPosition());
+
+        }
+        else
+        {
+            Sound::Play("GregRoar.ogg", this.getPosition()); //play sound
+
+        }
+
+        setKnocked(blob, 60); //knock the player when we first pick them up so they can't fight back
+        blob.Tag("dazzled");
+
+        //make player play the stunned sound
+        blob.getSprite().PlaySound("Stun.ogg", 1.0f, this.getSexNum() == 0 ? 1.0f : 1.5f);
+
+    }*/
+
+}
+
+void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+{
+    /*if (cmd == this.getCommandID("legomyego"))
+    {
+        this.server_DetachAll();
+        this.set_bool("no target", true);
+        set_emote(this, Emotes::mad);
+
+    }*/
+
+    if (cmd == this.getCommandID("dropstatue") && getNet().isClient())
+    {
+        this.Tag("statue");
+        //this.setVelocity(Vec2f_zero);
+
+    }
+    else if (cmd == this.getCommandID("unstatue") && getNet().isClient())
+    {
+        this.Untag("statue");
+
+    }
+
 }
 
 f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData )
-{		
-	if (damage>this.getHealth() && this.getHealth()>0)
-	{
-		if (hitterBlob.hasTag("player"))
-		{
-			CPlayer@ player = hitterBlob.getPlayer();
-		} else
-		if(hitterBlob.getDamageOwnerPlayer() !is null)
-		{
-			CPlayer@ player = hitterBlob.getDamageOwnerPlayer();
-		}
-		//server_DropCoins(hitterBlob.getPosition() + Vec2f(0,-3.0f), 25);
-	}
-	
-	MadAt( this, hitterBlob );
-	
-	if ( this !is hitterBlob )
-		this.server_DetachAll();
-	
-	return damage;
-}
-
-void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ attachedPoint)
 {
-	this.set_s16("grab timer", 0);
-}														
+    if (this.hasTag("statue"))
+        return 0.0f;
+    return damage;
 
-#include "Hitters.as";
+}
 
 bool doesCollideWithBlob( CBlob@ this, CBlob@ blob )
 {
-	if ( blob.hasTag("dead") || (this.getTeamNum() == blob.getTeamNum() && !blob.hasTag("zombie")) )
-		return false;
-	
-	return true;
-}
+    return blob.getName() != "greg";
 
-void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point1 )
-{
-	if (this.getHealth() <= 0.0) return; // dead
-	
-	if (blob is null)
-		return;
-
-	if ( blob.hasTag("flesh") && !blob.hasTag("dead") && blob.getName() != "Wraith" )
-	{
-		const f32 vellen = this.getShape().vellen;
-		f32 power = this.get_f32("bite damage");
-		if (vellen > 0.1f)
-		{
-			Vec2f pos = this.getPosition();
-			Vec2f vel = this.getVelocity();
-			Vec2f other_pos = blob.getPosition();
-			Vec2f direction = other_pos - pos;		
-			direction.Normalize();
-			vel.Normalize();
-			//if (vel * direction > 0.33f)
-			if ( getNet().isServer() && !(this.getTeamNum() == blob.getTeamNum()) && !blob.isAttached() )
-			{
-				f32 power = 1.0;
-				
-				CSprite@ thisSprite = this.getSprite();
-				thisSprite.PlaySound( "/SkeletonAttack" );
-				thisSprite.SetAnimation("bite");
-					
-				this.server_Hit( blob, point1, vel, power, Hitters::bite, false);
-				
-				if ( !blob.hasTag("Greg") )
-				{
-					this.server_AttachTo(blob,"PICKUP");
-				}
-				
-				this.server_Heal(power*0.9f);
-				
-				//this.getShape().getConsts().collideWhenAttached = true;
-				//blob.getShape().getConsts().collideWhenAttached = true;
-			}
-		}	
-
-		MadAt( this, blob );
-	}
-}
-
-void onHitBlob( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData )
-{
-	if (hitBlob !is null && customData == Hitters::flying)
-	{
-		Vec2f force = velocity * this.getMass() * 0.35f ;
-		force.y -= 7.0f;
-		hitBlob.AddForce( force);
-	}
-}
-
-void onDie( CBlob@ this )
-{
-	CSprite@ thisSprite = this.getSprite();
-	
-	if ( thisSprite !is null )
-		thisSprite.Gib();
 }

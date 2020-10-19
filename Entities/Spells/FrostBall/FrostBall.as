@@ -1,6 +1,6 @@
-#include "/Entities/Common/Attacks/Hitters.as";	   
+#include "/Entities/Common/Attacks/Hitters.as";
 #include "/Entities/Common/Attacks/LimitedAttacks.as";
-#include "Knocked.as";
+#include "KnockedCommon.as";
 
 const int pierce_amount = 8;
 
@@ -115,9 +115,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 		{
 			this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.1f, Hitters::water, true);
 			
-			f32 initialHealth = blob.getInitialHealth();
-			f32 health = blob.getHealth();
-			f32 freezeRatio = 1.0f - (health/initialHealth);
+			f32 freezeRatio = this.get_f32("freeze_power");
 			Freeze( blob, Maths::Max( MIN_FROZEN_TIME, MAX_FROZEN_TIME*freezeRatio ) );
 			
 			Boom( this );
@@ -226,8 +224,11 @@ void makeSmokeParticle(CBlob@ this, const Vec2f vel, const string filename = "Sm
 	//warn("making smoke");
 
 	const f32 rad = 4.0f;
-	Vec2f random = Vec2f( XORRandom(128)-64, XORRandom(128)-64 ) * 0.015625f * rad;
-	CParticle@ p = ParticleAnimated( "Sparkle" + (XORRandom(3)+1) + ".png", this.getPosition() + random, Vec2f(0,0), float(XORRandom(360)), 1.0f, 2 + XORRandom(3), 0.0f, false );
+	f32 freezeRatio = this.get_f32("freeze_power");
+	freezeRatio++;
+	float freezeParticlePos = freezeRatio*64;
+	Vec2f random = Vec2f( XORRandom(freezeParticlePos*2)-freezeParticlePos, XORRandom(freezeParticlePos*2)-freezeParticlePos ) * 0.015625f * rad;
+	CParticle@ p = ParticleAnimated( "Sparkle" + (XORRandom(3)+1) + ".png", this.getPosition() + random, Vec2f(0,0), float(XORRandom(360)), freezeRatio, 2 + XORRandom(3), 0.0f, false );
 	if ( p !is null)
 	{
 		p.bounce = 0;

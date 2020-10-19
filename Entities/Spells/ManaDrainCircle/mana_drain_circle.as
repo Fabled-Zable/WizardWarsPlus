@@ -3,6 +3,7 @@
 void onInit(CBlob@ this)
 {
     this.set_u8("frame", 0);
+    this.Tag("magic_circle");
     this.getShape().SetGravityScale(0);
     if(this.getTeamNum() == 0){this.set("colour",SColor(255,100,255,255));}
     else{this.set("colour",SColor(255,255,100,100));}
@@ -28,7 +29,7 @@ void onTick(CBlob@ this)
 
     if(reverse && this.get_u8("frame") < 1) this.server_Die();
 
-    if(!this.hasTag("finished") || !isClient()) return;
+    if(!this.hasTag("finished")) return;
 
     CMap@ map = getMap();
     CBlob@[] blobs;
@@ -39,28 +40,50 @@ void onTick(CBlob@ this)
         CBlob@ b = blobs[i];
 
         if(b.getPlayer() is null || b.getTeamNum() == this.getTeamNum()) continue;
-        Vec2f vel = b.getVelocity();
-        b.setVelocity(Vec2f(vel.x * 0.5,vel.y * 0.9));
-
-        if(getGameTime() % 30 != 0) return;
-
-        ManaInfo@ manaInfo;
-        if (!b.get( "manaInfo", @manaInfo )) {
-            return;
-        }
-        float mana = manaInfo.mana;
-        mana -= manaInfo.manaRegen* (fullCharge ? 4 : 2.5);
-
-        if(mana >= 0)
+        if(isClient())
         {
-            manaInfo.mana -= manaInfo.manaRegen * (fullCharge ? 4 : 2.5);
+            Vec2f vel = b.getVelocity();
+            b.setVelocity(Vec2f(vel.x * 0.5,vel.y * 0.9));
+
+            if(getGameTime() % 20 != 0) return;
+
+            ManaInfo@ manaInfo;
+            if (!b.get( "manaInfo", @manaInfo )) 
+            {
+                return;
+            }
+        
+            float mana = manaInfo.mana;
+            mana -= (fullCharge ? 4 : 3);
+
+            if(mana >= 0)
+            {
+                manaInfo.mana -= manaInfo.manaRegen + (fullCharge ? 4 : 3);
+            }
         }
+
+        if (isServer())
+		{
+            if(getGameTime() % 20 != 0) return;
+			CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), b.getPosition() ); 
+			if (orb !is null)
+			{
+				orb.set_string("effect", "mana");
+				orb.set_u8("mana_used", 1);
+				orb.set_u8("caster_mana", 3);
+                orb.set_bool("silent", true);
+
+				orb.IgnoreCollisionWhileOverlapped( this );
+                Vec2f orbVel = Vec2f( 0.1f , 0 ).RotateByDegrees(XORRandom(360));
+				orb.setVelocity( orbVel );
+			}
+		}
 
         if(isClient())
         {
-            for(int i = 0; i < manaInfo.manaRegen*5; i++)
+            for(int i = 0; i < 30; i++)
             {
-                CParticle@ p = ParticlePixelUnlimited(b.getPosition(), b.getVelocity() + Vec2f(XORRandom(8) - 4, XORRandom(8) - 4), randomManaColor(), true);
+                CParticle@ p = ParticlePixelUnlimited(b.getPosition(), b.getVelocity() + Vec2f(XORRandom(12) - 6, XORRandom(12) - 6), randomManaColor(), true);
                 if(p !is null)
                 {
                     p.gravity = Vec2f(0,0);

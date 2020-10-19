@@ -67,15 +67,21 @@ void onTick(CBlob@ this)
 			Vec2f p = pos + Vec2f(XORRandom(16) - 8, XORRandom(16) - 8);
 			getMap().server_setFireWorldspace(p, true);
 		}
-
+		
 		//burninating the actor
 		if ((burn_time % 5) == 0)
 		{
-			this.server_Hit(this, pos, Vec2f(0, 0), 0.50, this.get_u8(burn_hitter), true);
+			f32 damage = 0.5f;
+			if(this.get_u16("fireProt") > 0)
+			{damage = 0.0f;}
+			this.server_Hit(this, pos, Vec2f(0, 0), damage, this.get_u8("burn hitter"), true);
 		}
 
 		//burninating the burning time
-		burn_time--;
+		if(this.get_u16("fireProt") > 0)
+		{burn_time = 0;}
+		else
+		{burn_time--;}
 
 		//and making sure it's set correctly!
 		this.set_s16(burn_timer, burn_time);

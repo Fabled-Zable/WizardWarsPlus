@@ -104,7 +104,7 @@ void onInit(CBlob@ this)
 	//for EatOthers
 	string[] tags = {"player","lantern"};
 	this.set("tags to eat", tags);
-	this.set_f32("gib health", -3.0f);	
+	this.set_f32("gib health", -1.1f);	
 	float difficulty = getRules().get_f32("difficulty")/4.0;
 	if (difficulty<1.0) difficulty=1.0;
 	this.set_f32("bite damage", 1.0f);
@@ -152,7 +152,7 @@ void onTick(CBlob@ this)
 	
 	if (this.getHealth()<=0.0 && (this.getTickSinceCreated() - this.get_u16("death ticks")) > 300)
 	{
-		this.server_SetHealth(0.5);
+		this.server_SetHealth(0.2);
 		this.getShape().setFriction( 0.3f );
 		this.getShape().setElasticity( 0.1f );		
 	}

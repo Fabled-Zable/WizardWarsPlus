@@ -16,6 +16,8 @@ void onInit( CBlob@ this )
 	this.set_f32("map_damage_radius", 15.0f);
 	this.set_f32("map_damage_ratio", -1.0f); //heck no!
 	this.set_u32("last smoke puff", 0 );
+
+	this.addCommandID("aimpos sync");
 }	
 
 void onTick( CBlob@ this )
@@ -61,7 +63,14 @@ void onTick( CBlob@ this )
 	if( p !is null)	{
 		CBlob@ b = p.getBlob();
 		if( b !is null)	{
-			target = b.getAimPos();
+			if( p.isMyPlayer() )
+			{
+				Vec2f aimPos = b.getAimPos();
+				CBitStream params;
+				params.write_Vec2f(aimPos);
+				this.SendCommand(this.getCommandID("aimpos sync"), params);
+			}
+			target = this.get_Vec2f("aimpos");
 			targetSet = true;
 			brake = b.isKeyPressed( key_action3 );
 		}
@@ -69,18 +78,27 @@ void onTick( CBlob@ this )
 	
 	if(targetSet)
 	{
-		Vec2f vel = this.getVelocity();
-		Vec2f dir = target-this.getPosition();
 		if(!brake)
 		{
-			dir.Normalize();
-			vel += dir * 1.4f;
-		}
-		else {
+			this.getShape().setDrag(5.0f);
+			
+			Vec2f vel = this.getVelocity();
+			Vec2f dir = target-this.getPosition();
+			float distanceToCursor = dir.Length();
+			if(distanceToCursor > 5.0f)
+			{
+				dir.Normalize();
+				dir *= 5.0f;
+			}
 
-		}		
-		
-		this.setVelocity(vel);
+			vel += dir;
+			
+			this.setVelocity(vel);
+		}
+		else
+		{
+			this.getShape().setDrag(0.001f);
+		}
 	}
 }
 
@@ -123,4 +141,12 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 			this.server_Die();
 		} 
 	}
+}
+
+void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+{
+    if (cmd == this.getCommandID("aimpos sync"))
+    {
+        this.set_Vec2f("aimpos", params.read_Vec2f());
+    }
 }

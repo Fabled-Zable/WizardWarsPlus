@@ -157,16 +157,23 @@ void Slam(CBlob @this, f32 angle, Vec2f vel, f32 vellen)
 		return;
 
 	CMap@ map = this.getMap();
+	if (map is null)
+	{return;}
 	Vec2f pos = this.getPosition();
 	HitInfo@[] hitInfos;
 	u8 team = this.get_u8("launch team");
 
 	if (map.getHitInfosFromArc(pos, -angle, 30, vellen, this, false, @hitInfos))
 	{
+		if (hitInfos is null)
+		{return;}
 		for (uint i = 0; i < hitInfos.length; i++)
 		{
 			HitInfo@ hi = hitInfos[i];
 			f32 dmg = 2.0f;
+
+			if (hi is null)
+			{return;}
 
 			if (hi.blob is null) // map
 			{
@@ -175,6 +182,8 @@ void Slam(CBlob @this, f32 angle, Vec2f vel, f32 vellen)
 			}
 			else if (team != u8(hi.blob.getTeamNum()))
 			{
+				if(hi.blob.getName() == "knight") //less damage for knights
+				{dmg *= 0.1f;}
 				this.server_Hit(hi.blob, pos, vel, dmg, Hitters::crush, true);
 				this.setVelocity(vel * 0.9f); //damp
 			}
@@ -290,6 +299,8 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		}
 
 		//hurt
+		if(blob.getName() == "knight") //less damage for knights
+		{dmg *= 0.1f;}
 		this.server_Hit(blob, point1, hitvel, dmg, Hitters::crush, true);
 		this.server_Hit(this, point1, -hitvel, dmg*8.0f, Hitters::crush, true);
 

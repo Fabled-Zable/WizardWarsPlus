@@ -12,16 +12,11 @@ void onInit(CMovement@ this)
 void onTick(CMovement@ this)
 {
 	CBlob@ blob = this.getBlob();
-	if (blob.getHealth() > 0.0f)
+	if (blob.hasTag(burning_tag)) //double check
 	{
-		if (blob.hasTag(burning_tag)) //double check
+		if (XORRandom(200) == 0)
 		{
-			MovementVars@ vars = this.getVars();
-
-			if (XORRandom(200) == 0)
-			{
-				blob.getSprite().PlaySound("/MigrantScream");
-			}
+			blob.getSprite().PlaySound("/MigrantScream");
 		}
 	}
 }

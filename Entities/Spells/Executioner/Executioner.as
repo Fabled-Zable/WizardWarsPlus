@@ -1,5 +1,4 @@
 #include "Hitters.as";
-#include "ArcherCommon.as";
 #include "SpellCommon.as";
 
 void onInit(CBlob@ this)
@@ -13,13 +12,13 @@ void onInit(CBlob@ this)
 	this.Tag("counterable");
 	shape.SetGravityScale( 0.0f );
 	
+	this.set_u32("lifetime",0);
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
+
+	this.addCommandID("aimpos sync");
 	
-    this.server_SetTimeToDie(20);
-
-	this.getSprite().PlaySound("execast.ogg");
-
+    this.server_SetTimeToDie(25);
 }
 
 void onTick(CBlob@ this)
@@ -49,20 +48,17 @@ void onTick(CBlob@ this)
 		}
     }
 	//start of sword launch logic
-	this.Sync("shooTime", true);
-	this.Sync("stopTime", true);
-
-	u32 shooTime = this.get_u32("shooTime"); 		//base for timer system
-	u32 stopTime = this.get_u32("stopTime");
-	u32 lTime = getGameTime();						//clock
+	this.Sync("lifetime", true);
+	u32 lifetime = this.get_u32("lifetime");		//base for timer system
 
 	if (!this.hasTag("aimMode") && !this.hasTag("cruiseMode"))
 	{
-		if (lTime > stopTime)  //timer system for sentry mode
+		if (this.getTickSinceCreated() > lifetime)  //timer system for sentry mode
 		{
 			this.setVelocity(Vec2f(0,0));
 			this.Tag("aimMode"); //stops
-			this.getSprite().PlaySound("exepause.ogg");
+			if(isClient())
+			{this.getSprite().PlaySound("exepause.ogg");}
 		}
 	}
 
@@ -72,11 +68,18 @@ void onTick(CBlob@ this)
 		if( p !is null) {
 			CBlob@ caster = p.getBlob();
 			if( caster !is null) {
-				Vec2f aimPos = caster.getAimPos() + Vec2f(0.0f,-2.0f);
-				Vec2f aimDir = aimPos - this.getPosition();
+				if( p.isMyPlayer() )
+				{
+					Vec2f aimPos1 = caster.getAimPos() + Vec2f(0.0f,-2.0f);
+					CBitStream params;
+					params.write_Vec2f(aimPos1);
+					this.SendCommand(this.getCommandID("aimpos sync"), params);
+				}
+				Vec2f aimPos2 = this.get_Vec2f("aimpos");
+				Vec2f aimDir = aimPos2 - this.getPosition();
 				angle = aimDir.Angle();
 				this.setAngleDegrees(-angle);
-				if (lTime > shooTime)  //timer system for roboteching
+				if (caster.get_bool("shifting") && this.getTickSinceCreated() > (lifetime + 30) )  //shift system for roboteching
 				{
 					aimDir.Normalize();
 					Vec2f swordSpeed = aimDir * 15;
@@ -112,7 +115,6 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 	this.getSprite().PlaySound("exehit.ogg");
 
 	f32 angle = velocity.Angle();
-
 	this.set_u8("angle", Maths::get256DegreesFrom360(angle));
 
 	Vec2f norm = velocity;
@@ -129,21 +131,8 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 	//this.getShape().server_SetActive( false );
 
 	this.Tag("collided");
-
-	//kill any grain plants we shot the base of
-	CBlob@[] blobsInRadius;
-	if (this.getMap().getBlobsInRadius(worldPoint, this.getRadius() * 1.3f, @blobsInRadius))
-	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
-		{
-			CBlob @b = blobsInRadius[i];
-			if (b.getName() == "grain_plant")
-			{
-				this.server_Hit(b, worldPoint, Vec2f(0, 0), velocity.Length() / 7.0f, Hitters::arrow);
-				break;
-			}
-		}
-	}
+	
+	this.getShape().SetStatic(true);
 	this.getCurrentScript().tickFrequency = 0;
 }
 
@@ -164,7 +153,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 			}
 			else
 			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), ( expundamage / 4 ) , Hitters::arrow, true);
+				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.2f , Hitters::arrow, true);
 				this.server_Die();
 			}
 		}
@@ -188,4 +177,12 @@ bool isEnemy( CBlob@ this, CBlob@ target )
 		)
 		&& target.getTeamNum() != this.getTeamNum() 
 	);
+}
+
+void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+{
+    if (cmd == this.getCommandID("aimpos sync"))
+    {
+        this.set_Vec2f("aimpos", params.read_Vec2f());
+    }
 }

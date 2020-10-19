@@ -1,174 +1,164 @@
-#include "Hitters.as";
-#include "ArcherCommon.as";
-#include "SpellCommon.as";
+//There is no cfg file associated with this because it isn't a blob :D
+#include "Hitters.as"//we need this so we can use the enums which allows for more readable code
 
-void onInit(CBlob@ this)
-{
-	CShape@ shape = this.getShape();
-	ShapeConsts@ consts = shape.getConsts();
-	consts.mapCollisions = false;	 // we have our own map collision
-	consts.bullet = false;
-	consts.net_threshold_multiplier = 0.1f;
-	this.Tag("projectile");
-	this.Tag("counterable");
-	shape.SetGravityScale( 0.0f );
-	
-    //dont collide with top of the map
-	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
-	
-    this.server_SetTimeToDie(20);
-
-	this.getSprite().PlaySound("execast.ogg");
-
-}
 
 void onTick(CBlob@ this)
 {
-    CShape@ shape = this.getShape();
-
-    f32 angle;
-    bool processSticking = true;
-	if (!this.hasTag("collided")) //we haven't hit anything yet!
+	if(!this.exists("setupDone") || !this.get_bool("setupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
 	{
-		//prevent leaving the map
-		{
-			Vec2f pos = this.getPosition();
-			if (
-				pos.x < 0.1f ||
-				pos.x > (getMap().tilemapwidth * getMap().tilesize) - 0.1f
-			) {
-				this.server_Die();
-				return;
-			}
-		}
-		if (!this.hasTag("aimMode"))
-		{
-        	angle = (this.getVelocity()).Angle();
-			Pierce(this);   //Pierce call
-			this.setAngleDegrees(-angle);
-		}
-    }
-	//start of sword launch logic
-	this.Sync("shooTime", true);
-	this.Sync("stopTime", true);
+		this.set_u32("timeActive",(10*30) + getGameTime());//10 seconds from now
+		this.set_f32("effectRadius",8*2);// 2 block radius
+		this.set_u32("attackRate",15); // half a second
+		this.getSprite().AddScript("BladedShell.as");//need to do this to get the sprite hooks to run
 
-	u32 shooTime = this.get_u32("shooTime"); 		//base for timer system
-	u32 stopTime = this.get_u32("stopTime");
-	u32 lTime = getGameTime();						//clock
+		this.set_bool("setupDone",true);
+	}
 
-	if (!this.hasTag("aimMode") && !this.hasTag("cruiseMode"))
+	if(this !is null)
 	{
-		if (lTime > stopTime)  //timer system for sentry mode
+	if(this.hasTag("dead") ) //removes script if user dies
+	{cleanUp(this);}
+	}
+
+	u16 timeActive = this.get_u32("timeActive");
+	f32 effectRadius = this.get_f32("effectRadius");
+	if(timeActive < getGameTime())//remove script if we are past the active time
+	{
+		if(this !is null)
 		{
-			this.setVelocity(Vec2f(0,0));
-			this.Tag("aimMode"); //stops
-			this.getSprite().PlaySound("exepause.ogg");
+			cleanUp(this);
 		}
 	}
 
-	if (!this.hasTag("cruiseMode") && this.hasTag("aimMode")) //Aims sword to caster's cursor
-	{
-		CPlayer@ p = this.getDamageOwnerPlayer();
-		if( p !is null) {
-			CBlob@ caster = p.getBlob();
-			if( caster !is null) {
-				Vec2f aimPos = caster.getAimPos() + Vec2f(0.0f,-2.0f);
-				Vec2f aimDir = aimPos - this.getPosition();
-				angle = aimDir.Angle();
-				this.setAngleDegrees(-angle);
-				if (lTime > shooTime)  //timer system for roboteching
-				{
-					aimDir.Normalize();
-					Vec2f swordSpeed = aimDir * 15;
-					this.setVelocity(swordSpeed);
-					this.getSprite().PlaySound("execruise.ogg");
-					this.Tag("cruiseMode"); //stops the loop
-					this.Untag("aimMode");
-				}
-			}
-		}
-	}
-}
-
-void Pierce(CBlob@ this, CBlob@ blob = null)
-{
-	Vec2f end;
-	CMap@ map = this.getMap();
-	Vec2f position = blob is null ? this.getPosition() : blob.getPosition();
 	
-	if (this.hasTag("cruiseMode"))  //doesn't do raycasts until needed
+
+	CMap@ map = getMap(); //going to need map in order to see what blobs are in the radius
+	CBlob@[] blobs;//blob handle array to store blobs we want to effect
+
+	map.getBlobsInRadius(this.getPosition(),effectRadius, @blobs);//get the blobs
+
+	for(s32 i = 0; i < blobs.length(); i++)//itterate through blobs
 	{
-		if (map.rayCastSolidNoBlobs(this.getShape().getVars().oldpos, position, end))
+		CBlob@ other = @blobs[i];//setting other blob to a variable for readability
+		if(other.getTeamNum() == this.getTeamNum()){continue;}//skip over like team numbers
+		if(!isEnemy(this,other)){continue;}//if other isn't an enemy then we don't need to do anything to it
+		
+		if(!other.exists("BladedShellCooldown" + other.getNetworkID()) || (other.get_u32("BladedShellCooldown" + other.getNetworkID()) < getGameTime()))
 		{
-			ArrowHitMap(this, end, this.getOldVelocity(), 0.5f, Hitters::arrow);
+			u32 attackRate = this.get_u32("attackRate"); //gets hit delay
+			this.server_Hit(other, other.getPosition(), Vec2f(0,0),0.6f,Hitters::hits::sword);// hit em
+			other.set_u32("BladedShellCooldown" + other.getNetworkID(), getGameTime() + attackRate);//a second between hits
+
+			Vec2f norm = (this.getPosition() - other.getPosition()) * -1;
+			norm.Normalize();
+			
+			if(other.hasTag("barrier")) //Knockback System against barriers
+			{
+				CBlob@ self = this;
+				Vec2f selfPos = self.getPosition();
+				Vec2f othPos = other.getPosition();
+				Vec2f kickDir = selfPos - othPos;
+				kickDir.Normalize();
+				kickDir *= 11.0f;
+				kickDir += Vec2f(0,-1);
+				this.server_Hit(self, self.getPosition(), Vec2f(0,0),0.2f,Hitters::hits::sword);
+				this.setVelocity(this.getVelocity() + kickDir);
+			}
+			//ParticleAnimated("Knife.png", this.getPosition(), norm ,norm.getAngle(),1,RenderStyle::Style::normal,0, Vec2f(16,16),0,0, true);//ahh doesn't work, good enough without it
 		}
 	}
-	
 }
 
-void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 customData)
+void onTick(CSprite@ this)
 {
-
-	this.getSprite().PlaySound("exehit.ogg");
-
-	f32 angle = velocity.Angle();
-
-	this.set_u8("angle", Maths::get256DegreesFrom360(angle));
-
-	Vec2f norm = velocity;
-	norm.Normalize();
-	norm *= (1.5f);
-	Vec2f lock = worldPoint - norm;
-	this.set_Vec2f("lock", lock);
-
-	this.Sync("lock", true);
-	this.Sync("angle", true);
-
-	this.setVelocity(Vec2f(0, 0));
-	this.setPosition(lock);
-	//this.getShape().server_SetActive( false );
-
-	this.Tag("collided");
-
-	//kill any grain plants we shot the base of
-	CBlob@[] blobsInRadius;
-	if (this.getMap().getBlobsInRadius(worldPoint, this.getRadius() * 1.3f, @blobsInRadius))
+	CBlob@ b = this.getBlob();
+	if(!b.exists("spriteSetupDone") || !b.get_bool("spriteSetupDone"))
 	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
+		for(int i = 0; i < 360; i += 45)//makes 8
 		{
-			CBlob @b = blobsInRadius[i];
-			if (b.getName() == "grain_plant")
-			{
-				this.server_Hit(b, worldPoint, Vec2f(0, 0), velocity.Length() / 7.0f, Hitters::arrow);
-				break;
-			}
+			CSpriteLayer@ layer = this.addSpriteLayer("knife" + i,"Knife.png",13,4,b.getTeamNum(),0);
+		}
+		b.set_bool("spriteSetupDone",true);
+	}
+
+	for(int i = 0; i < 360; i += 45)//makes 8
+	{
+		CSpriteLayer@ layer = this.getSpriteLayer("knife" + i);
+		layer.ResetTransform();
+		f32 r = getGameTime() * 4 + i;
+		Vec2f angle = Vec2f(1,0).RotateByDegrees(r);
+		layer.RotateBy(r + 180,Vec2f_zero);
+		layer.SetOffset(angle * 12);//block and a half
+
+		layer.SetFacingLeft(true);
+
+		CParticle@ p = ParticlePixelUnlimited(
+			layer.getOffset() * 1.5 + b.getInterpolatedPosition(), //position
+			b.getVelocity() + Vec2f(XORRandom(2) == 1 ? 0.1 : -0.1,XORRandom(10)/10.0),// velocity
+			 SColor(255,255,225,225),//color
+			  true);//self lit
+		if(p !is null)
+		{
+			p.fastcollision = true;
+			p.gravity = Vec2f(0,-0.1);
+			p.bounce = 1;
+			p.lighting = false;
+			p.timeout = XORRandom(30);
+			p.damping = 0.75;
 		}
 	}
-	this.getCurrentScript().tickFrequency = 0;
+
+	if(b.hasTag("doubleBlade")) //if activated twice, second layer of knives
+	{
+		if(!b.exists("spriteSetupDone2") || !b.get_bool("spriteSetupDone2"))
+		{
+			for(int h = 0; h < 360; h += 45)//makes 8
+			{
+				CSpriteLayer@ layer = this.addSpriteLayer("2knife" + h,"Knife.png",13,4,b.getTeamNum(),0);
+			}
+			b.set_bool("spriteSetupDone2",true);
+		}
+
+		for(int h = 0; h < 360; h += 45)
+		{
+			CSpriteLayer@ layer = this.getSpriteLayer("2knife" + h);
+			layer.ResetTransform();
+			f32 r = getGameTime() + h;
+			Vec2f angle = Vec2f(1,0).RotateByDegrees(r);
+			layer.RotateBy(-r + 180,Vec2f_zero);
+			layer.SetOffset(angle * 24);//three blocks
+
+			layer.SetFacingLeft(false);
+		}
+	}
 }
 
-void onCollision( CBlob@ this, CBlob@ blob, bool solid )
-{	
-	if (blob !is null)
+void cleanUp(CBlob@ this)//because we don't use onInit we need to cleanup so that the script is ready for when it is added again
+{
+	for(int i = 0; i < 360; i += 45)
 	{
-		if (isEnemy(this, blob) && !this.hasTag("aimMode"))
+		this.getSprite().RemoveSpriteLayer("knife" + i);
+	}
+
+	if(this.hasTag("doubleBlade"))
+	{
+		for(int h = 0; h < 360; h += 45)
 		{
-			float expundamage = this.get_f32("damage");
-			if (!this.hasTag("collided"))
-			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
-				if (blob.hasTag("barrier"))
-				{
-					this.server_Die();
-				}
-			}
-			else
-			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), ( expundamage / 4 ) , Hitters::arrow, true);
-				this.server_Die();
-			}
+		this.getSprite().RemoveSpriteLayer("2knife" + h);
 		}
 	}
+
+	if(this.hasTag("doubleBlade"))
+	{
+		this.Untag("doubleBlade");
+	}
+
+	this.set_bool("setupDone",false);
+	this.set_bool("spriteSetupDone",false);
+	this.set_bool("spriteSetupDone2",false);
+	this.getSprite().RemoveScript("BladedShell.as");
+	this.RemoveScript("BladedShell.as");
+
 }
 
 bool isEnemy( CBlob@ this, CBlob@ target )

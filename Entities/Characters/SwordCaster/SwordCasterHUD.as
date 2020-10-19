@@ -3,7 +3,7 @@
 #include "SwordCasterCommon.as";
 #include "PlayerPrefsCommon.as";
 #include "MagicCommon.as";
-#include "SwordCasterHUDStartPos.as";
+#include "HUDStartPos.as";
 
 const string iconsFilename = "SpellIcons.png";
 const int slotsSize = 6;

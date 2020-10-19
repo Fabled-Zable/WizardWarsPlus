@@ -2,215 +2,209 @@
 #include "/Entities/Common/Attacks/LimitedAttacks.as";
 #include "SpellCommon.as";
 
-const int LIFETIME = 4;
-const int EXTENDED_LIFETIME = 6;
+const int LIFETIME = 10;
 const f32 SEARCH_RADIUS = 128.0f;
-const f32 HOMING_FACTOR = 2.0f;
-const int HOMING_DELAY = 15;	
+const f32 HOMING_FACTOR = 2.1f;
+//const f32 CORRECTION_FACTOR = 0.1f;
+const int HOMING_DELAY = 15; // before first tick
+const int SEARCH_DELAY = 5; // how often to tick to try search for new targets
 
 
-void onInit( CBlob @ this )
+void onInit(CBlob@ this)
 {
-
 	this.Tag("phase through spells");
-	this.Tag("counterable");
-	
-    //this.server_setTeamNum(1);
-	this.Tag("medium weight");
+    this.Tag("counterable");
+	this.set_f32("damage", 1.0f);
+    this.getShape().SetGravityScale(0);
+	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath) ); //dont collide with edge of the map
 
-	//dont collide with edge of the map
-	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath) );
-	
-	CShape@ shape = this.getShape();
-	shape.SetGravityScale( 0.0f );
-	shape.getConsts().bullet = true;
-	shape.SetRotationsAllowed(false);
-	
-    //burning sound	    
-	CSprite@ thisSprite = this.getSprite();
-    thisSprite.SetEmitSound("MolotovBurning.ogg");
-    thisSprite.SetEmitSoundVolume(5.0f);
-    thisSprite.SetEmitSoundPaused(false);
-	thisSprite.getConsts().accurateLighting = false;
-	
-	this.addCommandID("sync missile");
-	
-	this.set_bool("initialized", false);
-	this.set_bool("segments updating", false);
-	this.set_u32("dead segment", 0);
-	
-	this.set_bool("target found", false);
-	
-	this.set_bool("death triggered", false);
-	this.set_bool("dead", false);
+    if (isServer())
+    {
+		this.server_SetTimeToDie(LIFETIME);
+	}
+    
+	//burning sound	    
+	if (isClient())
+	{
+		CSprite@ sprite = this.getSprite();
+
+    	sprite.SetEmitSound("MolotovBurning.ogg");
+    	sprite.SetEmitSoundVolume(5.0f);
+    	sprite.SetEmitSoundPaused(false);
+		sprite.getConsts().accurateLighting = false;
+	}
+
+	this.getCurrentScript().tickFrequency = HOMING_DELAY; // when we first load, dont tick for 15 ticks
 }
 
-void onTick( CBlob@ this)
+void onTick(CSprite@ this) // note to glitch - this only runs on client, onTick is never called if blob is null
 {
-	CSprite@ thisSprite = this.getSprite();
-	Vec2f thisPos = this.getPosition();
-	Vec2f thisVel = this.getVelocity();
-	
-	bool deathTriggered = this.get_bool("death triggered");	//used to sync server and client onCollision 
-	bool isDead = this.get_bool("dead");
-	
-	if ( this.get_bool("initialized") == false && this.getTickSinceCreated() > 1 )
+	CBlob@ blob = this.getBlob();
+	if (blob.getTickSinceCreated() % 2 == 0)
 	{
-		this.SetLight(true);
-		this.SetLightRadius(24.0f);
-		SColor lightColor = SColor( 255, 255, 150, 0);
-		this.SetLightColor( lightColor );
-		thisSprite.SetZ(500.0f);
-		
-		this.set_bool("initialized", true);
+		makeSmokeParticle(blob);
 	}
-	
-	//targetting 
-	CBlob@ target = getBlobByNetworkID(this.get_netid("target"));
-	if ( this.getTickSinceCreated() > HOMING_DELAY )
-	{	
-		// try to find player target	
-		if ( target is null )
-		{
-			CBlob@[] blobs;
-			this.getMap().getBlobsInRadius( thisPos, SEARCH_RADIUS, @blobs );
-			f32 best_dist = 99999999;
-			for (uint step = 0; step < blobs.length; ++step)
-			{
-				//TODO: sort on proximity? done by engine?
-				CBlob@ other = blobs[step];
 
-				if (other is this) continue; //lets not run away from / try to eat ourselves...
-				
-				//TODO: flags for these...
-				if (other.getTeamNum() != this.getTeamNum() && (other.hasTag("player") || other.hasTag("zombie")) && !other.hasTag("dead")) //home in on enemies
-				{
-					Vec2f tpos = other.getPosition();									  
-					f32 dist = (tpos - thisPos).getLength();
-					if (dist < best_dist)
-					{
-						this.set_netid("target", other.getNetworkID());
-						best_dist=dist;
-						this.getShape().setDrag(1.0f);
-					}
-				}
-			}
-		}
-		else
+	this.ResetTransform();
+    this.RotateBy(blob.getVelocity().getAngle() * -1,Vec2f_zero);
+}
+
+void onTick(CBlob@ this)
+{
+	/// Delay check
+	ScriptData@ script = this.getCurrentScript();
+	Vec2f pos = this.getPosition();
+
+	if (script.tickFrequency == HOMING_DELAY)
+	{
+		script.tickFrequency = SEARCH_DELAY;
+		this.Tag("searching");
+	}
+
+	/// Chase target if it exists
+	if (this.exists("target"))
+	{
+		uint16 netid = this.get_netid("target");
+		CBlob@ target = getBlobByNetworkID(netid);
+
+		if (netid == 0 || target is null)
 		{
-			this.set_bool("target found", true);
-		
-			Vec2f tpos = target.getPosition();
-			Vec2f targetNorm = tpos - thisPos;
-			targetNorm.Normalize();
+			script.tickFrequency = SEARCH_DELAY;
+			this.Tag("searching");
+			this.set_netid("target", 0);
+		}
+		else 
+		{
+			script.tickFrequency = 1;
 			
-			this.AddForce( targetNorm*HOMING_FACTOR );
+			/// note (vam) - I'm not touching this, looks confusing and spooky
+			Vec2f pos = this.getPosition();
+			Vec2f thisVelNorm = this.getVelocity();
+			Vec2f thisVel = thisVelNorm;
+			thisVelNorm.Normalize();
+			Vec2f targetPos = target.getPosition();
+			Vec2f targetVel = target.getVelocity();
+			Vec2f predictedTrajectory = targetPos+targetVel;
+			Vec2f norm = predictedTrajectory - pos;
+
+			//Trajectory correction algorithm
+			float direcAngle = norm.getAngle();
+			float targetAngle = thisVel.getAngle();
+			float difference = targetAngle-direcAngle;
+			difference = Maths::Abs(difference);
+			float CORRECTION_FACTOR = difference/500;
+			
+			//collision deterrant algorithm
+			CMap@ map = getMap();
+			if(map.rayCastSolidNoBlobs(pos, pos+(thisVelNorm*10)))
+			{
+				CORRECTION_FACTOR += 0.6f;
+			}
+
+			norm.Normalize();
+			norm -= (thisVel * CORRECTION_FACTOR);
+
+			this.getShape().setDrag(1.0f);
+			this.AddForce(norm*HOMING_FACTOR);
+			/// end note (vam)
 		}
+
 	}
-		
-	//delayed death
-	if ( !isDead )
+
+
+	/// Searching for target
+	if (!this.hasTag("searching")) { return; }
+
+	CBlob@[] list;
+	if (getMap().getBlobsInRadius(pos, SEARCH_RADIUS, @list))
 	{
-		if ( this.get_bool("target found") && this.getTickSinceCreated() > (LIFETIME + EXTENDED_LIFETIME)*30 )
-		{
-			Die( this );
-		}
-		else if ( !this.get_bool("target found") && this.getTickSinceCreated() > LIFETIME*30 )
-		{
-			Die( this );
-		}
+		CBlob@ targetBlob = ClosestBlob(this, list);
+		if (targetBlob is null) { return; }
+
+		this.Untag("searching");
+		this.set_netid("target", targetBlob.getNetworkID());
 	}
-	
-	//activate death event if triggered
-	if ( deathTriggered == true && !isDead )
-	{
-		Explode( this );
-		Die( this );
-	}
-	
-	//random motion
-	if ( (getGameTime() % 4 == 0) )
-		randomForce(this);
-	
-	//face towards target like a ballista bolt
-	f32 angle = thisVel.Angle();	
-	thisSprite.ResetTransform();
-	thisSprite.RotateBy( -angle, Vec2f(0,0) );
-	this.AddForce( Vec2f(1,0).RotateBy(-angle)*0.25f );
-	
-	if(!getNet().isClient()) 
-		return;	
-	//particle smoke
-	if ( getGameTime() % 2 == 0 )
-		makeSmokePuff(this);
 }
 
-bool followsDeadAllies( CBlob@ this )
-{		
-	string effectType = this.get_string("effect");
-	
-	return ( effectType == "revive" );
+/// Want to optimize this? use kd-tree
+CBlob@ ClosestBlob(CBlob@ this, CBlob@[]@ blobs)
+{
+	float distanceToClosestTarget = 10000000;
+	Vec2f pos = this.getPosition();
+	CBlob@ target = null;
+
+	for (int a = 0; a < blobs.length; a++)
+	{
+		CBlob@ blob = blobs[a];
+		if (blob is null) { continue; }
+		if (this.getTeamNum() == blob.getTeamNum() || !blob.hasTag("flesh") ||  blob.hasTag("dead")) { continue; }
+
+		float distance = (blob.getPosition() - pos).LengthSquared();
+		if (distance < distanceToClosestTarget)
+		{
+			distanceToClosestTarget = distance;
+			@target = blob;
+		}
+	}
+
+	return target;
 }
 
+/// note (vam) -> I'm not touching these
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
-{	
-	bool isDead = this.get_bool("dead");
-	if ( isDead )
+{
+    if (solid && (this.getTickSinceCreated() > (HOMING_DELAY * 2) ))
+    {
+		blast(this, 4);
+        this.server_Die();
 		return;
+    }
 
-	if ( solid && this.getTickSinceCreated() > HOMING_DELAY )
-	{
-		this.set_bool("death triggered", true);
-	}
-	
-	if (blob !is null)
-	{
-		if ( ((blob.hasTag("player") || blob.hasTag("zombie") || blob.hasTag("kill other spells") || blob.hasTag("barrier")) && isEnemy(this, blob)))
+	if (blob is null) { return; }
+
+	//hit detection
+    if(blob.getTeamNum() != this.getTeamNum())
+    {
+		float damage = this.get_f32("damage");
+
+		if (blob.hasTag("barrier"))
 		{
-			this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.25f, Hitters::water, true);
-			this.set_bool("death triggered", true);
+			damage = 2.5f;
 		}
-	}
-	this.Sync("death triggered", true);
+		else if (blob.getName() == "knight")
+		{
+    		damage = 0.8f;
+            if (blob.hasTag("shielded"))
+            {
+                if(isClient())
+                {this.getSprite().PlaySound("ShieldHit.ogg");}
+                damage = 0.2;
+            }
+        }
+		else if (!blob.hasTag("flesh")){ return; }
+
+        this.server_Hit(blob,blob.getPosition(),this.getVelocity()*4,damage,Hitters::water);
+		blast(this, 4);
+        this.server_Die();
+    }
 }
 
-bool isOwnerBlob(CBlob@ this, CBlob@ target)
+bool doesCollideWithBlob( CBlob@ this, CBlob@ b )
 {
-	if ( target is null )
-		return true;
+	if(b is null){return false;}
 
-	//easy check
-	if (this.getDamageOwnerPlayer() is target.getPlayer())
-		return true;
-
-	if (!this.exists("explosive_parent")) { return false; }
-
-	return (target.getNetworkID() == this.get_u16("explosive_parent"));
-}
-
-bool isEnemy( CBlob@ this, CBlob@ target )
-{
-	CBlob@ friend = getBlobByNetworkID(target.get_netid("brain_friend_id"));
 	return 
 	(
-		(
-			target.hasTag("barrier") ||
-			(
-				target.hasTag("flesh") 
-				&& !target.hasTag("dead") 
-				&& (friend is null
-					|| friend.getTeamNum() != this.getTeamNum()
-					)
-			)
-		)
-		&& target.getTeamNum() != this.getTeamNum() 
-	);
+		b.getTeamNum() != this.getTeamNum()
+		&& b.hasTag("barrier")//collides with enemy barriers
+	); 
 }
 
-void makeSmokeParticle(CBlob@ this, const Vec2f vel, const string filename = "Smoke")
+
+void makeSmokeParticle( CBlob@ this )
 {
-	if(!getNet().isClient()) return;
-	//warn("making smoke");
+	if (this is null)
+	{ return; }
 
 	const f32 rad = 1.0f;
 	Vec2f random = Vec2f( XORRandom(128)-64, XORRandom(128)-64 ) * 0.015625f * rad;
@@ -220,100 +214,21 @@ void makeSmokeParticle(CBlob@ this, const Vec2f vel, const string filename = "Sm
 		p.bounce = 0;
     	p.fastcollision = true;
 		p.Z = 300.0f;
-		p.growth = -0.01f;
-	}
-	
-	//warn("smoke made");
-}
-
-void makeSmokePuff(CBlob@ this, const f32 velocity = 1.0f, const int smallparticles = 10, const bool sound = true)
-{
-	if ( !getNet().isClient() )
-		return;
-		
-	//makeSmokeParticle(this, Vec2f(), "Smoke");
-	//for (int i = 0; i < smallparticles; i++)
-	{
-		f32 randomness = (XORRandom(32) + 32)*0.015625f * 0.5f + 0.75f;
-		Vec2f vel = getRandomVelocity( -90, velocity * randomness, 360.0f );
-		makeSmokeParticle(this, vel);
 	}
 }
 
-void randomForce( CBlob@ this )
-{
-	this.AddForce( this.get_Vec2f("rVel") );
-
-	f32 randomness = (XORRandom(32) + 32)*0.015625f * 0.5f + 0.75f;
-	Vec2f vel = getRandomVelocity( -90, randomness*4.0f, 360.0f );
-	this.set_Vec2f("rVel", vel);
-	SyncMissile( this );
-}
-
-void SyncMissile( CBlob@ this )
-{
-	Vec2f rVel = this.get_Vec2f("rVel");	
-	CBitStream bt;
-	bt.write_Vec2f( rVel );	
-	this.SendCommand( this.getCommandID("sync missile"), bt );
-}
-
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
-{
-	if( cmd == this.getCommandID("sync missile") )
-    {
-		Vec2f rVel;	
-		rVel = params.read_Vec2f();	
-		this.set_Vec2f( "rVel", rVel );
-	}
-}
-
-void Explode( CBlob@ this )
-{
-    CMap@ map = getMap();
-	Vec2f thisPos = this.getPosition();
-    if (map !is null)   
-	{
-		CBlob@[] blobsInRadius;
-		if (map.getBlobsInRadius(thisPos, 24.0f, @blobsInRadius))
-		{
-			for (uint i = 0; i < blobsInRadius.length; i++)
-			{
-				CBlob @b = blobsInRadius[i];
-				if (b !is null)
-				{
-					Vec2f bPos = b.getPosition();
-					
-					if ( !map.rayCastSolid(thisPos, bPos) )
-                    {
-                        float extraDamage = this.hasTag("extra_damage") ? 1.2f : 1.0f;
-						this.server_Hit(b, bPos, bPos-thisPos, 0.75f * extraDamage, Hitters::water, false);
-                    }
-                }
-			}
-		}
-	}
-	
-	blast(this.getPosition(), 5);		
-	this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
-}
-
-void Die(CBlob@ this)
-{
-	this.shape.SetStatic(true);
-	this.getSprite().SetVisible(false);
-	this.getSprite().SetEmitSoundPaused(true);
-	
-	this.server_SetTimeToDie(3);	
-	
-	this.set_bool("dead", true);
-}
 
 Random _blast_r(0x10002);
-void blast(Vec2f pos, int amount)
+void blast( CBlob@ this , int amount)
 {
-	if ( !getNet().isClient() )
+	if ( !isClient() )
 		return;
+	if ( this is null )
+		return;
+
+	this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
+
+	Vec2f pos = this.getPosition();
 
 	for (int i = 0; i < amount; i++)
     {
@@ -329,7 +244,7 @@ void blast(Vec2f pos, int amount)
 									0.0f, 
 									false );
 									
-        if(p is null) return; //bail if we stop getting particles
+        if(p is null) continue; //bail if we stop getting particles
 		
     	p.fastcollision = true;
         p.scale = 0.5f + _blast_r.NextFloat()*0.5f;
@@ -338,3 +253,4 @@ void blast(Vec2f pos, int amount)
 		p.lighting = false;
     }
 }
+/// end (vam note)

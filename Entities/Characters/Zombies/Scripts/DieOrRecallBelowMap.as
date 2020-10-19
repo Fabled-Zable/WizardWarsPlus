@@ -27,8 +27,18 @@ void onTick( CBlob@ this )
 				die = false;
 			}
 		}
+		else
+		{
+			die = true;
+		}
 		
-		if ( die == true )
+		if ( die == true)
 			this.server_Die();
+	}
+
+	//prevent zombie spam a bit
+	if(getPlayersCount() < 2 || this.getDamageOwnerPlayer() is null)
+	{
+		this.server_Die();
 	}
 }

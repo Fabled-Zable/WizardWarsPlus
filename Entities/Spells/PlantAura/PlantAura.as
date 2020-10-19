@@ -114,6 +114,9 @@ void onTick(CSprite@ this)
 	getBlobsByName("plant_aura",@plants);
 
 	CBlob@ blob = this.getBlob();
+	if(blob is null)
+	{return;}
+	
 	//ParticleAnimated("heal_particle_animated.png",this.getPosition(),Vec2f(XORRandom(6) - 3,XORRandom(6) - 3),0,1,0,0, Vec2f(32,32),1,0.5,true);
 	SColor color = SColor(255,XORRandom(191),255,XORRandom(191));
 	CParticle@ p = ParticlePixel(blob.getPosition() + Vec2f(XORRandom(effectRadius*2)-effectRadius,XORRandom(effectRadius*2)-effectRadius),Vec2f(XORRandom(8) - 4,XORRandom(8) - 4), color,true,60);
@@ -122,22 +125,30 @@ void onTick(CSprite@ this)
 		p.gravity = Vec2f_zero;
 		p.damping = 0.9;
 		p.collides = false;
+		p.fastcollision = true;
+		p.bounce = 0;
+		p.lighting = false;
 	}
 
-	for(int i = 0; i < 360; i += plants.length + 1)
+	if(getGameTime() % 30 == 0)
 	{
-		SColor color = SColor(255,XORRandom(191),255,XORRandom(191));
-		Vec2f pos = blob.getPosition() + Vec2f_lengthdir(effectRadius,i);//game time gets rid of some gaps and can add a rotation effect
-		ParticlePixel(pos,Vec2f_zero, color,true,1);
+		for(int i = 0; i < 360; i += plants.length + 1)
+		{
+			SColor color = SColor(255,XORRandom(191),255,XORRandom(191));
+			Vec2f pos = blob.getPosition() + Vec2f_lengthdir(effectRadius,i);//game time gets rid of some gaps and can add a rotation effect
+			CParticle@ p = ParticlePixel( pos , Vec2f_zero , color , true , 60 );
+			if(p !is null)
+			{
+				p.gravity = Vec2f_zero;
+				p.damping = 0.9;
+				p.collides = false;
+				p.fastcollision = true;
+				p.bounce = 0;
+				p.lighting = false;
+				p.Z = 500;
+			}
+		}
 	}
-}
-
-void onDie(CBlob@ this)
-{
-	//counterSpell( this );
-	
-	
-	//this.getSprite().PlaySound("rocks_explode2.ogg", 1.0f, 1.0f);
 }
 
 void onSetStatic(CBlob@ this, const bool isStatic)

@@ -37,6 +37,25 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 
 	CBlob@ blob = player.getBlob(); // now, when the code references "blob," it means the player who called the command
 
+	if(admin && text_in == "!givmana")
+	{
+		if (isServer())
+		{
+			CBlob@ orb = server_CreateBlob( "effect_missile", blob.getTeamNum(), blob.getPosition() ); 
+			if (orb !is null)
+			{
+				orb.set_string("effect", "mana");
+				orb.set_u8("mana_used", 20);
+				orb.set_u8("caster_mana", 3);
+                orb.set_bool("silent", true);
+
+				orb.IgnoreCollisionWhileOverlapped( blob );
+                Vec2f orbVel = Vec2f( 0.1f , 0 ).RotateByDegrees(XORRandom(360));
+				orb.setVelocity( orbVel );
+			}
+		}
+	}
+
 	if (blob is null)
 	{
 		if(admin && text_in == "!admin")
@@ -280,7 +299,6 @@ bool onClientProcessChat(CRules@ this, const string& in text_in, string& out tex
 	{
 		text_out = awootismIfy(text_in);
 	}
-
 	if (text_in == "!debug" && !getNet().isServer())
 	{
 		// print all blobs

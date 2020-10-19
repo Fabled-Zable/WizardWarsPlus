@@ -147,7 +147,6 @@ void onInit(CBlob@ this)
 	this.Tag("flesh");
 	this.Tag("zombie");
 	this.Tag("freezable");
-	this.Tag("Greg");
 	this.set_s16("mad timer", 0);
 
 	
@@ -431,6 +430,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		server_setFireOn(this);
 		
-		counterSpell(this);
+		counterSpell(this, this.getAimPos());
 	}
 }

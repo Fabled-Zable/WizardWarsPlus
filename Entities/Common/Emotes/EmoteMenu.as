@@ -8,6 +8,8 @@
 #include "NecromancerCommon.as"
 #include "DruidCommon.as"
 #include "SwordCasterCommon.as"
+#include "EntropistCommon.as"
+#include "FrigateCommon.as"
 
 #define CLIENT_ONLY
 
@@ -18,6 +20,7 @@ enum spellClass
     Necromancer,
     Druid,
 	SwordCaster,
+    Entropist,
 }
 
 void onInit(CRules@ rules)
@@ -104,6 +107,11 @@ void onSetPlayer( CRules@ this, CBlob@ blob, CPlayer@ player )//Selects the spel
         _class = SwordCaster;
         spells_length = SwordCasterParams::spells.length;
     }
+    else if(blob_name == "entropist")
+    {
+        _class = Entropist;
+        spells_length = EntropistParams::spells.length;
+    }
     else
     {
         return;
@@ -133,6 +141,9 @@ void onSetPlayer( CRules@ this, CBlob@ blob, CPlayer@ player )//Selects the spel
             break;
             case SwordCaster:
                 spell = SwordCasterParams::spells[i];
+            break;
+            case Entropist:
+                spell = EntropistParams::spells[i];
             break;
             
             default:

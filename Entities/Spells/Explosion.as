@@ -65,9 +65,22 @@ void Explode(CBlob@ this, f32 radius, f32 damage)
 	if (this.isInInventory())
 	{
 		CBlob@ doomed = this.getInventoryBlob();
-		if (doomed !is null && !doomed.hasTag("invincible"))
+		if (doomed !is null)
 		{
-			this.server_Hit(doomed, pos, Vec2f(), 100.0f, Hitters::explosion, true);
+			//copy position, explode from centre of carrier
+			pos = doomed.getPosition();
+			//kill or stun players if we're in their inventory
+			if ((doomed.hasTag("player") || doomed.getName() == "crate") && !doomed.hasTag("invincible"))
+			{
+				if (this.getName() == "bomb") //kill player
+				{
+					this.server_Hit(doomed, pos, Vec2f(), 100.0f, Hitters::explosion, true);
+				}
+				else if (this.getName() == "waterbomb") //stun player
+				{
+					this.server_Hit(doomed, pos, Vec2f(), 0.0f, Hitters::water_stun_force, true);
+				}
+			}
 		}
 	}
 
@@ -150,8 +163,7 @@ void Explode(CBlob@ this, f32 radius, f32 damage)
 			m_pos.x = Maths::Floor(m_pos.x);
 			m_pos.y = Maths::Floor(m_pos.y);
 			m_pos = (m_pos * map.tilesize) + Vec2f(map.tilesize / 2, map.tilesize / 2);
-			
-			u8 solidTileCount = 0;
+
 			//explode outwards
 			for (int x_step = 0; x_step <= tile_rad; ++x_step)
 			{
@@ -206,25 +218,14 @@ void Explode(CBlob@ this, f32 radius, f32 damage)
 								{
 									if (!map.isTileBedrock(tile))
 									{
-										if ( dist >= rad_thresh )
+										if (dist >= rad_thresh ||
+										        !canExplosionDestroy(map, tpos, tile))
 										{
 											map.server_DestroyTile(tpos, 1.0f, this);
 										}
 										else
 										{
 											map.server_DestroyTile(tpos, 100.0f, this);
-											
-											if ( map.isTileSolid(tile) && solidTileCount < 100 )
-											{
-												CBlob@ debrisBlock = server_CreateBlob( "debris_block", -1, tpos);
-												if ( debrisBlock !is null )
-												{
-													debrisBlock.set_u16("tile num", tile);
-													debrisBlock.setVelocity( Vec2f(XORRandom(8) - 4, -8 - XORRandom(8)) );
-												}
-												
-												solidTileCount += 1;
-											}
 										}
 									}
 								}
@@ -433,8 +434,17 @@ void BombermanExplosion(CBlob@ this, f32 radius, f32 damage, f32 map_damage_radi
 
 bool canExplosionDamage(CMap@ map, Vec2f tpos, TileType t)
 {
+	CBlob@ blob = map.getBlobAtPosition(tpos); // TODO: make platform get detected
+	bool hasValidFrontBlob = false;
+	bool isBackwall = (t == CMap::tile_castle_back || t == CMap::tile_castle_back_moss || t == CMap::tile_wood_back);
+	if (blob !is null)
+	{
+		string name = blob.getName();
+		hasValidFrontBlob = (name == "wooden_door" || name == "stone_door" || name == "trap_block" || name == "wooden_platform");
+	}
 	return map.getSectorAtPosition(tpos, "no build") is null &&
-	       (t != CMap::tile_ground_d0 && t != CMap::tile_stone_d0); //don't _destroy_ ground, hit until its almost dead tho
+	       (t != CMap::tile_ground_d0 && t != CMap::tile_stone_d0) && //don't _destroy_ ground, hit until its almost dead tho
+		   !(hasValidFrontBlob && isBackwall); // don't destroy backwall if there is a door or trap block
 }
 
 bool canExplosionDestroy(CMap@ map, Vec2f tpos, TileType t)
@@ -498,7 +508,8 @@ bool HitBlob(CBlob@ this, CBlob@ hit_blob, f32 radius, f32 damage, const u8 hitt
 	                bombforce, dam,
 	                hitter, hitter == Hitters::water || //hit with water
 	                isOwnerBlob(this, hit_blob) ||	//allow selfkill with bombs
-	                should_teamkill || hit_blob.hasTag("dead")			//hit all corpses
+	                should_teamkill || hit_blob.hasTag("dead") || //hit all corpses ("dead" tag)
+					hit_blob.hasTag("explosion always teamkill") // check for override with tag
 	               );
 	return true;
 }

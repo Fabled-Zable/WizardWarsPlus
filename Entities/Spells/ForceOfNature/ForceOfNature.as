@@ -47,22 +47,6 @@ void onTick(CBlob@ this)
 	sparks(this.getPosition(), 1, this);
 }
 
-bool isEnemy( CBlob@ this, CBlob@ target )
-{
-	CBlob@ friend = getBlobByNetworkID(target.get_netid("brain_friend_id"));
-	return 
-	(
-		( target.getTeamNum() != this.getTeamNum() && (target.hasTag("kill other spells") || target.hasTag("door") || target.getName() == "trap_block") )
-		||
-		(
-			target.hasTag("flesh") 
-			&& !target.hasTag("dead") 
-			&& target.getTeamNum() != this.getTeamNum() 
-			&& ( friend is null || friend.getTeamNum() != this.getTeamNum() )
-		)
-	);
-}
-
 void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 {
 	this.getSprite().PlaySound("forceofnature_bounce.ogg", 0.6f, 1.0f + XORRandom(3)/10.0f);

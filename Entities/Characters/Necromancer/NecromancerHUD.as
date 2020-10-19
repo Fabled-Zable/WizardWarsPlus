@@ -3,7 +3,7 @@
 #include "NecromancerCommon.as";
 #include "PlayerPrefsCommon.as";
 #include "MagicCommon.as";
-#include "NecromancerHUDStartPos.as";
+#include "HUDStartPos.as";
 
 const string iconsFilename = "SpellIcons.png";
 const int slotsSize = 6;

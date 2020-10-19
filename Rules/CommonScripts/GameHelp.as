@@ -52,7 +52,9 @@ const string textInfo =
 		" * How do I figure out what these spells do?\n"+
 		"You can read spell descriptions by selecting a spell in the classes menu menu.\n\n"+
 		" * How do I turn off this awesome music?! It's too good for my ears!!!\n"+
-		"The in-game music is played through KAG's built-in jukebox system. Turn it off just like you would for the default music by going to your 'ESC' settings menu. Still, I recommend putting that shit on full blast to get the best experience!\n";
+		"The in-game music is played through KAG's built-in jukebox system. Turn it off just like you would for the default music by going to your 'ESC' settings menu. Still, I recommend putting that shit on full blast to get the best experience!\n\n"+
+		" * How do I use some of my spells? They get stuck in mid air or do nothing!\n"+
+		"Most classes have a special effect on one of their spells that can be activated by pressing your SHIFT key.\n";
 
 const Vec2f windowDimensions = Vec2f(1000,600); //temp
 
@@ -76,7 +78,6 @@ const Vec2f windowDimensions = Vec2f(1000,600); //temp
 	Button@ classesBtn;
     Button@ togglemenuBtn;
     Button@ toggleHotkeyEmotesBtn;
-	Button@ toggleColorBlindBtn;
 	Rectangle@ optionsFrame;
 	Icon@ helpIcon;
 	ScrollBar@ particleCount;
@@ -103,7 +104,6 @@ bool isGUINull()
 		|| barNumBtn is null
 		|| startCloseBtn is null
         || toggleSpellWheelBtn is null
-		|| toggleColorBlindBtn is null
 		|| achievementBtn is null
 		|| optionsFrame is null
 		|| helpIcon is null
@@ -227,15 +227,6 @@ void ButtonClickHandler(int x , int y , int button, IGUIItem@ sender){ //Button 
         
         getRules().set_bool("hotkey_emotes", toggleHotkeyEmotesBtn.toggled);
     }
-
-	  if (sender is toggleColorBlindBtn)
-    {
-        toggleColorBlindBtn.toggled = !toggleColorBlindBtn.toggled;
-		toggleColorBlindBtn.desc = (toggleColorBlindBtn.toggled) ? "Colorblind Mode Enabled" : "Colorblind Mode Disabled";
-		toggleColorBlindBtn.saveBool("Colorblind", toggleColorBlindBtn.toggled,"WizardWars");
-        
-        getRules().set_bool("colorblind", toggleColorBlindBtn.toggled);
-    }
 }
 
 void SliderClickHandler(int dType ,Vec2f mPos, IGUIItem@ sender){
@@ -251,9 +242,7 @@ void onTick( CRules@ this )
         
         u16 itemDistance_value = 6;
 
-        u16 hoverDistance_value = 6; 
-
-		bool colorblind_value = false;
+        u16 hoverDistance_value = 6;
 
         if(cfg.loadFile("../Cache/WW_OptionsMenu.cfg"))//Load file, if file exists
         {
@@ -268,11 +257,6 @@ void onTick( CRules@ this )
             {
                 hoverDistance_value = cfg.read_u8("hover_distance");//Set default
             }
-			if(cfg.exists("colorblind"))
-			{
-				colorblind_value = cfg.read_bool("colorblind");
-			}
-
         }
 
 
@@ -322,11 +306,7 @@ void onTick( CRules@ this )
         @toggleHotkeyEmotesBtn = @Button(Vec2f(10,250),Vec2f(200,30),"",SColor(255,255,255,255));
 		toggleHotkeyEmotesBtn.addClickListener(ButtonClickHandler);
 
-		@toggleColorBlindBtn = @Button(Vec2f(10,200),Vec2f(200,30),"",SColor(255,255,255,255));
-		toggleColorBlindBtn.addClickListener(ButtonClickHandler);
-		toggleColorBlindBtn.toggled = colorblind_value;
-
-
+        
 
 		@achievementBtn = @Button(Vec2f(425,495),Vec2f(120,30),"Achievements",SColor(255,255,255,255));
 		achievementBtn.addClickListener(ButtonClickHandler);
@@ -368,7 +348,6 @@ void onTick( CRules@ this )
 		optionsFrame.addChild(startCloseBtn);
         optionsFrame.addChild(toggleSpellWheelBtn);
         optionsFrame.addChild(toggleHotkeyEmotesBtn);
-		optionsFrame.addChild(toggleColorBlindBtn);
 		optionsFrame.addChild(particleCount);
 		optionsFrame.addChild(particleText);
         
@@ -391,10 +370,6 @@ void onTick( CRules@ this )
 		toggleHotkeyEmotesBtn.desc = (toggleHotkeyEmotesBtn.toggled) ? "Hotkey Emotes Enabled" : "Hotkey Emotes Disabled";
         this.set_bool("hotkey_emotes", toggleHotkeyEmotesBtn.toggled);
 
-		toggleColorBlindBtn.toggled = toggleColorBlindBtn.getBool("Colorblind","WizardWars");
-		toggleColorBlindBtn.desc = (toggleColorBlindBtn.toggled) ? "Colorblind Mode Enabled" : "Colorblind Mode Disabled";
-        this.set_bool("colorblind", toggleColorBlindBtn.toggled);
-
 
 		barNumBtn.toggled = barNumBtn.getBool("Bar Numbers","WizardWars");
 		barNumBtn.desc = (barNumBtn.toggled) ? "Bar Numbers Enabled" : "Bar Numbers Disabled";
@@ -415,9 +390,6 @@ void onTick( CRules@ this )
 		this.set_bool("GUI initialized", true);
 		print("GUI has been initialized");
 	}
-
-
-        
 
 	CControls@ controls = getControls();
 	if ( controls.isKeyJustPressed( KEY_F1 ) )
@@ -487,7 +459,6 @@ void onTick( CRules@ this )
 
             cfg.add_u16("item_distance", itemDistance.value);
             cfg.add_u16("hover_distance", hoverDistance.value);
-			cfg.add_bool("colorblind", toggleColorBlindBtn.toggled);
 
             cfg.saveFile("WW_OptionsMenu.cfg");
         }
@@ -636,48 +607,8 @@ void onRender( CRules@ this )
 		helpWindow.position = Vec2f( helpWindow.position.x, Maths::Max( helpWindow.position.y - scrollSpeed, minHelpYPos) );
 	}
 
-	
-	if(this.get_bool("colorblind"))
-		drawColorblind(this);
-
 	CBlob@ localBlob = getLocalPlayerBlob();
 	CControls@ controls = getControls();
 	
 	RenderClassMenus();
-}
-
-void drawColorblind(CRules@ this)
-{
-	CMap@ map = getMap();
-	CBlob@ pblob = getLocalPlayerBlob();
-	CCamera@ cam = getCamera();
-	if(pblob !is null && cam !is null)
-	{
-		int teamid = pblob.getTeamNum();
-		for(int i = 0; i < getPlayersCount(); i++)
-		{
-			CPlayer@ nextp = getPlayer(i);
-			if(nextp !is null)
-			{
-				CBlob@ nextb = nextp.getBlob();
-				if(nextb !is null)
-				{
-					SColor light = map.getColorLight(nextb.getPosition());
-					int avglight = (light.getBlue() + light.getGreen() + light.getRed()) / 3;
-					if(teamid == nextb.getTeamNum())
-					{
-						GUI::DrawIcon("ColorblindIcons.png", 1, Vec2f(16, 16), nextb.getInterpolatedScreenPos() - (Vec2f(16, 64) * cam.targetDistance), cam.targetDistance, SColor(avglight, 255, 255, 255));
-					}
-					else if(nextb.getTeamNum() == 3)
-					{
-						GUI::DrawIcon("ColorblindIcons.png", 2, Vec2f(16, 16), nextb.getInterpolatedScreenPos() - (Vec2f(16, 64) * cam.targetDistance), cam.targetDistance, SColor(avglight, 255, 255, 255));
-					}
-					else
-					{
-						GUI::DrawIcon("ColorblindIcons.png", 0, Vec2f(16, 16), nextb.getInterpolatedScreenPos() - (Vec2f(16, 64) * cam.targetDistance), cam.targetDistance, SColor(avglight, 255, 255, 255));
-					}
-				}
-			}
-		}
-	}
 }

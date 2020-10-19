@@ -4,7 +4,7 @@
 #include "PlayerPrefsCommon.as"
 #include "MagicCommon.as";
 #include "ThrowCommon.as"
-#include "Knocked.as"
+#include "KnockedCommon.as"
 #include "Hitters.as"
 #include "RunnerCommon.as"
 #include "ShieldCommon.as";
@@ -85,11 +85,6 @@ void ManageSpell( CBlob@ this, DruidInfo@ druid, PlayerPrefsInfo@ playerPrefsInf
 	bool ismyplayer = this.isMyPlayer();
 	s32 charge_time = druid.charge_time;
 	u8 charge_state = druid.charge_state;
-	Vec2f pos = this.getPosition();
-    Vec2f aimpos = this.getAimPos();
-	Vec2f aimVec = aimpos - pos;
-	Vec2f normal = aimVec;
-	normal.Normalize();
 	
 	u8 spellID = playerPrefsInfo.primarySpellID;
 	int hotbarLength = playerPrefsInfo.hotbarAssignments_Druid.length;
@@ -142,12 +137,19 @@ void ManageSpell( CBlob@ this, DruidInfo@ druid, PlayerPrefsInfo@ playerPrefsInf
 	
 	Spell spell = DruidParams::spells[spellID];
 	
-	Vec2f tilepos = pos + normal * Maths::Min(aimVec.Length() - 1, spell.range);
+	//raycast arrow
+
+	Vec2f pos = this.getPosition();
+    Vec2f aimpos = this.getAimPos();
+	Vec2f aimVec = aimpos - pos;
+	Vec2f normal = aimVec;
+	normal.Normalize();
+	
+	Vec2f tilepos = pos + normal * Maths::Min(aimVec.Length(), spell.range);
 	Vec2f surfacepos;
-	CMap@ map = this.getMap();
-	Vec2f surfacePaddingVec = normal*8.0f;
-	bool aimPosBlocked = map.rayCastSolid(pos, tilepos + surfacePaddingVec, surfacepos);
-	Vec2f spellPos = surfacepos - surfacePaddingVec; 
+	CMap@ map = getMap();
+	bool aimPosBlocked = map.rayCastSolid(pos, tilepos , surfacepos);
+	Vec2f spellPos = surfacepos; 
 	
 	//Are we casting? 
 	if ( is_pressed )
@@ -389,7 +391,7 @@ void onTick( CBlob@ this )
 		return;
 	}
 
-	/*if(getKnocked(this) > 0)
+	/*if(getKnockedRemaining(this) > 0)
 	{
 		druid.charge_state = 0;
 		druid.charge_time = 0;
@@ -428,8 +430,6 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
         CastSpell(this, charge_state, spell, aimpos);
 		
 		manaInfo.mana -= spell.mana;
-		
-		this.Sync("manaInfo", true);
     }
 }
 
@@ -469,7 +469,7 @@ void onHitBlob( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob
 		if (blockAttack(hitBlob, velocity, 0.0f))
 		{
 			this.getSprite().PlaySound("/Stun", 1.0f, this.getSexNum() == 0 ? 1.0f : 2.0f);
-			SetKnocked( this, 30 );
+			setKnocked( this, 30 );
 		}
 	}
 }

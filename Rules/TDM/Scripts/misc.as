@@ -10,13 +10,13 @@ void onTick(CRules@ this)
     CBlob@ b = p.getBlob();
     if(p.isLocal() && p.isMod() && (b is null || (b.getConfig() != "pixie")))
     {
-        CControls@ c = getControls();
-        if(c.isKeyPressed(KEY_LSHIFT) && c.isKeyPressed(KEY_LCONTROL) && c.isKeyJustPressed(KEY_KEY_A))
-        {
-            CBitStream params;
-            params.write_u16(p.getNetworkID());
-            this.SendCommand(this.getCommandID("setPlayerAdminMode"),params,false);//false tells server to not send to client
-        }
+        //CControls@ c = getControls();
+        //if(c.isKeyPressed(KEY_LSHIFT) && c.isKeyPressed(KEY_LCONTROL) && c.isKeyJustPressed(KEY_KEY_A))
+        //{
+        //    CBitStream params;
+        //    params.write_u16(p.getNetworkID());
+        //   this.SendCommand(this.getCommandID("setPlayerAdminMode"),params,false);//false tells server to not send to client
+        //}
     }
 }
 
