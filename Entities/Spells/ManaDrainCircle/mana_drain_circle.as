@@ -65,7 +65,7 @@ void onTick(CBlob@ this)
         if (isServer())
 		{
             if(getGameTime() % 20 != 0) return;
-			CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), b.getPosition() ); 
+			CBlob@ orb = server_CreateBlob( "effect_missile_circle", this.getTeamNum(), b.getPosition() ); 
 			if (orb !is null)
 			{
 				orb.set_string("effect", "mana");

@@ -9,60 +9,47 @@ void decreaseNegatisphereLife( CBlob@ this , CBlob@ b )
 	switch(blobname.getHash())
 	{
 		case 1370376319: //bees
-		{
-			this.set_s8("lifepoints", (life - 1));
-		}
-		break;
 		case 829656850: //spores
-		{
-			this.set_s8("lifepoints", (life - 1));
-		}
-		break;
 		case 1463630946: //spikeballs
+		case -308267308: //effect_missile_circle
 		{
 			this.set_s8("lifepoints", (life - 1));
 		}
 		break;
+		
 		case 1843332075: //ground rock spikes
-		{
-			this.set_s8("lifepoints", (life - 2));
-		}
-		break;
-		case -825046729: //mushroom
-		{
-			this.set_s8("lifepoints", (life - 6));
-		}
-		break;
 		case 131361395: //expunger
 		{
 			this.set_s8("lifepoints", (life - 2));
 		}
 		break;
-		case -1661937901: //impaler
-		{
-			this.set_s8("lifepoints", (life - 5));
-		}
-		break;
-		case -32608566: //crusader
-		{
-			this.set_s8("lifepoints", (life - 7));
-		}
-		break;
+
 		case -1625426670: //orb
 		{
 			this.set_s8("lifepoints", (life - 4));
 		}
 		break;
-		case -1214504009: //magic missile
+
+		case -1661937901: //impaler
 		{
-			this.set_s8("lifepoints", (life - 6));
+			this.set_s8("lifepoints", (life - 5));
 		}
 		break;
+
+		case -32608566: //crusader
+		{
+			this.set_s8("lifepoints", (life - 7));
+		}
+		break;
+		
+		case -825046729: //mushroom
+		case -1214504009: //magic missile
 		case -1037635552: //plasma_shot
 		{
 			this.set_s8("lifepoints", (life - 6));
 		}
 		break;
+
 		default: //anything that one-shots it
 		{
 			this.set_s8("lifepoints", 0);
@@ -195,6 +182,11 @@ s8 negentropyDecoder( CBlob@ b )
 		case -824473937: //effect_missile
 		{
 			return 15;
+		}
+		break;
+		case -308267308: //effect_missile_circle
+		{
+			return 1;
 		}
 		break;
 		case 452290988: //plant_aura
