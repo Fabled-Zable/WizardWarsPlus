@@ -84,11 +84,6 @@ void ManageSpell( CBlob@ this, SwordCasterInfo@ swordcaster, PlayerPrefsInfo@ pl
 	bool ismyplayer = this.isMyPlayer();
 	s32 charge_time = swordcaster.charge_time;
 	u8 charge_state = swordcaster.charge_state;
-	Vec2f pos = this.getPosition();
-    Vec2f aimpos = this.getAimPos();
-	Vec2f aimVec = aimpos - pos;
-	Vec2f normal = aimVec;
-	normal.Normalize();
 	
 	u8 spellID = playerPrefsInfo.primarySpellID;
 	int hotbarLength = playerPrefsInfo.hotbarAssignments_SwordCaster.length;
@@ -140,13 +135,20 @@ void ManageSpell( CBlob@ this, SwordCasterInfo@ swordcaster, PlayerPrefsInfo@ pl
     }
 	
 	Spell spell = SwordCasterParams::spells[spellID];
+
+	//raycast arrow
+
+	Vec2f pos = this.getPosition();
+    Vec2f aimpos = this.getAimPos();
+	Vec2f aimVec = aimpos - pos;
+	Vec2f normal = aimVec;
+	normal.Normalize();
 	
-	Vec2f tilepos = pos + normal * Maths::Min(aimVec.Length() - 1, spell.range);
+	Vec2f tilepos = pos + normal * Maths::Min(aimVec.Length(), spell.range);
 	Vec2f surfacepos;
-	CMap@ map = this.getMap();
-	Vec2f surfacePaddingVec = normal*8.0f;
-	bool aimPosBlocked = map.rayCastSolid(pos, tilepos + surfacePaddingVec, surfacepos);
-	Vec2f spellPos = surfacepos - surfacePaddingVec; 
+	CMap@ map = getMap();
+	bool aimPosBlocked = map.rayCastSolid(pos, tilepos , surfacepos);
+	Vec2f spellPos = surfacepos; 
 	
 	//Are we casting? 
 	if ( is_pressed )

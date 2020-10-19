@@ -1961,7 +1961,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 				if(this.get_bool("shifting"))
 				{
-					orb.set_Vec2f("target", this.getAimPos());
+					orb.set_Vec2f("target", aimpos);
 					orb.set_bool("launch", true);
 				}
 			}
