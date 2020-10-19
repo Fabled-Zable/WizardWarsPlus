@@ -688,7 +688,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 1838498488://slow
 		{
-			f32 orbspeed = 4.0f;
+			f32 orbspeed = 4.2f;
 			u16 effectTime = 600;
 
 			switch(charge_state)
@@ -704,7 +704,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				
 				case super_cast:
 				{
-					orbspeed *= 1.5f;
+					orbspeed *= 1.6f;
 					effectTime *= 1.2f;
 				}
 				break;
@@ -1195,7 +1195,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 		
-		case 652962395:	//plant_aura
+		case 652962395:	//healing_plant
 		{			
 			u16 lifetime = 10;
 
@@ -1951,7 +1951,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			if (orb !is null)
 			{
 				orb.set_Vec2f("caster", this.getPosition());
-				orb.set_s8("lifepoints", 10);
+				orb.set_s8("lifepoints", 10); //"life" that drains when cancelling other spells.
 
 				orb.IgnoreCollisionWhileOverlapped( this );
 				orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -1961,7 +1961,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 				if(this.get_bool("shifting"))
 				{
-					orb.set_Vec2f("target", aimpos);
+					orb.set_Vec2f("target", this.getAimPos());
 					orb.set_bool("launch", true);
 				}
 			}
@@ -2044,7 +2044,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
            		return;
 			}
 			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
-			f32 orbspeed = 2.0f;
+			f32 orbspeed = 2.2f;
 			f32 orbDamage = 3.0f * extraDamage;
 
 			switch(charge_state)

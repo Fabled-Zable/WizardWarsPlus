@@ -15,22 +15,22 @@ void decreaseNegatisphereLife( CBlob@ this , CBlob@ b )
 		break;
 		case 829656850: //spores
 		{
-			this.set_s8("lifepoints", (life - 2));
+			this.set_s8("lifepoints", (life - 1));
 		}
 		break;
 		case 1463630946: //spikeballs
 		{
-			this.set_s8("lifepoints", (life - 2));
+			this.set_s8("lifepoints", (life - 1));
 		}
 		break;
 		case 1843332075: //ground rock spikes
 		{
-			this.set_s8("lifepoints", (life - 3));
+			this.set_s8("lifepoints", (life - 2));
 		}
 		break;
 		case -825046729: //mushroom
 		{
-			this.set_s8("lifepoints", (life - 8));
+			this.set_s8("lifepoints", (life - 6));
 		}
 		break;
 		case 131361395: //expunger

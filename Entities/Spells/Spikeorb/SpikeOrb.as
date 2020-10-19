@@ -1,9 +1,10 @@
 const f32 AOE = 12.0f;//radius
-const int min_detonation_time = 6;
+const int min_detonation_time = 30;
 void onInit(CBlob@ this)
 {
 	this.Tag("standingup");
 	this.Tag("counterable");
+	this.Tag("exploding"); //doesn't have the Explode script
 	this.set_f32("damage", 0.4f);
 	//this.set_f32("explosive_radius", 2.0f);
 	//this.set_f32("explosive_damage", 10.0f);
@@ -59,7 +60,6 @@ void onTick(CBlob@ this)
 
 bool isEnemy( CBlob@ this, CBlob@ target )
 {
-	CBlob@ friend = getBlobByNetworkID(target.get_netid("brain_friend_id"));
 	return 
 	(
 		( target.getTeamNum() != this.getTeamNum() && (target.hasTag("kill other spells") || target.hasTag("door") || target.getName() == "trap_block") )
@@ -68,7 +68,6 @@ bool isEnemy( CBlob@ this, CBlob@ target )
 			target.hasTag("flesh") 
 			&& !target.hasTag("dead") 
 			&& target.getTeamNum() != this.getTeamNum() 
-			&& ( friend is null || friend.getTeamNum() != this.getTeamNum() )
 		)
 	);
 }
@@ -96,16 +95,23 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 
 void onDie( CBlob@ this )
 {
+	if(!this.hasTag("exploding"))
+	{return;}
+
 	Vec2f pos = this.getPosition();
 	CBlob@[] aoeBlobs;
 	CMap@ map = getMap();
+	if(map is null)
+	{return;}
 	
-	if ( getNet().isServer() )
+	if ( isServer() )
 	{
 		map.getBlobsInRadius( pos, AOE, @aoeBlobs );
 		for ( u8 i = 0; i < aoeBlobs.length(); i++ )
 		{
 			CBlob@ blob = aoeBlobs[i];
+			if(blob is null)
+			{continue;}
 			if ( !getMap().rayCastSolidNoBlobs( pos, blob.getPosition() ) )
 				this.server_Hit( blob, pos, Vec2f_zero, this.get_f32("damage") , 40, blob.getName() == "spikeorb" );
 		}

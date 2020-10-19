@@ -4,6 +4,7 @@ void onInit(CBlob@ this)
 {
 	this.Tag("standingup");
 	this.Tag("counterable");
+	this.Tag("exploding"); //doesn't have the Explode script
 	this.set_f32("damage", 0.4f);
 	//this.set_f32("explosive_radius", 2.0f);
 	//this.set_f32("explosive_damage", 10.0f);
@@ -96,11 +97,14 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 
 void onDie( CBlob@ this )
 {
+	if(!this.hasTag("exploding"))
+	{return;}
+
 	Vec2f pos = this.getPosition();
 	CBlob@[] aoeBlobs;
 	CMap@ map = getMap();
 	
-	if ( getNet().isServer() )
+	if ( isServer() )
 	{
 		map.getBlobsInRadius( pos, AOE, @aoeBlobs );
 		for ( u8 i = 0; i < aoeBlobs.length(); i++ )

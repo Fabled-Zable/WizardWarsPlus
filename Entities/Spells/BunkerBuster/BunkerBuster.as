@@ -69,20 +69,25 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 		float blastStr = this.get_f32("blastStr");
 		if (isEnemy(this, blob))
 		{
-			//Vec2f selfPos = this.getPosition();
+			Vec2f thisPos = this.getPosition();
 			//Vec2f othPos = blob.getPosition();
 			//Vec2f kickDir = othPos - selfPos;
-			Vec2f kickDir = this.getVelocity();
+			Vec2f kickDir = blob.getPosition() - thisPos;
 			kickDir.Normalize();
 			kickDir *= (2500.0f * blastStr);
-			kickDir += Vec2f(0,-1);
 
 			if(blob.hasTag("flesh"))
 			{
+				kickDir += Vec2f(0,-500);
 				kickDir *= 0.5f;
+				blob.AddForce(kickDir);
+			}
+			else
+			{
+				blob.AddForceAtPosition(kickDir, thisPos);
 			}
 
-			blob.AddForceAtPosition(kickDir, this.getPosition());
+			
 			this.getSprite().PlaySound("bunkerbust.ogg", 100.0f);
 
 			float damage = this.get_f32("damage");

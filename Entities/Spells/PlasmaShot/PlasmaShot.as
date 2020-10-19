@@ -4,6 +4,7 @@ void onInit(CBlob@ this)
 {
 	this.Tag("phase through spells");
     this.Tag("counterable");
+	this.Tag("exploding"); //doesn't have the Explode script
 
 	//default values
 	this.set_f32("damage", 1.0f); 
@@ -110,6 +111,9 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 
 void explode( CBlob@ this )
 {
+	if(!this.hasTag("exploding"))
+	{return;}
+
 	CMap@ map = getMap();
 	if (map is null || this is null)
 	return;
