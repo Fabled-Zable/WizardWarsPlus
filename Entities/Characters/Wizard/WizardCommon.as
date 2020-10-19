@@ -37,10 +37,10 @@ namespace WizardParams
 			SpellType::other, 18, 25, 0, 360.0f, true),
 			
 		Spell("heal", "Lesser Heal", 14, "Salves the least of your allies' wounds to restore a moderate portion of their health. Fully charge in order to heal yourself with less efficiency.",
-			SpellType::other, 20, 40, 0, 360.0f), 
+			SpellType::other, 18, 30, 0, 360.0f), 
 			 
 		Spell("firebomb", "Fire Bomb", 11, "Throw a high velocity condensed ball of flames that explodes on contact with enemies, igniting them. Has a minimum engagement distance of about 8 blocks.",
-			SpellType::other, 25, 25, 0, 360.0f, true),
+			SpellType::other, 28, 40, 0, 360.0f, true),
 			 
 		Spell("fire_sprite", "Fire Sprites", 12, "Create long-ranged explosive balls of energy which follow your aim for an extended period of time.",
 			SpellType::other, 22, 35, 0, 360.0f, true),	
@@ -52,7 +52,7 @@ namespace WizardParams
 			SpellType::other, 50, 40, 0, 360.0f, true),
 			 
 		Spell("magic_barrier", "Magic Barrier", 21, "Create a wall of pure magical energy in front of you that blocks most small projectiles.",
-			SpellType::other, 18, 7, 0, 32.0f, true),
+			SpellType::other, 15, 7, 0, 32.0f, true),
 			
 		Spell("slow", "Slow", 19, "Deprive a player of his speed and ability to teleport for a few moments.",
 			SpellType::other, 20, 10, 0, 360.0f, true), 
