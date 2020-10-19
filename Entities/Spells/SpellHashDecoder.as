@@ -259,7 +259,7 @@ bool voltageFieldDamage( CBlob@ b )
 		case -401411067: //lightning
 		case 770505718: //leech
 		case -824473937: //effect_missile
-		case -824473937: //effect_missile_circle
+		case -308267308: //effect_missile_circle
 		case 1238003545: //meteor
 		case 750462252: //mana_drain_circle
 		case -1727909596: //arcane_circle
