@@ -16,7 +16,7 @@ void decreaseNegatisphereLife( CBlob@ this , CBlob@ b )
 			this.set_s8("lifepoints", (life - 1));
 		}
 		break;
-		
+
 		case 1843332075: //ground rock spikes
 		case 131361395: //expunger
 		{
@@ -252,75 +252,20 @@ bool voltageFieldDamage( CBlob@ b )
 	switch(blobname.getHash())
 	{
 		case 603057094: //executioner
-		{
-			return false;
-		}
-		break;
 		case -1625426670: //orb
-		{
-			return false;
-		}
-		break;
 		case 39628416: //no_teleport_barrier
-		{
-			return false;
-		}
-		break;
 		case -445081510: //negatisphere
-		{
-			return false;
-		}
-		break;
 		case -1418908460: //bunker_buster
-		{
-			return false;
-		}
-		break;
 		case -401411067: //lightning
-		{
-			return false;
-		}
-		break;
 		case 770505718: //leech
-		{
-			return false;
-		}
-		break;
 		case -824473937: //effect_missile
-		{
-			return false;
-		}
-		break;
+		case -824473937: //effect_missile_circle
 		case 1238003545: //meteor
-		{
-			return false;
-		}
-		break;
 		case 750462252: //mana_drain_circle
-		{
-			return false;
-		}
-		break;
 		case -1727909596: //arcane_circle
-		{
-			return false;
-		}
-		break;
 		case 882940767: //black_hole
-		{
-			return false;
-		}
-		break;
 		case -270118290: //black_hole_big
-		{
-			return false;
-		}
-		break;
 		case -1760442616: //mana_obelisk
-		{
-			return false;
-		}
-		break;
 		case -1612772378: //force_of_nature
 		{
 			return false;
