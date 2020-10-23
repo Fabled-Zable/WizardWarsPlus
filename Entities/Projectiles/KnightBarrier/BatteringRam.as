@@ -27,7 +27,11 @@ void onTick( CBlob@ this )
 	}
 
 	CPlayer@ p = this.getDamageOwnerPlayer();
+
+	if (p is null) { return; }
+
 	CBlob@ owner = p.getBlob();
+
 	if (owner is null)
 	{
 		this.server_Die();

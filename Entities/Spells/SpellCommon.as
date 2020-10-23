@@ -2173,6 +2173,7 @@ void CastNegentropy( CBlob@ this )
 	float aimAngle = aimVec.getAngleDegrees();
 
 	float negentropyRange = 64.0f;
+	float negentropyRangeInner = 20.0f;
 	float negentropyAngle = 90.0f;
 
 	float arcLimitDegrees = (negentropyAngle/2)+5.0f;
@@ -2190,11 +2191,15 @@ void CastNegentropy( CBlob@ this )
 
 		Vec2f bPos = b.getPosition();
 		Vec2f bVec = bPos - thisPos;
-		float bAngle = bVec.getAngle();
-		bAngle -= aimAngle;
+		float bAngle = bVec.getAngleDegrees();
 
-		if( (bAngle > arcLimitDegrees || bAngle < -arcLimitDegrees) && bVec.getLength() > 16.0f)
-		{continue;}
+		float angleDiff = bAngle - aimAngle;
+		angleDiff = (angleDiff + 180) % 360 - 180;
+
+		if( (angleDiff > arcLimitDegrees || angleDiff < -arcLimitDegrees) && bVec.getLength() > negentropyRangeInner)
+		{
+			continue;
+		}
 		
 		bool incompatible = false;
 		bool kill = true;
@@ -2475,9 +2480,10 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 	float aimAngle = aimVec.getAngleDegrees();
 
 	float counterspellRange = 64.0f;
-	float counterspellAngle = 90.0f;
+	float counterspellRangeInner = 20.0f;
+	float counterspellArc = 90.0f;
 
-	float arcLimitDegrees = (counterspellAngle/2)+5.0f;
+	float arcLimitDegrees = (counterspellArc/2)+6.0f;
 
 	CBlob@[] blobsInRadius;
 	map.getBlobsInRadius(thisPos, counterspellRange, @blobsInRadius);
@@ -2489,11 +2495,15 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 		{
 			Vec2f bPos = b.getPosition();
 			Vec2f bVec = bPos - thisPos;
-			float bAngle = bVec.getAngle();
-			bAngle -= aimAngle;
+			float bAngle = bVec.getAngleDegrees();
 
-			if( (bAngle > arcLimitDegrees || bAngle < -arcLimitDegrees) && bVec.getLength() > 16.0f)
-			{continue;}
+			float angleDiff = bAngle - aimAngle;
+			angleDiff = (angleDiff + 180) % 360 - 180;
+
+			if( (angleDiff > arcLimitDegrees || angleDiff < -arcLimitDegrees) && bVec.getLength() > counterspellRangeInner)
+			{
+				continue;
+			}
 
 			bool sameTeam = b.getTeamNum() == caster.getTeamNum();
 			
