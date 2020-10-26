@@ -2135,6 +2135,40 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 		}
 		break;
+
+		case -1488386525://fiery_star
+		{
+			if (!isServer()){
+           		return;
+			}
+
+			f32 orbspeed = necro_shoot_speed;
+			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
+			f32 orbDamage = 1.0f * extraDamage;
+            
+			if (charge_state == super_cast) {
+				orbDamage *= 1.5f;
+				orbspeed *= 1.5;
+			}
+
+			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
+			orbVel.Normalize();
+			orbVel *= orbspeed;
+
+			CBlob@ orb = server_CreateBlob( "fiery_star" );
+			if (orb !is null)
+			{
+				orb.set_f32("damage", orbDamage);
+
+				orb.IgnoreCollisionWhileOverlapped( this );
+				orb.SetDamageOwnerPlayer( this.getPlayer() );
+				orb.server_setTeamNum( this.getTeamNum() );
+				orb.setPosition( orbPos );
+				orb.setVelocity( orbVel );
+			}
+		}
+		break;
 			
 		default:
 		{
