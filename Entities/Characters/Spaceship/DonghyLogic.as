@@ -220,7 +220,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 			return;
 		}
 
-		CastNegentropy(this);
+		//CastNegentropy(this);
 
 		frigate.pulse_amount -= 1;
 	}

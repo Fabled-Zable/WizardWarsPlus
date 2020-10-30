@@ -18,7 +18,7 @@ void onInit(CBlob@ this)
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
 
-    this.server_SetTimeToDie(10);
+    this.server_SetTimeToDie(2);
 }
 
 void onTick(CBlob@ this)
@@ -107,13 +107,6 @@ void onDie( CBlob@ this )
 	if (map is null)
 	{return;}
 
-	CPlayer@ p = this.getDamageOwnerPlayer();
-	CBlob@ owner = null;
-	if (p !is null)
-	{
-		CBlob@ owner = p.getBlob();
-	}
-
 	CBlob@[] blobsInRadius;
 	map.getBlobsInRadius(this.getPosition(), 64.0f, @blobsInRadius);
 	for (uint i = 0; i < blobsInRadius.length; i++)
@@ -123,7 +116,8 @@ void onDie( CBlob@ this )
 
 		CBlob@ radiusBlob = blobsInRadius[i];
 
-		if (owner !is null && radiusBlob is owner)
+		CBlob@ caster = this.getDamageOwnerPlayer().getBlob();
+		if(caster !is null && radiusBlob is caster)
 		{
 			this.server_Hit(radiusBlob, radiusBlob.getPosition(), Vec2f_zero, damage, Hitters::fire, true);
 			continue;
