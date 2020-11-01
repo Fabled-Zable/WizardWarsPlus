@@ -113,11 +113,15 @@ void onDie( CBlob@ this )
 
 		CBlob@ radiusBlob = blobsInRadius[i];
 
-		CBlob@ caster = this.getDamageOwnerPlayer().getBlob();
-		if(caster !is null && radiusBlob is caster)
+		CPlayer@ player = this.getDamageOwnerPlayer();
+		if(player !is null)
 		{
-			this.server_Hit(radiusBlob, radiusBlob.getPosition(), Vec2f_zero, damage, Hitters::fire, true);
-			continue;
+			CBlob@ caster = player.getBlob();
+			if(caster !is null && radiusBlob is caster)
+			{
+				this.server_Hit(radiusBlob, radiusBlob.getPosition(), Vec2f_zero, damage, Hitters::fire, true);
+				continue;
+			}
 		}
 
 		if (radiusBlob.getTeamNum() == this.getTeamNum())
@@ -131,7 +135,7 @@ void onDie( CBlob@ this )
 		this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
 
 		//particles front
-		
+
 		CParticle@ pa = ParticleAnimated( "fiery_boom.png",
 			this.getPosition(),
 			Vec2f(0,0),
