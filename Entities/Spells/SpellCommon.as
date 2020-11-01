@@ -2142,13 +2142,13 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
            		return;
 			}
 
-			f32 orbspeed = necro_shoot_speed;
+			f32 orbspeed = necro_shoot_speed * 0.3f;
 			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
 			f32 orbDamage = 1.0f * extraDamage;
             
 			if (charge_state == super_cast) {
 				orbDamage *= 1.5f;
-				orbspeed *= 1.5;
+				orbspeed *= 1.4;
 			}
 
 			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);

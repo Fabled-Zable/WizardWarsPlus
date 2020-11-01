@@ -18,7 +18,7 @@ void onInit(CBlob@ this)
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
 
-    this.server_SetTimeToDie(2);
+    this.server_SetTimeToDie(8);
 }
 
 void onTick(CBlob@ this)
@@ -46,7 +46,7 @@ void onTick(CBlob@ this)
 		Vec2f particleVel = Vec2f( randomPVel ,0).RotateByDegrees(XORRandom(360));
 		particleVel += this.getVelocity();
 
-    	CParticle@ p = ParticlePixelUnlimited(this.getPosition(), particleVel, SColor(255,10,5,5), true);
+    	CParticle@ p = ParticlePixelUnlimited(this.getPosition(), particleVel, SColor(255,255,255,0), true);
    		if(p !is null)
     	{
     	    p.collides = false;
@@ -98,9 +98,6 @@ void onDie( CBlob@ this )
 	//Vec2f othPos = blob.getPosition();
 	//Vec2f kickDir = othPos - selfPos;
 
-			
-	this.getSprite().PlaySound("bunkerbust.ogg", 100.0f);
-
 	float damage = this.get_f32("damage");
 
 	CMap@ map = getMap();
@@ -129,20 +126,42 @@ void onDie( CBlob@ this )
 		this.server_Hit(radiusBlob, radiusBlob.getPosition(), Vec2f_zero, damage, Hitters::fire, false);
 	}
 			
-	if ( isClient() ) //temporary Counterspell effect
+	if ( isClient() ) 
 	{
-		CParticle@ pb = ParticleAnimated( "Shockwave3WIP.png",
+		this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
+
+		//particles front
+		
+		CParticle@ pa = ParticleAnimated( "fiery_boom.png",
 			this.getPosition(),
 			Vec2f(0,0),
-			float(XORRandom(360)),
-			0.25f, 
-			2, 
+			0,
+			1.0f, 
+			3, 
+			0.0f, true );    
+		if ( pa !is null)
+		{
+			pa.bounce = 0;
+    		pa.fastcollision = true;
+			pa.Z = 10.0f;
+			pa.setRenderStyle(RenderStyle::additive);
+		}
+
+		//particles back
+	
+		CParticle@ pb = ParticleAnimated( "fiery_boom_back.png",
+			this.getPosition(),
+			Vec2f(0,0),
+			0,
+			1.0f, 
+			3, 
 			0.0f, true );    
 		if ( pb !is null)
 		{
 			pb.bounce = 0;
     		pb.fastcollision = true;
 			pb.Z = -10.0f;
+			pb.setRenderStyle(RenderStyle::additive);
 		}
 	}
 }
