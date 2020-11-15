@@ -17,7 +17,12 @@ void onTick( CBlob@ this )
 	
 	if(manaInfo.mana < 1)
 	{
-		this.set_s32("OG_manaRegen",1);
+		s32 OG_manaRegen = this.get_s32("OG_manaRegen");
+
+		if(OG_manaRegen > 0)
+		{
+			this.set_s32("OG_manaRegen",OG_manaRegen - 1);
+		}
 
 		this.set_bool("burnState", false);
 	}

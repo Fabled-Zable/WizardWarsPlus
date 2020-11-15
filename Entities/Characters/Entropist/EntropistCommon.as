@@ -17,7 +17,7 @@ namespace EntropistParams
 	const ::f32 shoot_max_vel = 8.0f;
 	const ::f32 MAX_ATTACK_DIST = 360.0f;
 	const ::s32 MAX_MANA = 200;
-	const ::s32 MANA_REGEN = 1;
+	const ::s32 MANA_REGEN = 2;
 	
 	const ::string[] zombieTypes = {"zombie", "skeleton", "greg", "wraith"};
 
@@ -47,11 +47,11 @@ namespace EntropistParams
 		Spell("nova", "Nova", 55, "Releases a homing, concentrated energy star. Explodes on contact.",
 				SpellType::other, 30, 40, 5, 100.0f, true),
 			
-		Spell("burn", "Burn", 60, "Ignite your mana reserves and fuel your magic with blinding heat. Resets mana generation to 1.",
-				SpellType::other, 160, 60, 15, 0.0f, true),
+		Spell("burn", "Burn", 60, "Ignite your mana reserves and fuel your magic with blinding heat. Reduces mana generation by 1.",
+				SpellType::other, 20, 60, 15, 0.0f, true),
 			
 		Spell("negentropy", "Negentropy", 59, "Cause Negentropy. Gain 1 extra mana generation.",
-				SpellType::other, 180, 60, 20, 0.0f, true),
+				SpellType::other, 170, 60, 20, 0.0f, true),
 				
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
