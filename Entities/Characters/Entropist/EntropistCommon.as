@@ -17,7 +17,7 @@ namespace EntropistParams
 	const ::f32 shoot_max_vel = 8.0f;
 	const ::f32 MAX_ATTACK_DIST = 360.0f;
 	const ::s32 MAX_MANA = 200;
-	const ::s32 MANA_REGEN = 0;
+	const ::s32 MANA_REGEN = 1;
 	
 	const ::string[] zombieTypes = {"zombie", "skeleton", "greg", "wraith"};
 
@@ -42,13 +42,13 @@ namespace EntropistParams
 				SpellType::other, 8, 2, 3, 1.0f, true),
 			 
 		Spell("voltage_field", "Voltage Field", 54, "Releases a bubble of electricity that knocks away projectiles and enemies that collide with it. Cannot cast spells while active.",
-				SpellType::other, 30, 90, 6, 1.0f),
+				SpellType::other, 30, 90, 6, 1.0f, true),
 			
 		Spell("nova", "Nova", 55, "Releases a homing, concentrated energy star. Explodes on contact.",
-				SpellType::other, 30, 40, 5, 100.0f),
+				SpellType::other, 30, 40, 5, 100.0f, true),
 			
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("burn", "Burn", 55, "Ignite your mana reserves and fuel your magic with blinding heat. Reduces your mana generation by 1.",
+				SpellType::other, 150, 1, 10, 0.0f, true),
 			
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

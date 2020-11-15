@@ -2169,6 +2169,12 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 		}
 		break;
+
+		case 1375277208://burn
+		{
+			this.set_bool("burnState", true);
+		}
+		break;
 			
 		default:
 		{

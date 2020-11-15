@@ -67,8 +67,9 @@ void onTick(CBlob@ this)
 			ManaInfo@ manaInfo;
 			if ( (getGameTime() % 24 == 0) && attractedblob.get("manaInfo", @manaInfo) && !map.rayCastSolidNoBlobs(thisPos, blobPos) )
 			{
-				s8 MANA_DRAIN = manaInfo.manaRegen + 1;
-				if (attractedblob.getName() == "entropist")
+				s32 MANA_DRAIN = attractedblob.get_s32("mana regen rate") + 1;
+
+				/*if (attractedblob.getName() == "entropist")
 				{
 					if(manaInfo.mana > 2)
 					{
@@ -79,10 +80,17 @@ void onTick(CBlob@ this)
 						manaInfo.mana = 0;
 					}
 				}
-				else if (manaInfo.mana > MANA_DRAIN)
+				else*/
+
+				if (MANA_DRAIN < 1) //normalizer
+				{
+					MANA_DRAIN = 1;
+				}
+
+				if (manaInfo.mana > MANA_DRAIN)
 				{
 					manaInfo.mana -= MANA_DRAIN;
-
+					
 					attractedblob.getSprite().PlaySound("ManaDraining.ogg", 0.5f, 1.0f + XORRandom(2)/10.0f);
 					makeManaDrainParticles( blobPos, 30 );
 				}

@@ -26,7 +26,8 @@ void ManageCursors( CBlob@ this )
 	else
 	{
 		// set cursor
-		getHUD().SetCursorImage("EntropistCursor.png", Vec2f(32,32));
+		//getHUD().SetCursorImage("EntropistCursor.png", Vec2f(32,32));
+		getHUD().SetCursorImage("MagicCursor.png", Vec2f(32,32));
 		getHUD().SetCursorOffset( Vec2f(-32, -32) );
 		// frame set in logic
 	}

@@ -74,8 +74,8 @@ void onTick(CBlob@ this)
 			ManaInfo@ manaInfo;
 			if (attractedblob.get("manaInfo", @manaInfo) && (getGameTime() % 24 == 0))
 			{
-				s8 MANA_DRAIN = manaInfo.manaRegen - 1;
-				if (attractedblob.getName() == "entropist")
+				s32 MANA_DRAIN = attractedblob.get_s32("mana regen rate") - 1;
+				/*if (attractedblob.getName() == "entropist")
 				{
 					if(manaInfo.mana > 1)
 					{
@@ -86,7 +86,14 @@ void onTick(CBlob@ this)
 						manaInfo.mana = 0;
 					}
 				}
-				else if (manaInfo.mana > MANA_DRAIN)
+				else*/
+
+				if (MANA_DRAIN < 1) //normalizer
+				{
+					MANA_DRAIN = 1;
+				}
+
+				if (manaInfo.mana > MANA_DRAIN)
 				{
 					manaInfo.mana -= MANA_DRAIN;
 					
@@ -97,7 +104,6 @@ void onTick(CBlob@ this)
 				{
 					manaInfo.mana = 0.0;
 				}
-			
 			}
 		}
 	}

@@ -86,8 +86,8 @@ void onTick(CBlob@ this)
             }
         }
         
-        this.set_u8("mana regen rate", manaRegenRate);//Set the mana regen rate
-        this.set_u8("OG_manaRegen", manaRegenRate); //Reminder for the original value
+        this.set_s32("mana regen rate", manaRegenRate);//Set the mana regen rate
+        this.set_s32("OG_manaRegen", manaRegenRate); //Reminder for the original value
         this.Tag("mana_calcs_done");
     }
 
@@ -104,9 +104,9 @@ void onTick(CBlob@ this)
 		s32 maxMana = manaInfo.maxMana;
 		s32 maxtestmana = manaInfo.maxtestmana;
 		
-        u8 adjustedManaRegenRate = this.get_u8("mana regen rate");
-        
-		if (mana < maxMana)
+        u8 adjustedManaRegenRate = this.get_s32("mana regen rate");
+
+		if (mana < maxMana && !this.get_bool("burnState"))
 		{
 			if (maxMana - mana >= adjustedManaRegenRate)
 				manaInfo.mana += adjustedManaRegenRate;
@@ -119,7 +119,7 @@ void onTick(CBlob@ this)
     if( this is null || !this.hasTag("mana_calcs_done") )
     return;
 
-    u8 ogRegen = this.get_u8("OG_manaRegen");
+    u8 ogRegen = this.get_s32("OG_manaRegen");
 
     if(this.getVelocity() == Vec2f_zero)
     {
@@ -127,12 +127,14 @@ void onTick(CBlob@ this)
         {
             if(ogRegen != 0)
             {
-                this.set_u8("mana regen rate", ogRegen+1);
+                this.set_s32("mana regen rate", ogRegen+1);
             }
-            else
+
+            if(!this.hasTag("focused"))
             {
                 this.Tag("focused");
             }
+                
             Vec2f thisPos = this.getPosition();
             for (int i = 0; i < 3; i++)
             {
@@ -146,17 +148,18 @@ void onTick(CBlob@ this)
         }
         else
         {
-            if(ogRegen == 0 && this.hasTag("focused"))
-            {
-                this.Untag("focused");
-            }
             this.set_u16("focus", this.get_u16("focus")+1);
         }
     }
     else
     {
+        if(this.hasTag("focused"))
+        {
+            this.Untag("focused");
+        }
+        
         this.set_u16("focus", 0);
-        this.set_u8("mana regen rate", ogRegen);
+        this.set_s32("mana regen rate", ogRegen);
         return;
     }
 }

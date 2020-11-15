@@ -105,7 +105,7 @@ void onDie( CBlob@ this )
 	{return;}
 
 	CBlob@[] blobsInRadius;
-	map.getBlobsInRadius(this.getPosition(), 64.0f, @blobsInRadius);
+	map.getBlobsInRadius(this.getPosition(), 50.0f, @blobsInRadius);
 	for (uint i = 0; i < blobsInRadius.length; i++)
 	{
 		if(blobsInRadius[i] is null)
