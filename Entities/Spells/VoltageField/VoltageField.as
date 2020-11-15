@@ -54,16 +54,6 @@ void onTick(CBlob@ this)
 
 	for(s32 i = 0; i < blobs.length(); i++)//itterate through blobs
 	{
-		if(check <= 25)
-		{
-			check++;
-		}
-		else
-		{
-			print("looped like an idiot");
-			break;
-			return;
-		}
 
 		CBlob@ target = @blobs[i];//setting target blob to a variable for readability
 		if(target is null){continue;}

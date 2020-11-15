@@ -2175,6 +2175,15 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			this.set_bool("burnState", true);
 		}
 		break;
+
+		case 890496406://negentropy
+		{
+			if(!this.get_bool("burnState"))
+			{
+				this.set_bool("negentropyStart",true);
+			}
+		}
+		break;
 			
 		default:
 		{

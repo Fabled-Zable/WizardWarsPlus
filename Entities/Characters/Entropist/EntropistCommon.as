@@ -47,11 +47,11 @@ namespace EntropistParams
 		Spell("nova", "Nova", 55, "Releases a homing, concentrated energy star. Explodes on contact.",
 				SpellType::other, 30, 40, 5, 100.0f, true),
 			
-		Spell("burn", "Burn", 55, "Ignite your mana reserves and fuel your magic with blinding heat. Reduces your mana generation by 1.",
-				SpellType::other, 150, 1, 10, 0.0f, true),
+		Spell("burn", "Burn", 55, "Ignite your mana reserves and fuel your magic with blinding heat. Resets mana generation to 1.",
+				SpellType::other, 160, 60, 15, 0.0f, true),
 			
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("negentropy", "Negentropy", 55, "Cause Negentropy. Gain 1 extra mana generation.",
+				SpellType::other, 180, 60, 20, 0.0f, true),
 				
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
