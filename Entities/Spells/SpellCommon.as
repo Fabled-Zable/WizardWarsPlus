@@ -2184,6 +2184,69 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 		}
 		break;
+
+		case 11469271://crystallize
+		{
+			u8 shardAmount = this.get_u8("shard_amount");
+
+			if ( shardAmount > 7 )	//cannot create more than 8
+			{
+				ManaInfo@ manaInfo;
+				if (!this.get( "manaInfo", @manaInfo )) {
+					return;
+				}
+				
+				manaInfo.mana += spell.mana;
+				
+				if(isClient())
+				{
+					this.getSprite().PlaySound("ManaStunCast.ogg", 1.0f, 1.0f);
+				}
+				return;
+			}
+
+			shardAmount++;
+			this.set_u8("shard_amount",shardAmount); //increases by one
+		}
+		break;
+
+		case 1552774047://dematerialize
+		{
+			u8 shardAmount = this.get_u8("shard_amount");
+
+			if ( shardAmount == 0 )	//no shards left
+			{
+				if(isClient())
+				{
+					this.getSprite().PlaySound("ManaStunCast.ogg", 1.0f, 1.0f);
+				}
+				return;
+			}
+
+			ManaInfo@ manaInfo;
+			if (!this.get( "manaInfo", @manaInfo )) {
+				return;
+			}
+
+			if(manaInfo.mana + 20 > manaInfo.maxMana)
+			{
+				manaInfo.mana = manaInfo.maxMana;
+			}
+			else
+			{
+				manaInfo.mana += 20;
+			}
+
+			shardAmount--;
+			this.set_u8("shard_amount",shardAmount); //decreases by one
+		}
+		break;
+
+		case -1648886327://polarity
+		{
+			this.set_bool("attack", !this.get_bool("attack"));
+		}
+		break;
 			
 		default:
 		{
@@ -2749,15 +2812,15 @@ void manaShot( CBlob@ blob, u8 manaUsed, u8 casterMana, bool silent = false)
 		ManaInfo@ manaInfo;
 		if (!blob.get( "manaInfo", @manaInfo )) {return;}
 
-		u16 currentMana = manaInfo.mana;
-		u16 maxMana = manaInfo.maxMana;
-		u16 manaReg = manaInfo.manaRegen;
-		if(manaReg == 0)
+		s32 currentMana = manaInfo.mana;
+		s32 maxMana = manaInfo.maxMana;
+		s32 manaReg = blob.get_s32("mana regen rate");
+		if(manaReg < 1)
 		{
-			manaReg = 3;
+			manaReg = 1;
 		}
 		float manaEquivalent = manaReg / casterMana;
-		u16 manaAmount = manaUsed * manaEquivalent;
+		s32 manaAmount = manaUsed * manaEquivalent;
 
 		if( (currentMana + manaAmount) > maxMana)
 		{

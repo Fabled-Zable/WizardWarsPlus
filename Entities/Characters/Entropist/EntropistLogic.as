@@ -195,10 +195,10 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
 		}
 	}
 
-	
-	bool canCastSpell = entropistMana >= spell.mana && playerPrefsInfo.spell_cooldowns[spellID] <= 0;
+	bool onCooldown = playerPrefsInfo.spell_cooldowns[spellID] <= 0;
+	bool canCastSpell = entropistMana >= spell.mana && onCooldown;
 
-	if(this.get_bool("burnState")) //burn override
+	if(this.get_bool("burnState") && onCooldown) //burn override
 	{
 		canCastSpell = true;
 	}

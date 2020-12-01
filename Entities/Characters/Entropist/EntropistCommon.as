@@ -24,7 +24,7 @@ namespace EntropistParams
 	const ::Spell[] spells = 
 	{
 		Spell("orb", "Orb", 6, "Fire a basic orb which ricochets off of most surfaces until impacting an enemy and exploding, dealing minor damage.",
-			SpellType::other, 1, 20, 0, 360.0f),
+			SpellType::other, 2, 20, 0, 360.0f),
 			
 		Spell("teleport", "Teleport to Target", 40, "Point to any visible position and teleport there.",
 			SpellType::other, 15, 6, 0, 270.0f, true),
@@ -53,14 +53,14 @@ namespace EntropistParams
 		Spell("negentropy", "Negentropy", 59, "Cause Negentropy. Gain 1 extra mana generation.",
 				SpellType::other, 170, 60, 20, 0.0f, true),
 				
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("crystallize", "Crystallize", 61, "Create a new shard. WIP",
+				SpellType::other, 20, 20, 0, 0.0f, true),
 							
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("dematerialize", "Dematerialize", 62, "Converts a shard back into mana. WIP",
+				SpellType::other, 0, 20, 0, 0.0f, true),
 				
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
+		Spell("polarity", "Polarity", 63, "Switch between attack and defense mode. WIP",
+				SpellType::other, 0, 10, 0, 0.0f, true),
 				
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),
