@@ -5,6 +5,7 @@
 #include "SwordCasterCommon.as";
 #include "EntropistCommon.as";
 #include "TeamColour.as";
+#include "SpellHashDecoder.as";
 
 #include "FireCommon.as"
 
@@ -37,7 +38,7 @@ void onTick( CBlob@ this )
 		
 		sprite.getConsts().accurateLighting = false;
 		sprite.setRenderStyle(RenderStyle::additive);
-		sprite.SetRelativeZ(1000);
+		sprite.SetRelativeZ(-1);
 	}
 
 	u32 deadTimer = this.get_u32("deadTimer");
@@ -60,6 +61,17 @@ void onTick( CBlob@ this )
 	Vec2f thisPos = this.getPosition();
 
 	u8 shardAmount = ownerBlob.get_u8("shard_amount");
+	bool attackMode = ownerBlob.get_bool("attack");
+
+	if(!attackMode && !this.hasTag("barrier"))
+	{
+		this.Tag("barrier");
+	}
+	else if(attackMode && this.hasTag("barrier"))
+	{
+		this.Untag("barrier");
+	}
+
 	if(shardAmount < this.get_s8("shardID"))
 	{
 		this.server_Die();
@@ -105,34 +117,43 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 				return;
 			}
 
-			if(manaInfoCaster.mana + 2 > manaInfoCaster.maxMana)
+			s32 ownerManaRegen = ownerBlob.get_s32("mana regen rate");
+			s32 blobManaRegen = blob.get_s32("mana regen rate");
+
+			if(manaInfoCaster.mana + ownerManaRegen > manaInfoCaster.maxMana)
 			{
 				manaInfoCaster.mana = manaInfoCaster.maxMana;
 			}
 			else
 			{
-				manaInfoCaster.mana += 2;
+				manaInfoCaster.mana += ownerManaRegen;
 			}
 
-			manaInfoBlob.mana -= 2;
+			manaInfoBlob.mana -= blobManaRegen;
 		}
 	}
 	else
 	{
 		if(blob !is null && blob.hasTag("counterable") && isEnemy(this, blob))
 		{
-			Vec2f blobVel = blob.getVelocity();
-			blob.setVelocity(-blobVel);
-			this.set_u32("deadTimer", 120);
+			//Vec2f blobVel = blob.getVelocity();
+			//blob.setVelocity(-blobVel);
+			if(doesShardKill(blob))
+			{
+				if(blob.hasTag("exploding"))
+				{
+					blob.Untag("exploding");
+				}
+
+				blob.server_Die();
+			}
+
+			if(doesShardDefend( blob ))
+			{
+				this.set_u32("deadTimer", 120);
+			}
 		}
 	}
-}
-
-void onSetStatic(CBlob@ this, const bool isStatic)
-{
-	if (!isStatic) return;
-
-	this.getSprite().PlaySound("/build_wood.ogg");
 }
 
 bool canBePickedUp(CBlob@ this, CBlob@ byBlob)
@@ -156,7 +177,18 @@ bool doesCollideWithBlob( CBlob@ this, CBlob@ b )
 		return false;
 	}
 
-	return !ownerBlob.get_bool("attack");
+	return 
+	(
+		!ownerBlob.get_bool("attack")
+		&&
+		this.get_u32("deadTimer") == 0
+		&&
+		this.getTeamNum() != b.getTeamNum()
+		&&
+		b.hasTag("counterable")
+		&&
+		doesShardDefend ( b )
+	);
 }
 
 Random _sprk_r(32432);

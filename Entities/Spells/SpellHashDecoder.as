@@ -378,3 +378,59 @@ float undeadCounterspellDamage( CBlob@ b )
 	
 	return 1.8f;
 }
+
+bool doesShardDefend ( CBlob@ b )
+{
+	if(b is null){return false;}
+
+	string blobname = b.getName();
+	switch(blobname.getHash())
+	{
+		case -2014033180: //magic_barrier
+		case 382419657: //rock_wall
+		case 452290988: //plant_aura
+		case 882940767: //black_hole
+		case -270118290: //black_hole_big
+		case -1727909596: //arcane_circle
+		case 750462252: //mana_drain_circle
+		case -824473937: //effect_missile
+		case -445081510: //negatisphere
+		case -1429602869: //shard
+		{
+			return false;
+		}
+		break;
+
+		default: //interact and defend
+		{
+			return true;
+		}
+	}
+
+	return true;
+}
+
+bool doesShardKill ( CBlob@ b )
+{
+	if(b is null){return false;}
+
+	string blobname = b.getName();
+	switch(blobname.getHash())
+	{
+		case 1174066691: //fire_sprite
+		case -559341693: //nova_bolt
+		case -308267308: //effect_missile_circle
+		case 1843332075: //ground rock spikes
+		case 829656850: //spores
+		case 1463630946: //spikeballs
+		{
+			return true;
+		}
+
+		default: //don't kill it
+		{
+			return false;
+		}
+	}
+	return false;
+}

@@ -3,6 +3,8 @@
 void onInit( CBlob@ this )
 {
 	this.set_u8("shard_amount",0);
+	this.set_u16("shiftTimer", 0);
+	this.set_f32("oldAngle", 0.0f);
 	this.set_bool("attack", true);
 
 	CBlob@[] entropistAmount;
@@ -26,14 +28,72 @@ void onTick( CBlob@ this )
 		this.getCurrentScript().tickFrequency = 0;
 	}
 
+	bool burnState = this.get_bool("burnState");
+
 	string casterBlobTag = this.get_string("casterBlobTag");
 	string casterShardTag = this.get_string("casterShardTag");
 	
 	Vec2f thisPos = this.getPosition();
+	Vec2f aimPos = this.getAimPos();
 
+	float spinMult = burnState ? 12 : 2;
 	float anglePerShard = 360/shardAmount;
-	float shardWheelRot = getGameTime() % 360;
-	Vec2f shardPos = thisPos + Vec2f(16,0);
+	float shardWheelRot = (getGameTime()*spinMult) % 360;
+	float radius = 18.0f;
+
+	u16 shiftTimer = this.get_u16("shiftTimer");
+
+	if(this.get_bool("shifting"))
+	{
+		if(shiftTimer < 30)
+		{
+			this.set_u16("shiftTimer", shiftTimer+1);
+		}
+	}
+	else
+	{
+		if(shiftTimer > 0)
+		{
+			this.set_u16("shiftTimer", shiftTimer-1);
+		}
+	}
+
+	if(radius > 6.0f)
+	{
+		radius -= (0.4*shiftTimer);
+	}
+
+	Vec2f aimVec = aimPos - thisPos;
+	float aimAngle = aimVec.getAngleDegrees();
+	float oldAngle = this.get_f32("oldAngle");
+
+	float angleDiff = oldAngle - aimAngle;
+	angleDiff = (angleDiff + 540) % 360 - 180;
+
+	float aimSpeed = burnState ? 4.0f : 1.0f;
+	if(shiftTimer == 0)
+	{
+		oldAngle = aimAngle;
+	}
+	else if( angleDiff > aimSpeed )
+	{
+		oldAngle -= aimSpeed; 
+	}
+	else if( angleDiff < -aimSpeed )
+	{
+		oldAngle += aimSpeed;
+	}
+	else
+	{
+		oldAngle -= angleDiff;
+	}
+
+	this.set_f32("oldAngle", oldAngle);
+
+	Vec2f deviation = Vec2f(2*shiftTimer,0);
+	deviation.RotateBy(-oldAngle);
+
+	Vec2f shardPos = thisPos + Vec2f(radius,0);
 
 	CBlob@[] casterShards;
 	getBlobsByTag(casterShardTag, @casterShards);
@@ -42,6 +102,7 @@ void onTick( CBlob@ this )
 	{
 		Vec2f shardMovePos = shardPos;
 		shardMovePos.RotateBy(shardWheelRot + anglePerShard*i, thisPos);
+		shardMovePos += deviation;
 
 		if(casterShards.length <= i)
 		{
