@@ -1307,6 +1307,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				Vec2f aimVector = aimpos - castPos;
 				Vec2f aimNorm = aimVector;
 				aimNorm.Normalize();
+				aimVector -= aimNorm*4;
+				aimpos -= aimNorm*4;
 
 				HitInfo@[] hitInfos;
 				bool teleBlock = false;
@@ -1326,8 +1328,9 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 							{continue;}
 							else 
 							{
-								aimpos = hitInfos[i].hitpos; //sets both aimpos and aimVector to correspond with the teleport blocker
-								aimVector = aimpos - castPos; 
+								Vec2f hitPos = hitInfos[i].hitpos;
+								aimpos = hitPos - aimNorm*4; //sets both aimpos and aimVector to correspond with the teleport blocker
+								aimVector = hitPos - castPos;
 								teleBlock = true; //no more blob checking
 							}
 						}
@@ -2045,7 +2048,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
 			f32 orbspeed = 2.2f;
-			f32 orbDamage = 3.0f * extraDamage;
+			f32 orbDamage = 2.6f * extraDamage;
 
 			switch(charge_state)
 			{

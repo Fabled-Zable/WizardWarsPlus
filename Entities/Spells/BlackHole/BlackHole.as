@@ -1,5 +1,6 @@
 #include "Hitters.as";
 #include "MagicCommon.as";
+#include "CommonFX.as";
 
 const f32 PULL_RADIUS = 192.0f;
 const f32 MAX_FORCE = 100.0f;
@@ -111,7 +112,7 @@ void onTick(CBlob@ this)
 	if ( this.getTickSinceCreated() > LIFETIME*30 + 15 )
 	this.Tag("dead");
 	
-	if ( getNet().isClient() && getGameTime() % PARTICLE_TICKS == 0 )
+	if ( isClient() && getGameTime() % PARTICLE_TICKS == 0 )
 	makeBlackHoleParticle( thisPos, Vec2f(0,0) );
 }
 
@@ -212,31 +213,6 @@ void makeBlackHoleParticle( Vec2f pos, Vec2f vel )
 		p.gravity = Vec2f(0,0);
 		p.emiteffect = emitEffect;
 	}
-}
-
-Random _sprk_r2(634566);
-void makeManaDrainParticles( Vec2f pos, int amount )
-{
-	if ( !getNet().isClient() )
-		return;
-
-	u8 emitEffect = GetCustomEmitEffectID( "blackHoleEmit" );
-	
-	for (int i = 0; i < amount; i++)
-    {
-        Vec2f vel(_sprk_r2.NextFloat() * 6.0f, 0);
-        vel.RotateBy(_sprk_r2.NextFloat() * 360.0f);
-
-        CParticle@ p = ParticlePixel( pos, vel, SColor( 255, 120+XORRandom(40), 0, 255), true );
-        if(p is null) continue; //bail if we stop getting particles
-
-        p.timeout = 10 + _sprk_r2.NextRanged(30);
-        p.scale = 1.0f + _sprk_r2.NextFloat();
-        p.damping = 0.6f;
-    	p.fastcollision = true;
-		p.gravity = Vec2f(0,0);
-		p.emiteffect = emitEffect;
-    }
 }
 
 Random _blast_r(0x10002);

@@ -6,6 +6,7 @@
 #include "EntropistCommon.as";
 #include "TeamColour.as";
 #include "SpellHashDecoder.as";
+#include "CommonFX.as";
 
 #include "FireCommon.as"
 
@@ -33,12 +34,15 @@ void onTick( CBlob@ this )
 
 	if (this.getTickSinceCreated() < 1)
 	{		
-		this.getSprite().PlaySound("discharge1.ogg", 1.0f, 1.0f);	
 		this.server_SetTimeToDie(3000);
-		
-		sprite.getConsts().accurateLighting = false;
-		sprite.setRenderStyle(RenderStyle::additive);
-		sprite.SetRelativeZ(-1);
+
+		if(isClient())
+		{
+			this.getSprite().PlaySound("discharge1.ogg", 1.0f, 1.0f);	
+			sprite.getConsts().accurateLighting = false;
+			sprite.setRenderStyle(RenderStyle::additive);
+			sprite.SetRelativeZ(-1);
+		}
 	}
 
 	u32 deadTimer = this.get_u32("deadTimer");
@@ -67,7 +71,7 @@ void onTick( CBlob@ this )
 	{
 		this.Tag("barrier");
 	}
-	else if(attackMode && this.hasTag("barrier"))
+	else if((attackMode || deadTimer > 0) && this.hasTag("barrier"))
 	{
 		this.Untag("barrier");
 	}
@@ -129,7 +133,20 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 				manaInfoCaster.mana += ownerManaRegen;
 			}
 
-			manaInfoBlob.mana -= blobManaRegen;
+			if(manaInfoBlob.mana - blobManaRegen < 0)
+			{
+				manaInfoBlob.mana = 0;
+			}
+			else
+			{
+				manaInfoBlob.mana -= blobManaRegen;
+			}
+
+			if(isClient())
+			{
+				makeManaDrainParticles( this.getPosition(), 6 );
+				this.getSprite().PlaySound("discharge2.ogg", 0.7f, 3.0f);
+			}
 		}
 	}
 	else

@@ -386,6 +386,7 @@ bool doesShardDefend ( CBlob@ b )
 	string blobname = b.getName();
 	switch(blobname.getHash())
 	{
+		case -286128466: //ice_prison
 		case -2014033180: //magic_barrier
 		case 382419657: //rock_wall
 		case 452290988: //plant_aura
@@ -417,7 +418,6 @@ bool doesShardKill ( CBlob@ b )
 	string blobname = b.getName();
 	switch(blobname.getHash())
 	{
-		case 1174066691: //fire_sprite
 		case -559341693: //nova_bolt
 		case -308267308: //effect_missile_circle
 		case 1843332075: //ground rock spikes

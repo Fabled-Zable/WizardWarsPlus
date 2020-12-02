@@ -122,16 +122,17 @@ void ManageSpell( CBlob@ this, WizardInfo@ wizard, PlayerPrefsInfo@ playerPrefsI
 	//raycast arrow
 
 	Vec2f pos = this.getPosition();
-    Vec2f aimpos = this.getAimPos();
+	Vec2f aimpos = this.getAimPos();
 	Vec2f aimVec = aimpos - pos;
 	Vec2f normal = aimVec;
 	normal.Normalize();
-	
-	Vec2f tilepos = pos + normal * Maths::Min(aimVec.Length(), spell.range);
+
+	Vec2f tilepos = pos + normal * Maths::Min(aimVec.Length() - 1, spell.range);
+	CMap@ map = this.getMap();
+	Vec2f surfacePaddingVec = normal*2.0f;
 	Vec2f surfacepos;
-	CMap@ map = getMap();
-	bool aimPosBlocked = map.rayCastSolid(pos, tilepos , surfacepos);
-	Vec2f spellPos = surfacepos; 
+	bool aimPosBlocked = map.rayCastSolid(pos, tilepos + surfacePaddingVec, surfacepos);
+	Vec2f spellPos = surfacepos - surfacePaddingVec;
 	
 	//Are we casting? 
 	if ( is_pressed )

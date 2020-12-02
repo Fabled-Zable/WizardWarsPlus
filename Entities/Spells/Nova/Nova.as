@@ -3,7 +3,7 @@
 #include "TeamColour.as";
 #include "MakeDustParticle.as";
 
-const float STANDARD_SPEED = 64.0f;
+const float STANDARD_SPEED = 32.0f;
 
 void onInit( CBlob@ this )
 {

@@ -73,7 +73,7 @@ namespace WizardParams
 				SpellType::other, 15, 10, 2, 360.0f, true),
 				
 		Spell("plasma_shot", "Plasma Shot", 17, "Fires a burst of slow moving plasma that explodes on impact or after reaching its destination.",
-				SpellType::other, 10, 15, 0, 500.0f, true),
+				SpellType::other, 12, 15, 0, 500.0f, true),
 
 		Spell("fiery_star", "Fiery Star", 58, "[WIP] Launch a concetrated fire element particle at your enemies. Huge blast radius, dangerous to caster.",
 				SpellType::other, 30, 50, 1, 360.0f, true),

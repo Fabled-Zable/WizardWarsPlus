@@ -52,7 +52,7 @@ void onTick(CBlob@ this)
 			Vec2f norm = (this.getPosition() - other.getPosition()) * -1;
 			norm.Normalize();
 			
-			if(other.hasTag("barrier")) //Knockback System against barriers
+			if(other.hasTag("barrier") && other.getName() != "shard") //Knockback System against barriers
 			{
 				CBlob@ self = this;
 				Vec2f selfPos = self.getPosition();
