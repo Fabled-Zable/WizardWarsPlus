@@ -2199,7 +2199,10 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					return;
 				}
 				
-				manaInfo.mana += spell.mana;
+				if(!this.get_bool("burnState"))
+				{
+					manaInfo.mana += spell.mana;
+				}
 				
 				if(isClient())
 				{
@@ -2231,13 +2234,16 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				return;
 			}
 
-			if(manaInfo.mana + 20 > manaInfo.maxMana)
+			if(!this.get_bool("burnState"))
 			{
-				manaInfo.mana = manaInfo.maxMana;
-			}
-			else
-			{
-				manaInfo.mana += 20;
+				if(manaInfo.mana + 20 > manaInfo.maxMana)
+				{
+					manaInfo.mana = manaInfo.maxMana;
+				}
+				else 
+				{
+					manaInfo.mana += 20;
+				}
 			}
 
 			shardAmount--;
@@ -2458,7 +2464,7 @@ void Heal( CBlob@ blob, f32 healAmount )
 		
     if (blob.isMyPlayer())
     {
-        SetScreenFlash( 100, 0, 225, 0 );
+        SetScreenFlash( 80, 0, 225, 0 );
     }
 		
 	blob.getSprite().PlaySound("Heal.ogg", 0.8f, 1.0f + XORRandom(2)/10.0f);
