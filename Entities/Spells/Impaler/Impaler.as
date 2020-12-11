@@ -51,14 +51,13 @@ void onTick(CBlob@ this)
 		this.Sync("following", true);
 		if(this.get_bool("following"))
 		{
-			u16 targtid = this.get_u16("attached"); //finds target ID
-			CBlob@ targt = getBlobByNetworkID(targtid);
-			if(targt !is null)
+			u16 targetid = this.get_u16("attached"); //finds target ID
+			CBlob@ target = getBlobByNetworkID(targetid);
+			if(target !is null && !target.hasTag("dead"))
 			{
-				if(targt.hasTag("dead"))
-				{this.server_Die();}
+				this.server_Die();
 				this.setVelocity(Vec2f(0,0));
-				this.setPosition(targt.getPosition());
+				this.setPosition(target.getPosition());
 			}
 			else
 			{

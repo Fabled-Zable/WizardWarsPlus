@@ -23,7 +23,6 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-    f32 angle;
 	//prevent leaving the map
 	
 	Vec2f pos = this.getPosition();
@@ -34,8 +33,27 @@ void onTick(CBlob@ this)
 		return;
 	}
 
-    angle = (this.getVelocity()).Angle();
-	this.setAngleDegrees(-angle);
+	CMap@ map = getMap();
+	if (map is null)
+	{return;}
+
+	if(getGameTime() % 5 == 0)
+	{
+		CBlob@[] blobsInRadius;
+		map.getBlobsInRadius(this.getPosition(), 20.0f, @blobsInRadius);
+		for (uint i = 0; i < blobsInRadius.length; i++)
+		{
+			if(blobsInRadius[i] is null)
+			{continue;}
+
+			CBlob@ radiusBlob = blobsInRadius[i];
+
+			if (radiusBlob.getTeamNum() == this.getTeamNum() || radiusBlob.hasTag("burning"))
+			{continue;}
+
+			this.server_Hit(radiusBlob, radiusBlob.getPosition(), Vec2f_zero, 0.2f, Hitters::fire, false);
+		}
+	}
 
 	if(!isClient())
 	{return;}
@@ -62,20 +80,29 @@ void onTick(CBlob@ this)
 void onTick(CSprite@ this) //rotating sprite
 {
 	CBlob@ b = this.getBlob();
+	if(this is null || b is null)
+	{return;}
+
 	if(!b.exists("spriteSetupDone") || !b.get_bool("spriteSetupDone"))
 	{
 		CSpriteLayer@ layer = this.addSpriteLayer("shine","spriteback_alpha.png",150,150,b.getTeamNum(),0);
+		if(layer is null)
+		{return;}
         layer.SetRelativeZ(-1.0f);
 		layer.setRenderStyle(RenderStyle::additive);
 		layer.ScaleBy(0.3f, 0.3f);
 		b.set_bool("spriteSetupDone",true);
 	}
-
-    CSpriteLayer@ layer = this.getSpriteLayer("shine");
+	else
+	{
+    	CSpriteLayer@ layer = this.getSpriteLayer("shine");
+		if(layer is null)
+		{return;}
 	
-    layer.RotateByDegrees(7,Vec2f_zero);
+    	layer.RotateByDegrees(7,Vec2f_zero);
 
-	this.RotateByDegrees(-7,Vec2f_zero);
+		this.RotateByDegrees(-7,Vec2f_zero);
+	}
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
