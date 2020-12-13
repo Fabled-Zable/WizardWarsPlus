@@ -121,25 +121,25 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 				return;
 			}
 
-			s32 ownerManaRegen = ownerBlob.get_s32("mana regen rate");
-			s32 blobManaRegen = blob.get_s32("mana regen rate");
+			//s32 ownerManaRegen = ownerBlob.get_s32("mana regen rate");
+			//s32 blobManaRegen = blob.get_s32("mana regen rate");
 
-			if(manaInfoCaster.mana + ownerManaRegen > manaInfoCaster.maxMana)
+			if(manaInfoCaster.mana + 1 > manaInfoCaster.maxMana)
 			{
 				manaInfoCaster.mana = manaInfoCaster.maxMana;
 			}
 			else
 			{
-				manaInfoCaster.mana += ownerManaRegen;
+				manaInfoCaster.mana += 1;
 			}
 
-			if(manaInfoBlob.mana - blobManaRegen < 0)
+			if(manaInfoBlob.mana - 1 < 0)
 			{
 				manaInfoBlob.mana = 0;
 			}
 			else
 			{
-				manaInfoBlob.mana -= blobManaRegen;
+				manaInfoBlob.mana -= 1;
 			}
 
 			if(isClient())

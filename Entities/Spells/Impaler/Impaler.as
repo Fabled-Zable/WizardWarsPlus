@@ -15,6 +15,7 @@ void onInit(CBlob@ this)
 	this.Tag("projectile");
 	this.Tag("counterable");
 	this.set_bool("following", false);
+	this.set_u16("attached",0);
 	shape.SetGravityScale( 0.0f );
 
     //dont collide with top of the map
@@ -55,8 +56,7 @@ void onTick(CBlob@ this)
 			CBlob@ target = getBlobByNetworkID(targetid);
 			if(target !is null && !target.hasTag("dead"))
 			{
-				this.server_Die();
-				this.setVelocity(Vec2f(0,0));
+				this.setVelocity(Vec2f_zero);
 				this.setPosition(target.getPosition());
 			}
 			else
@@ -118,6 +118,7 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
 	float expundamage = this.get_f32("damage");
+
 	if (blob !is null)
 	{
 		if (isEnemy(this, blob))
@@ -128,7 +129,16 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 			}
 			else
 			{
-				this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
+				u16 targetid = this.get_u16("attached"); //finds target ID
+				CBlob@ target = getBlobByNetworkID(targetid);
+				if(target !is null && !target.hasTag("dead") && target is blob)
+				{
+					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.1f, Hitters::arrow, true);
+				}
+				else
+				{
+					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
+				}
 
 				if(this.hasTag("primed"))
 				{

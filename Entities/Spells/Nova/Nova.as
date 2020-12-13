@@ -40,9 +40,6 @@ void onTick( CBlob@ this )
 		this.getSprite().SetZ(1000.0f);
 		this.Tag("fire bolt");
 		
-		//makes a stupid annoying sound
-		//ParticleZombieLightning( this.getPosition() );
-		
 		// done post init
 		this.set_bool("initialized", true);
 	}
@@ -93,12 +90,13 @@ void onTick( CBlob@ this )
 		if( dist > STANDARD_SPEED )
 		{
 			this.setVelocity(finalSpeed); //if farther away, use standard speed
+			dist = STANDARD_SPEED;
 		}
 		else
 		{
 			this.setVelocity(moveDir); //if closer than needed, jump to that spot
 		}
-
+		
 		if(isClient())
 		{
 			Vec2f pPos = thisPos;

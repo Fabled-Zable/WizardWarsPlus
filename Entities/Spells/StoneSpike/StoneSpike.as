@@ -5,7 +5,7 @@ void onInit(CBlob@ this)
 {
 	this.Tag("standingup");
 	this.Tag("counterable");
-	this.Tag("alwayscounter");
+	//this.Tag("alwayscounter");
 	//this.set_f32("explosive_radius", 2.0f);
 	//this.set_f32("explosive_damage", 10.0f);
 	//this.set_f32("map_damage_radius", 4.0f);
@@ -46,8 +46,6 @@ void onTick(CSprite@ this)
 		this.getCurrentScript().tickFrequency = 0;
 	}
 }
-
-float homingRadius = 40;
 
 void onTick(CBlob@ this)
 {
