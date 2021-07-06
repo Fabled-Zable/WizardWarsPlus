@@ -103,7 +103,7 @@ void onTick(CBlob@ this)
 				}
 				else
 				{
-					manaInfo.mana = 0.0;
+					manaInfo.mana = 0;
 				}
 			}
 		}
@@ -183,7 +183,7 @@ void updateBlackHoleParticle( CParticle@ p )
 		}
 	}
 	else
-		p.frame = 7;
+	p.frame = 7;
 }
 
 Random _sprk_r(1337);

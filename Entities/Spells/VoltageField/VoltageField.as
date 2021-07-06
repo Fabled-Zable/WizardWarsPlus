@@ -54,11 +54,10 @@ void onTick(CBlob@ this)
 
 	for(s32 i = 0; i < blobs.length(); i++)//itterate through blobs
 	{
-
 		CBlob@ target = @blobs[i];//setting target blob to a variable for readability
 		if(target is null){continue;}
-		if(target.getTeamNum() == this.getTeamNum()){continue;}//skip over like team numbers
-		if(!isEnemy(this,target)){continue;}//if target isn't an enemy then we don't need to do anything to it
+		if(target.getTeamNum() == this.getTeamNum()){continue;}//skip over same team entities
+		if(!tagCheck(target)){continue;}//if target fails tag checks, skip
 
 		float damage = 0.4f;
 		Vec2f norm = (target.getPosition() - this.getPosition());
@@ -77,14 +76,12 @@ void onTick(CBlob@ this)
 				if (difference > 90 || difference < -90)
 				{
 					targetVel.RotateByDegrees(difference);
-					if(target is null){continue;}
 					target.setVelocity(targetVel);
 				}
 				damage = 0.6;
 			}
 		}
 
-		if(target is null){continue;}
 		if (voltageFieldDamage(target))
 		{
 			this.server_Hit(target, target.getPosition(), norm*3,damage,Hitters::water);// hit em
@@ -139,17 +136,14 @@ void cleanUp(CBlob@ this)//because we don't use onInit we need to cleanup so tha
 	this.RemoveScript("VoltageField.as");
 }
 
-bool isEnemy( CBlob@ this, CBlob@ target )
+bool tagCheck( CBlob@ target )
 {
 	return 
 	(
-		(
-			target.hasTag("barrier")
-			||
-			target.hasTag("flesh") 
-			||
-			target.hasTag("counterable") 
-		)
-		&& target.getTeamNum() != this.getTeamNum() 
+		target.hasTag("barrier")
+		||
+		target.hasTag("flesh") 
+		||
+		target.hasTag("counterable") 
 	);
 }

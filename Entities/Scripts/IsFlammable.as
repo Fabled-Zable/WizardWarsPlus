@@ -1,14 +1,14 @@
-//Burn and spread fire
-
 #include "Hitters.as";
 #include "FireCommon.as";
+
+Random _r();
 
 void onInit(CBlob@ this)
 {
 	this.getShape().getConsts().isFlammable = true;
 
 	if (!this.exists(burn_duration))
-		this.set_s16(burn_duration , 400);
+		this.set_s16(burn_duration , 300);
 	if (!this.exists(burn_hitter))
 		this.set_u8(burn_hitter, Hitters::burn);
 
@@ -21,20 +21,42 @@ void onInit(CBlob@ this)
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
-	if ((isIgniteHitter(customData) && damage > 0.0f) ||					 	   // Fire arrows
+	if (isIgniteHitter(customData) ||					 	   // Fire arrows
 	        (this.isOverlapping(hitterBlob) &&
 	         hitterBlob.isInFlames() && !this.isInFlames()))	   // Flaming enemy
 	{
 		server_setFireOn(this);
+		if (hitterBlob.getDamageOwnerPlayer() !is null){
+			this.set_netid("burn starter player", hitterBlob.getDamageOwnerPlayer().getNetworkID());
+		}
 	}
 
 	if (isWaterHitter(customData))	  // buckets of water
 	{
+		if (this.hasTag(burning_tag))
+		{
+			this.getSprite().PlaySound("/ExtinguishFire.ogg");
+		}
 		server_setFireOff(this);
-		this.getSprite().PlaySound("/ExtinguishFire.ogg");
+		this.set_netid("burn starter player", 0);
 	}
 
 	return damage;
+}
+
+void BurnRandomNear(Vec2f pos)
+{
+	Vec2f p = pos + Vec2f((_r.NextFloat() - 0.5f) * 16.0f, (_r.NextFloat() - 0.5f) * 16.0f);
+	getMap().server_setFireWorldspace(p, true);
+}
+
+//ensure it spreads correctly for one-hit tiles etc
+void onDie(CBlob@ this)
+{
+	if (this.hasTag(burning_tag) && this.hasTag(spread_fire_tag))
+	{
+		BurnRandomNear(this.getPosition());
+	}
 }
 
 void onTick(CBlob@ this)
@@ -53,9 +75,10 @@ void onTick(CBlob@ this)
 	}
 
 	//check if we're extinguished
-	if (burn_time == 0 || this.isInWater())
+	if (burn_time == 0 || this.isInWater() || map.isInWater(pos))
 	{
 		server_setFireOff(this);
+		this.set_netid("burn starter blob", 0);
 	}
 
 	//burnination
@@ -64,24 +87,32 @@ void onTick(CBlob@ this)
 		//burninating the other tiles
 		if ((burn_time % 8) == 0 && this.hasTag(spread_fire_tag))
 		{
-			Vec2f p = pos + Vec2f(XORRandom(16) - 8, XORRandom(16) - 8);
-			getMap().server_setFireWorldspace(p, true);
+			BurnRandomNear(pos);
 		}
-		
+
 		//burninating the actor
-		if ((burn_time % 5) == 0)
+		if ((burn_time % 7) == 0)
 		{
+			uint16 netid = this.get_netid("burn starter player");
+			CBlob@ blob = null;
+			CPlayer@ player = null;
+			if (netid != 0)
+				@player = getPlayerByNetworkId(this.get_netid("burn starter player"));
+
+			if (player !is null)
+				@blob = player.getBlob();
+
+			if (blob is null)
+				@blob = this;
+
 			f32 damage = 0.5f;
 			if(this.get_u16("fireProt") > 0)
 			{damage = 0.0f;}
-			this.server_Hit(this, pos, Vec2f(0, 0), damage, this.get_u8("burn hitter"), true);
+			blob.server_Hit(this, pos, Vec2f(0, 0), damage, this.get_u8(burn_hitter), true);
 		}
 
 		//burninating the burning time
-		if(this.get_u16("fireProt") > 0)
-		{burn_time = 0;}
-		else
-		{burn_time--;}
+		burn_time--;
 
 		//and making sure it's set correctly!
 		this.set_s16(burn_timer, burn_time);

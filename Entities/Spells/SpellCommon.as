@@ -1,7 +1,6 @@
 //Spells Common
 #include "MagicCommon.as";
 #include "NecromancerCommon.as";
-#include "WizardCommon.as";
 #include "DruidCommon.as";
 #include "SwordCasterCommon.as";
 #include "EntropistCommon.as";

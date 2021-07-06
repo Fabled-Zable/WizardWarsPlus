@@ -5,6 +5,7 @@ enum EntityHash
 	_effect_missile_circle = -308267308,
 	_black_hole_big = -270118290,
 	_mana_obelisk = -1760442616,
+	//_battering_ram = ,
 
 	//characters
 	_wizard = -66908406,
@@ -26,7 +27,6 @@ enum EntityHash
 	//common spells
 	_orb = -1625426670,
 	_magic_missile = -1214504009,
-	_magic_barrier = -2014033180,
 	_effect_missile = -824473937,
 	
 	//wizard spells

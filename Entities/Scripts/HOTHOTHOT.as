@@ -12,11 +12,25 @@ void onInit(CMovement@ this)
 void onTick(CMovement@ this)
 {
 	CBlob@ blob = this.getBlob();
-	if (blob.hasTag(burning_tag)) //double check
+	if (blob.getHealth() > 0.0f)
 	{
-		if (XORRandom(200) == 0)
+		if (blob.hasTag(burning_tag)) //double check
 		{
-			blob.getSprite().PlaySound("/MigrantScream");
+			MovementVars@ vars = this.getVars();
+
+			if (blob.isFacingLeft())
+			{
+				blob.setKeyPressed(key_left, true);
+			}
+			else
+			{
+				blob.setKeyPressed(key_right, true);
+			}
+
+			if (XORRandom(200) == 0)
+			{
+				blob.getSprite().PlaySound("/MigrantScream");
+			}
 		}
 	}
 }
