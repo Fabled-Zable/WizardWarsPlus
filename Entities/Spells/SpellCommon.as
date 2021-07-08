@@ -1644,6 +1644,24 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 
+		case 799586754://flame_slash
+		{
+			if(this.hasScript("FlameSlash.as"))
+			{
+				return;
+			}
+
+			if(!this.hasScript("FlameSlash.as"))
+			{
+				this.AddScript("FlameSlash.as");
+				if(isClient())
+				{
+					this.getSprite().PlaySound("flame_slash_sound");
+				}
+			}
+		}
+		break;
+
 		case -1661937901://impaler
 		{
 			this.getSprite().PlaySound("ImpCast.ogg", 100.0f);

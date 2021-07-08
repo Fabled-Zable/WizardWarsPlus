@@ -46,7 +46,7 @@ namespace WizardParams
 			SpellType::other, 22, 35, 0, 360.0f, true),	
 			 
 		Spell("meteor_strike", "Meteor Strike", 9, "Bring flaming meteors crashing down wherever you desire.",
-			SpellType::other, 50, 40, 0, 360.0f, true),
+			SpellType::other, 55, 50, 0, 360.0f, true),
 			 
 		Spell("revive", "Revive", 15, "Fully bring trusty allies back from the dead by aiming a reviving missile at their gravestone.",
 			SpellType::other, 50, 40, 0, 360.0f, true),
@@ -64,7 +64,7 @@ namespace WizardParams
 				SpellType::other, 40, 10, 0, 180.0f, true),
 
 		Spell("mana_drain_circle", "Circle of disenchant", 33, "Those who stand inside this circle lose their mana and are slowed to a crawl",
-				SpellType::other,40,30,10,360, true),			
+				SpellType::other,40,40,15,360, true),			
 
 		Spell("mana_transfer", "Mana Transfer", 48, "Transfers mana equivalent to the target's regen. Generates 1 extra mana if overcharged.",
 				SpellType::other, 10, 10, 0, 360.0f, true),
