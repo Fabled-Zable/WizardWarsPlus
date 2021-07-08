@@ -4,10 +4,6 @@
 
 const int pierce_amount = 8;
 
-const f32 hit_amount_ground = 1.0f;
-const f32 hit_amount_air = 3.0f;
-const f32 hit_amount_cata = 10.0f;
-
 const f32 MIN_FROZEN_TIME = 1;
 const f32 MAX_FROZEN_TIME = 6;
 
@@ -15,8 +11,10 @@ void onInit( CBlob @ this )
 {
 	this.Tag("kill other spells");
 	this.Tag("counterable");
+	this.Tag("exploding");
 	
     this.set_u8("launch team",255);
+	this.set_f32("freeze_power", 0.0f);
     //this.server_setTeamNum(1);
 	this.Tag("medium weight");
     
@@ -25,11 +23,6 @@ void onInit( CBlob @ this )
     this.set_u8( "blocks_pierced", 0 );
     u32[] tileOffsets;
     this.set( "tileOffsets", tileOffsets );
-    
-    // damage
-    this.set_f32("hit dmg modifier", hit_amount_ground);
-	this.set_f32("map dmg modifier", 0.0f); //handled in this script
-	this.set_u8("hurtoncollide hitter", Hitters::boulder);
 
 	CShape@ shape = this.getShape();
 	shape.getConsts().collideWhenAttached = true;
@@ -68,7 +61,7 @@ void onTick( CBlob@ this)
 			|| pos.y < 0.1f
 			|| pos.y > (getMap().tilemapheight * getMap().tilesize) - 0.1f )
 	{
-		this.server_Die();
+		Boom( this );
 		return;
 	}
 	
@@ -82,43 +75,30 @@ void onTick( CBlob@ this)
 		f32 angle = vel.Angle();
 		Slam( this, angle, vel, this.getShape().vellen * 1.5f );
 	}
-	//normal mode
-	else if (!this.isOnGround() && !this.isInWater())
-	{
-		this.set_f32("hit dmg modifier", hit_amount_air);
-	}
-	
-	if ( this.get_bool("bomb armed") )
-	{
-		f32 bombTimer = this.get_f32("bomb timer");
-		if ( bombTimer <= 0 )
-			Boom( this );
-		else
-			this.set_f32("bomb timer", bombTimer - 1);
-	}
 
 	makeSmokePuff(this);
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
+	bool spellDeath = false;
+
 	if ( solid || (blob !is null && blob.hasTag("barrier") && blob.getTeamNum() != this.getTeamNum()) )
 	{
 		this.getSprite().PlaySound("IceImpact" + (XORRandom(3)+1) + ".ogg", 0.8f, 1.0f);
-		ExplodeWithIce(this);
-		Boom( this );
+		spellDeath = true;
 	}
 	
 	if (blob !is null)
 	{
 		if ( (blob.hasTag("player") || blob.hasTag("freezable")) && isEnemy(this, blob) )
 		{
-			this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.1f, Hitters::water, true);
+			this.server_Hit(blob, blob.getPosition(), this.getVelocity(), 0.2f, Hitters::water, true);
 			
 			f32 freezeRatio = this.get_f32("freeze_power");
 			Freeze( blob, Maths::Max( MIN_FROZEN_TIME, MAX_FROZEN_TIME*freezeRatio ) );
 			
-			Boom( this );
+			spellDeath = true;
 		}
 	}
 	else
@@ -131,6 +111,11 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 				icePrison.AddScript("CheapFakeRolling.as");
 			}
 		}
+	}
+
+	if(spellDeath)
+	{
+		Boom( this );
 	}
 }
 
@@ -164,8 +149,10 @@ void Freeze(CBlob@ blob, f32 frozenTime)
 
 void onDie(CBlob@ this)
 {
-    ExplodeWithIce(this);
-    this.getSprite().SetEmitSoundPaused(true);
+	if(this.hasTag("exploding"))
+	{
+    	ExplodeWithIce(this);
+	}
 }
 
 void ExplodeWithIce(CBlob@ this)
@@ -183,7 +170,7 @@ void ExplodeWithIce(CBlob@ this)
 			if (b !is null)
 			{
 				Vec2f bPos = b.getPosition();
-				float damage = 0.5f;
+				float damage = 1.0f;
 				if(this.getTeamNum() == b.getTeamNum() && !isOwnerBlob(this,b))
 				{
 					damage = 0.0f;
@@ -316,9 +303,8 @@ void smoke(Vec2f pos, int amount)
 
 void Boom( CBlob@ this )
 {
-	blast(this.getPosition(), 5);	
-	
-    this.server_SetHealth(-1.0f);
+	blast(this.getPosition(), 5);
+	this.getSprite().SetEmitSoundPaused(true);
     this.server_Die();
 }
 

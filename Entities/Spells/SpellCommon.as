@@ -454,7 +454,6 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			CBlob@ orb = server_CreateBlob( "frost_ball" );
 			if (orb !is null)
 			{
-				orb.set_f32("explosive_damage", orbDamage);
 				orb.set_f32("freeze_power", freezePower);
 
 				orb.IgnoreCollisionWhileOverlapped( this );

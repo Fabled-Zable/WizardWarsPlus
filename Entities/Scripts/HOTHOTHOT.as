@@ -27,7 +27,7 @@ void onTick(CMovement@ this)
 				blob.setKeyPressed(key_right, true);
 			}
 
-			if (XORRandom(200) == 0)
+			if (XORRandom(100) == 0)
 			{
 				blob.getSprite().PlaySound("/MigrantScream");
 			}
