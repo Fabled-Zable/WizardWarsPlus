@@ -84,7 +84,7 @@ void onTick(CBlob@ this)
 
 		if (voltageFieldDamage(target))
 		{
-			this.server_Hit(target, target.getPosition(), norm*3,damage,Hitters::water);// hit em
+			this.server_Hit(target, target.getPosition(), norm*3,damage,Hitters::explosion);// hit em
 		}
 		
 	}

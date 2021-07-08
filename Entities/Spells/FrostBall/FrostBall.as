@@ -183,8 +183,12 @@ void ExplodeWithIce(CBlob@ this)
 			if (b !is null)
 			{
 				Vec2f bPos = b.getPosition();
-				
-				this.server_Hit(b, bPos, bPos-thisPos, 0.5f, Hitters::water, isOwnerBlob(this,b));
+				float damage = 0.5f;
+				if(this.getTeamNum() == b.getTeamNum() && !isOwnerBlob(this,b))
+				{
+					damage = 0.0f;
+				}
+				this.server_Hit(b, bPos, bPos-thisPos, damage, Hitters::water, true);
 			}
 		}
 	}

@@ -53,7 +53,7 @@ void onTick( CBlob@ this)
 			float damage = 1.4f;
 			if(b.hasTag("counterable"))
 			{damage = 3.0f;}
-			this.server_Hit(b, b.getPosition(), hitVec*6, damage, Hitters::water, true);
+			this.server_Hit(b, b.getPosition(), hitVec*6, damage, Hitters::explosion, true);
 		}
 
 		this.set_u8("boomNum", boomNum+1);

@@ -75,7 +75,7 @@ void onTick( CBlob@ this)
 			float damage = 2.0f;
 			if(b.hasTag("counterable"))
 			{damage = 4.0f;}
-			this.server_Hit(b, b.getPosition(), hitVec*8, damage, Hitters::water, true);
+			this.server_Hit(b, b.getPosition(), hitVec*8, damage, Hitters::explosion, true);
 		}
 
 		this.Untag("in spell sequence");

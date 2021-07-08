@@ -91,7 +91,7 @@ void onTick(CBlob@ this)
 		}
 
 		//burninating the actor
-		if ((burn_time % 7) == 0)
+		if ((burn_time % 3) == 0)
 		{
 			uint16 netid = this.get_netid("burn starter player");
 			CBlob@ blob = null;
@@ -105,7 +105,7 @@ void onTick(CBlob@ this)
 			if (blob is null)
 				@blob = this;
 
-			f32 damage = 0.5f;
+			f32 damage = 0.2f;
 			if(this.get_u16("fireProt") > 0)
 			{damage = 0.0f;}
 			blob.server_Hit(this, pos, Vec2f(0, 0), damage, this.get_u8(burn_hitter), true);

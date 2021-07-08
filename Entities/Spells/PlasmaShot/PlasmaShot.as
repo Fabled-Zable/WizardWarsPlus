@@ -122,7 +122,7 @@ void onDie( CBlob@ this )
 			CBlob@ caster = player.getBlob();
 			if(caster !is null && blob is caster)
 			{
-				this.server_Hit(blob, blob.getPosition(), Vec2f_zero, damage, Hitters::water, true);
+				this.server_Hit(blob, blob.getPosition(), Vec2f_zero, damage, Hitters::explosion, true);
 				continue;
 			}
 		}
@@ -150,7 +150,7 @@ void onDie( CBlob@ this )
 		Vec2f attackNorm = blob.getPosition() - thisPos;
 		attackNorm.Normalize();
 		blob.AddForce(attackNorm*100);
-        this.server_Hit(blob,thisPos,Vec2f_zero,finalDamage,Hitters::water);
+        this.server_Hit(blob,thisPos,Vec2f_zero,finalDamage,Hitters::explosion);
 	}
 }
 

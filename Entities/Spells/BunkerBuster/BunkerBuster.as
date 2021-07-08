@@ -108,7 +108,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 				if(!isEnemy(this, radiusBlob))
 				{continue;}
 
-				this.server_Hit(radiusBlob, radiusBlob.getPosition(), Vec2f_zero, damage, Hitters::water, false);
+				this.server_Hit(radiusBlob, radiusBlob.getPosition(), Vec2f_zero, damage, Hitters::explosion, false);
 			}
 			
 			if ( isClient() ) //temporary Counterspell effect
