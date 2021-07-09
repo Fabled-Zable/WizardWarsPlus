@@ -3,10 +3,6 @@
 void onInit(CBlob@ this)
 {
 	this.set_u16("cooldown", 0); //supershield setup
-	if(isClient())
-	{
-		this.set_bool("clientMat", false);
-	}
 
 	this.getCurrentScript().removeIfTag = "dead";
 
@@ -17,7 +13,7 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	if(!isClient())
+	if(!this.isMyPlayer())
     {
         return;
     }
@@ -38,12 +34,7 @@ void onTick(CBlob@ this)
 			this.SendCommand(this.getCommandID("addMaterializing"));
 			this.set_u16("cooldown", getGameTime() + 30); //starts a timer where you can't remove your shield
 			
-			if( !this.get_bool("clientMat") )
-			{
-				this.set_bool("clientMat", true);
-				this.SendCommand(this.getCommandID("makeBarrier"));
-			}
-			
+			this.SendCommand(this.getCommandID("makeBarrier"));
 		}
 	}
 	else if (!this.get_bool("shifting")) //gets shifting
@@ -52,7 +43,6 @@ void onTick(CBlob@ this)
 		{
 			this.Untag("materializing"); //removes tag which causes the supershield blob to server_Die
 			this.SendCommand(this.getCommandID("removeMaterializing"));
-			this.set_bool("clientMat", false);
 		}
 	}
 
@@ -66,7 +56,6 @@ void onTick(CBlob@ this)
 		{
 			this.Untag("materializing");
 			this.SendCommand(this.getCommandID("removeMaterializing"));
-			this.set_bool("clientMat", false);
 
 			chargeInfo.charge = -40; //charge penalty
 		}

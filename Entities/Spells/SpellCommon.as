@@ -2089,10 +2089,6 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				case minimum_cast:
 				case medium_cast:
 				case complete_cast:
-				{
-					orbspeed *= 1.0f;
-					orbDamage *= 1.0f;
-				}
 				break;
 
 				case super_cast:
