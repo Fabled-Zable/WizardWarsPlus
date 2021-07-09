@@ -1669,7 +1669,9 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					default:return;
 				}
 
+				this.set_Vec2f("flame_slash_aimpos",aimpos);
 				this.AddScript("FlameSlash.as");
+				
 				if(isClient())
 				{
 					this.getSprite().PlaySound("flame_slash_sound", 3.0f);

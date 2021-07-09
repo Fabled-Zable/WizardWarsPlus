@@ -37,7 +37,7 @@ void onTick(CBlob@ this)
 				damage = 1.0f;
 				this.Untag("super_flame_slash");
 			}
-			
+
 			CMap@ map = getMap();
 			if(map is null)
 			{return;}
@@ -45,7 +45,7 @@ void onTick(CBlob@ this)
 			CBlob@[] blobsHit;
 
 			Vec2f thisPos = this.getPosition();
-			Vec2f blobAimPos = this.getAimPos();
+			Vec2f blobAimPos = this.get_Vec2f("flame_slash_aimpos");
 			Vec2f aimDir = blobAimPos-thisPos;
 			float aimAngle = aimDir.getAngleDegrees();
 			aimAngle *= -1;
@@ -129,7 +129,7 @@ void onTick(CSprite@ this)
 		CSpriteLayer@ layer = this.addSpriteLayer("slash","fire_slash_effect.png",100,45);
 
 		Vec2f thisPos = b.getPosition();
-		Vec2f blobAimPos = b.getAimPos();
+		Vec2f blobAimPos = b.get_Vec2f("flame_slash_aimpos");
 		Vec2f aimDir = blobAimPos-thisPos;
 		float aimAngle = aimDir.getAngleDegrees();
 
