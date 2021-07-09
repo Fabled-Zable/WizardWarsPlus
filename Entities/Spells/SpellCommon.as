@@ -1653,10 +1653,26 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 			if(!this.hasScript("FlameSlash.as"))
 			{
+				switch(charge_state)
+				{
+					case minimum_cast:
+					case medium_cast:
+					case complete_cast:
+					break;
+				
+					case super_cast:
+					{
+						this.Tag("super_flame_slash");
+					}
+					break;
+				
+					default:return;
+				}
+
 				this.AddScript("FlameSlash.as");
 				if(isClient())
 				{
-					this.getSprite().PlaySound("flame_slash_sound");
+					this.getSprite().PlaySound("flame_slash_sound", 3.0f);
 				}
 			}
 		}
@@ -1722,7 +1738,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			Vec2f userPos = this.getPosition() + Vec2f(0.0f,-2.0f);
 			Vec2f castDir = (targetPos- userPos);
 			castDir.Normalize();
-			castDir *= 24; //all of this to get deviation 3 blocks in front of caster
+			castDir *= 24; //all of this to get offset 3 blocks in front of caster
 			Vec2f castPos = userPos + castDir;  //exact position of effect
 
 			if ( isClient() ) //temporary Counterspell effect
@@ -1758,7 +1774,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 
 			map.getBlobsInRadius(castPos,effectRadius, @blobs);//get the blobs
-			for(s32 i = 0; i < blobs.length(); i++)//itterate through blobs
+			for(uint i = 0; i < blobs.length(); i++)//itterate through blobs
 			{
 				if(@blobs[i] is null){continue;}
 				CBlob@ other = @blobs[i];//setting other blob to a variable for readability

@@ -31,6 +31,13 @@ void onTick(CBlob@ this)
 
 		if( time_passed == 6 )
 		{
+			float damage = 0.2f;
+			if(this.hasTag("super_flame_slash"))
+			{
+				damage = 1.0f;
+				this.Untag("super_flame_slash");
+			}
+			
 			CMap@ map = getMap();
 			if(map is null)
 			{return;}
@@ -71,7 +78,7 @@ void onTick(CBlob@ this)
 				if(this.getTeamNum() == b.getTeamNum())
 				{continue;}
 				
-				b.server_Hit(b,this.getPosition(), Vec2f_zero , 1.0f , Hitters::fire , false);
+				b.server_Hit(b,this.getPosition(), Vec2f_zero , damage , Hitters::fire , false);
 				b.AddForce(aimDir*800);
 			}
 			
