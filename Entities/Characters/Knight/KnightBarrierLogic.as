@@ -3,7 +3,10 @@
 void onInit(CBlob@ this)
 {
 	this.set_u16("cooldown", 0); //supershield setup
-	this.set_bool("clientMat", false);
+	if(isClient())
+	{
+		this.set_bool("clientMat", false);
+	}
 
 	this.getCurrentScript().removeIfTag = "dead";
 

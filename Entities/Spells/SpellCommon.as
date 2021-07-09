@@ -176,7 +176,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		}
 		break;
 
-		case 1463630946://spikedorb
+		case 1463630946://spikeorb
 		{
 			if (!isServer()){
            		return;

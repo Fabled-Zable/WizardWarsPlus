@@ -54,7 +54,7 @@ namespace SwordCasterParams
 		Spell("vectorial_dash", "Vectorial Dash", 47, "Cheap movement spell for specific situations. Has a long cooldown.",
 				SpellType::other, 3, 6, 5, 180.0f, true),
 			 
-		Spell("flame_slash", "Flame Slash", 61, "Forward slash that incinerates your enemies.",
+		Spell("flame_slash", "Flame Slash", 64, "Forward slash that incinerates your enemies.",
 				SpellType::other, 45, 50, 1, 70.0f, true),
 			
 		Spell("", "", 0, "Empty spell.",

@@ -77,6 +77,8 @@ void onTick(CBlob@ this)
 
 				if(this.getTeamNum() == b.getTeamNum())
 				{continue;}
+				if(b.getName() == "force_of_nature") //if beeg green orb, no kil
+				{continue;}
 				
 				b.server_Hit(b,this.getPosition(), Vec2f_zero , damage , Hitters::fire , false);
 				b.AddForce(aimDir*800);
