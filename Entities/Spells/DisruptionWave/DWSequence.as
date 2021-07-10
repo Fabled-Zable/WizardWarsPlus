@@ -46,7 +46,7 @@ void onTick( CBlob@ this)
 			CBlob@ orb = server_CreateBlob( "disruption_point" );
 			if (orb !is null)
 			{
-				orb.set_f32("DW_blob_damage", this.get_f32("DW_damage"));
+				orb.set_f32("DW_blob_damage", this.get_f32("DW_damage")); //sets damage for the wave
 				orb.IgnoreCollisionWhileOverlapped( this );
 				orb.SetDamageOwnerPlayer( this.getPlayer() );
 				orb.setPosition( thisPos );

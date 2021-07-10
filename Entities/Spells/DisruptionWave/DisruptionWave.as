@@ -52,7 +52,7 @@ void onTick( CBlob@ this)
 			Vec2f hitVec = b.getPosition() - thisPos;
 			hitVec.Normalize();
 
-			float damage = this.get_f32("DW_blob_damage");
+			float damage = this.get_f32("DW_blob_damage"); //damage carried over from DWSequence
 			if(b.hasTag("counterable"))
 			{damage = 3.0f;}
 			print("damage: " +damage);
