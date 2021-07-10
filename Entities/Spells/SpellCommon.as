@@ -2017,7 +2017,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				
 				case super_cast:
 				{
-					orbspeed *= 1.3f;
+					damage = 1.2f;
 				}
 				break;
 				
@@ -2027,6 +2027,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			int castTime = getGameTime();
 		
 			this.set_Vec2f("spell aim vec", aimpos - this.getPosition());
+			this.set_f32("DW_damage", damage); //sets damage for Disruption Wave to use
 			
 			this.Tag("in spell sequence");
 			this.set_u16("DW cast moment", castTime);

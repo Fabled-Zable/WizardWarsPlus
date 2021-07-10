@@ -6,6 +6,8 @@ void onInit( CBlob@ this)
 	this.getShape().SetGravityScale(0);
 	
 	this.getCurrentScript().removeIfTag = "dead";
+
+	this.set_f32("DW_blob_damage", 0.8f); //default damage if variable is non-existant
 }
 
 void onTick( CBlob@ this)
@@ -50,9 +52,10 @@ void onTick( CBlob@ this)
 			Vec2f hitVec = b.getPosition() - thisPos;
 			hitVec.Normalize();
 
-			float damage = 0.8f;
+			float damage = this.get_f32("DW_blob_damage");
 			if(b.hasTag("counterable"))
 			{damage = 3.0f;}
+			print("damage: " +damage);
 			this.server_Hit(b, b.getPosition(), hitVec*6, damage, Hitters::explosion, true);
 		}
 
