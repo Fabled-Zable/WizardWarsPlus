@@ -50,7 +50,7 @@ void onTick( CBlob@ this)
 			Vec2f hitVec = b.getPosition() - thisPos;
 			hitVec.Normalize();
 
-			float damage = 1.4f;
+			float damage = 0.8f;
 			if(b.hasTag("counterable"))
 			{damage = 3.0f;}
 			this.server_Hit(b, b.getPosition(), hitVec*6, damage, Hitters::explosion, true);

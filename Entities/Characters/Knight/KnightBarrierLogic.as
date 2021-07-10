@@ -37,9 +37,9 @@ void onTick(CBlob@ this)
 			this.SendCommand(this.getCommandID("makeBarrier"));
 		}
 	}
-	else if (!this.get_bool("shifting")) //gets shifting
+	else if (!this.get_bool("shifting") && getGameTime() > this.get_u16("cooldown")) //if cooldown still active, can't dematerialize the shield
 	{
-		if (this.hasTag("materializing") && getGameTime() > this.get_u16("cooldown")) //if cooldown still active, can't dematerialize the shield
+		if (this.hasTag("materializing") ) 
 		{
 			this.Untag("materializing"); //removes tag which causes the supershield blob to server_Die
 			this.SendCommand(this.getCommandID("removeMaterializing"));

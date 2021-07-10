@@ -2007,6 +2007,23 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 1324044072://disruption_wave
 		{
+			float damage = 0.8f;
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				break;
+				
+				case super_cast:
+				{
+					orbspeed *= 1.3f;
+				}
+				break;
+				
+				default:return;
+			}
+
 			int castTime = getGameTime();
 		
 			this.set_Vec2f("spell aim vec", aimpos - this.getPosition());
