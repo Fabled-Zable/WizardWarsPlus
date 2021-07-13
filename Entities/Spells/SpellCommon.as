@@ -1680,7 +1680,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				
 				if(isClient())
 				{
-					this.getSprite().PlaySound("flame_slash_sound", 3.0f);
+					this.getSprite().PlaySound("flame_slash_setup", 3.0f);
 				}
 			}
 		}
