@@ -55,7 +55,7 @@ namespace SwordCasterParams
 				SpellType::other, 3, 6, 5, 180.0f, true),
 			 
 		Spell("flame_slash", "Flame Slash", 64, "Forward slash that incinerates your enemies.",
-				SpellType::other, 25, 30, 0, 70.0f, true),
+				SpellType::other, 25, 30, 1, 70.0f, true),
 			
 		Spell("", "", 0, "Empty spell.",
 				SpellType::other, 1, 1, 0, 0.0f),

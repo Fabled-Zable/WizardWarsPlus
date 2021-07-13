@@ -136,8 +136,14 @@ void onTick(CSprite@ this)
 		if( !b.get_bool("flame_slash_activation") )
 		{
 			CSpriteLayer@ layer = this.addSpriteLayer("slash","Flash1.png",32,32);
-
-			layer.SetFrame(0);
+			if(isClient())
+			{
+				layer.SetFrame(0);
+				layer.SetRelativeZ(-5);
+				b.set_Vec2f("blobLastPos",thisPos);
+				b.set_bool("wasFacingleft",false);
+				b.set_bool("changed_look",false);
+			}
 		}
 		else
 		{
@@ -147,18 +153,20 @@ void onTick(CSprite@ this)
 			}
 
 			CSpriteLayer@ layer = this.addSpriteLayer("slash","fire_slash_effect.png",100,45);
-
-			Vec2f blobAimPos = b.get_Vec2f("flame_slash_aimpos");
-			Vec2f aimDir = blobAimPos-thisPos;
-			float aimAngle = aimDir.getAngleDegrees();
+			if(isClient())
+			{
+				Vec2f blobAimPos = b.get_Vec2f("flame_slash_aimpos");
+				Vec2f aimDir = blobAimPos-thisPos;
+				float aimAngle = aimDir.getAngleDegrees();
 		
-			Vec2f layerOffset = Vec2f(-25.0f,0);
-			layerOffset.RotateByDegrees(aimAngle);
-			layer.SetOffset(layerOffset);
+				Vec2f layerOffset = Vec2f(-25.0f,0);
+				layerOffset.RotateByDegrees(aimAngle);
+				layer.SetOffset(layerOffset);
 
-			layer.ScaleBy(Vec2f(1.05f,1.05f));
-			layer.RotateBy(-aimAngle,Vec2f_zero);
-			layer.SetFrame(0);
+				layer.ScaleBy(Vec2f(1.05f,1.05f));
+				layer.RotateBy(-aimAngle,Vec2f_zero);
+				layer.SetFrame(0);
+			}
 		}
 
 		b.set_bool("slashSetupDone",true);
@@ -176,9 +184,58 @@ void onTick(CSprite@ this)
 
 		CSpriteLayer@ slashLayer = this.getSpriteLayer("slash");
 
-		float horizontalOffset = this.isFacingLeft() ? 16.0f : -16.0f;
-		Vec2f swordTargetPos = Vec2f(16,-10.0f);
-		slashLayer.SetOffset(swordTargetPos);
+		bool spriteIsFacingLeft = this.isFacingLeft();
+		if (b.get_bool("wasFacingLeft") && !spriteIsFacingLeft)
+		{
+			b.set_bool("wasFacingLeft", false);
+			b.set_bool("changed_look", true);
+		}
+		else if (!b.get_bool("wasFacingLeft") && spriteIsFacingLeft)
+		{
+			b.set_bool("wasFacingLeft", true);
+			b.set_bool("changed_look", true);
+		}
+		
+		Vec2f layerTargetPos = Vec2f(16,-10.0f);
+		float invertedOffset = this.isFacingLeft() ? -1.0f : 1.0f;
+		Vec2f layerLastPos = slashLayer.getOffset();
+
+		if(b.get_bool("changed_look"))
+		{
+			layerLastPos.x *= -1.0f;
+			b.set_bool("changed_look",false);
+		}
+		
+		Vec2f blobLastPos = b.get_Vec2f("blobLastPos");
+		Vec2f blobTravelVec = thisPos - blobLastPos;
+		if(!spriteIsFacingLeft)
+		{
+			blobTravelVec.x *= -1.0f;
+		}
+
+		layerLastPos -= blobTravelVec;
+
+		Vec2f travelVec = layerTargetPos-layerLastPos;
+		float travelDist = travelVec.getLength();
+		Vec2f travelVecNorm = travelVec;
+		travelVecNorm.Normalize();
+		
+		float travelSpeed = travelDist/8;
+		travelVecNorm *= travelSpeed;
+
+		Vec2f layerNextPos = layerLastPos + travelVecNorm;
+
+		//float layerTravelDist = 1.0f - (health/initialHealth);
+		
+		b.set_Vec2f("blobLastPos",thisPos);
+		if(travelDist < 1.0f)
+		{
+			slashLayer.SetOffset(layerTargetPos);
+		}
+		else
+		{
+			slashLayer.SetOffset(layerNextPos);
+		}
 
 		uint16 currentFrame = slashLayer.getFrame();
 		if(getGameTime() % 2 == 0)
