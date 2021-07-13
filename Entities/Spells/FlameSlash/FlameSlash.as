@@ -142,7 +142,6 @@ void onTick(CSprite@ this)
 				layer.SetRelativeZ(-5);
 				b.set_Vec2f("blobLastPos",thisPos);
 				b.set_bool("wasFacingleft",false);
-				b.set_bool("changed_look",false);
 			}
 		}
 		else
@@ -177,7 +176,7 @@ void onTick(CSprite@ this)
 		return;
 	}
 
-	if( !b.get_bool("flame_slash_activation") ) //if false, control sword
+	if( !b.get_bool("flame_slash_activation") ) //if false, control sword layer
 	{
 		if(!isClient())
 		{return;}
@@ -185,30 +184,24 @@ void onTick(CSprite@ this)
 		CSpriteLayer@ slashLayer = this.getSpriteLayer("slash");
 
 		bool spriteIsFacingLeft = this.isFacingLeft();
-		if (b.get_bool("wasFacingLeft") && !spriteIsFacingLeft)
+
+		Vec2f layerTargetPos = Vec2f(16,-10.0f);
+		Vec2f layerLastPos = slashLayer.getOffset();
+		Vec2f blobLastPos = b.get_Vec2f("blobLastPos");
+		Vec2f blobTravelVec = thisPos - blobLastPos;
+
+		if (b.get_bool("wasFacingLeft") && !spriteIsFacingLeft) //inverts X on position of layer if blob switched facing
 		{
 			b.set_bool("wasFacingLeft", false);
-			b.set_bool("changed_look", true);
+			layerLastPos.x *= -1.0f;
 		}
 		else if (!b.get_bool("wasFacingLeft") && spriteIsFacingLeft)
 		{
 			b.set_bool("wasFacingLeft", true);
-			b.set_bool("changed_look", true);
-		}
-		
-		Vec2f layerTargetPos = Vec2f(16,-10.0f);
-		float invertedOffset = this.isFacingLeft() ? -1.0f : 1.0f;
-		Vec2f layerLastPos = slashLayer.getOffset();
-
-		if(b.get_bool("changed_look"))
-		{
 			layerLastPos.x *= -1.0f;
-			b.set_bool("changed_look",false);
 		}
-		
-		Vec2f blobLastPos = b.get_Vec2f("blobLastPos");
-		Vec2f blobTravelVec = thisPos - blobLastPos;
-		if(!spriteIsFacingLeft)
+
+		if(!spriteIsFacingLeft) //same for the travel vector of the caster
 		{
 			blobTravelVec.x *= -1.0f;
 		}
@@ -225,8 +218,6 @@ void onTick(CSprite@ this)
 
 		Vec2f layerNextPos = layerLastPos + travelVecNorm;
 
-		//float layerTravelDist = 1.0f - (health/initialHealth);
-		
 		b.set_Vec2f("blobLastPos",thisPos);
 		if(travelDist < 1.0f)
 		{
@@ -237,10 +228,10 @@ void onTick(CSprite@ this)
 			slashLayer.SetOffset(layerNextPos);
 		}
 
-		uint16 currentFrame = slashLayer.getFrame();
+		uint16 currentFrame = slashLayer.getFrame(); //animation loop
 		if(getGameTime() % 2 == 0)
 		{
-			if(currentFrame != 3)
+			if(currentFrame != 3) //reset after fourth frame (0->3)
 			{
 				slashLayer.SetFrame(currentFrame+1);
 			}
