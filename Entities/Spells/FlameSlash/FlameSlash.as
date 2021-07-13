@@ -9,6 +9,7 @@ void onTick(CBlob@ this)
 		this.set_u32("endTime",(1*30) + getGameTime());//1 second from now
 		this.set_u32("timePassed", 0); //counter system
 		this.getSprite().AddScript("FlameSlash.as");//need to do this to get the sprite hooks to run
+		this.set_bool("flame_slash_activation", false);
 
 		this.set_bool("setupDone",true);
 	}
@@ -20,9 +21,9 @@ void onTick(CBlob@ this)
 			cleanUp(this);
 			return;
 		}
-		if(this.get_u32("endTime") < getGameTime())
+
+		if( !this.get_bool("flame_slash_activation") )
 		{
-			cleanUp(this);
 			return;
 		}
 
@@ -125,53 +126,87 @@ void onTick(CBlob@ this)
 void onTick(CSprite@ this)
 {
 	CBlob@ b = this.getBlob();
+	if(b is null)
+	{return;}
+
+	Vec2f thisPos = b.getPosition();
 	
 	if(!b.exists("slashSetupDone") || !b.get_bool("slashSetupDone"))
 	{
-		CSpriteLayer@ layer = this.addSpriteLayer("slash","fire_slash_effect.png",100,45);
+		if( !b.get_bool("flame_slash_activation") )
+		{
+			CSpriteLayer@ layer = this.addSpriteLayer("slash","Flash1.png",32,32);
 
-		Vec2f thisPos = b.getPosition();
-		Vec2f blobAimPos = b.get_Vec2f("flame_slash_aimpos");
-		Vec2f aimDir = blobAimPos-thisPos;
-		float aimAngle = aimDir.getAngleDegrees();
+			layer.SetFrame(0);
+		}
+		else
+		{
+			if(this.getSpriteLayer("slash") !is null)
+			{
+				this.RemoveSpriteLayer("slash");
+			}
 
-		Vec2f blobVel = b.getVelocity();
+			CSpriteLayer@ layer = this.addSpriteLayer("slash","fire_slash_effect.png",100,45);
+
+			Vec2f blobAimPos = b.get_Vec2f("flame_slash_aimpos");
+			Vec2f aimDir = blobAimPos-thisPos;
+			float aimAngle = aimDir.getAngleDegrees();
 		
-		Vec2f layerOffset = Vec2f(-25.0f,0);
-		layerOffset.RotateByDegrees(aimAngle);
-		layer.SetOffset(layerOffset);
+			Vec2f layerOffset = Vec2f(-25.0f,0);
+			layerOffset.RotateByDegrees(aimAngle);
+			layer.SetOffset(layerOffset);
+
+			layer.ScaleBy(Vec2f(1.05f,1.05f));
+			layer.RotateBy(-aimAngle,Vec2f_zero);
+			layer.SetFrame(0);
+		}
 
 		b.set_bool("slashSetupDone",true);
-		layer.ScaleBy(Vec2f(1.05f,1.05f));
-		layer.RotateBy(-aimAngle,Vec2f_zero);
-		layer.SetFrame(0);
 	}
-	
-	/*
-	CSpriteLayer@ layer = this.getSpriteLayer("slash");
-	layer.ResetTransform();
-	{
-		layer.SetFrame(layer.getFrame()+1);
-	}
-	layer.ScaleBy(Vec2f(1.01f,1.01f));
-	*/
 
 	if(!b.get_bool("slashSetupDone"))
 	{
 		return;
 	}
 
-	CSpriteLayer@ slashLayer = this.getSpriteLayer("slash");
-	slashLayer.SetFacingLeft(false);
+	if( !b.get_bool("flame_slash_activation") ) //if false, control sword
+	{
+		if(!isClient())
+		{return;}
 
-	uint16 currentFrame = slashLayer.getFrame();
-	if(currentFrame != 13)
-	{
-		slashLayer.SetFrame(currentFrame+1);
+		CSpriteLayer@ slashLayer = this.getSpriteLayer("slash");
+
+		float horizontalOffset = this.isFacingLeft() ? 16.0f : -16.0f;
+		Vec2f swordTargetPos = Vec2f(16,-10.0f);
+		slashLayer.SetOffset(swordTargetPos);
+
+		uint16 currentFrame = slashLayer.getFrame();
+		if(getGameTime() % 2 == 0)
+		{
+			if(currentFrame != 3)
+			{
+				slashLayer.SetFrame(currentFrame+1);
+			}
+			else
+			{
+				slashLayer.SetFrame(0);
+			}
+		}
 	}
-	else
+	else //if true, slash animation
 	{
-		cleanUp(b);
+		CSpriteLayer@ slashLayer = this.getSpriteLayer("slash");
+		slashLayer.SetFacingLeft(false);
+
+		uint16 currentFrame = slashLayer.getFrame();
+		if(currentFrame != 13)
+		{
+			slashLayer.SetFrame(currentFrame+1);
+		}
+		else
+		{
+			cleanUp(b);
+		}
 	}
 }
 

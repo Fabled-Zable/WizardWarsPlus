@@ -1648,11 +1648,10 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			if(this.hasScript("FlameSlash.as"))
 			{
-				return;
-			}
+				this.set_Vec2f("flame_slash_aimpos",aimpos);
+				this.set_bool("slashSetupDone", false);
+				this.set_bool("flame_slash_activation", true);
 
-			if(!this.hasScript("FlameSlash.as"))
-			{
 				switch(charge_state)
 				{
 					case minimum_cast:
@@ -1668,8 +1667,15 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				
 					default:return;
 				}
-
-				this.set_Vec2f("flame_slash_aimpos",aimpos);
+				
+				if(isClient())
+				{
+					this.getSprite().PlaySound("flame_slash_sound", 3.0f);
+				}
+			}
+			else
+			{
+				//this.set_Vec2f("flame_slash_aimpos",aimpos);
 				this.AddScript("FlameSlash.as");
 				
 				if(isClient())
