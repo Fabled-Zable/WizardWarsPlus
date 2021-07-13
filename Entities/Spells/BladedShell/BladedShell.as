@@ -4,14 +4,14 @@
 
 void onTick(CBlob@ this)
 {
-	if(!this.exists("setupDone") || !this.get_bool("setupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
+	if(!this.exists("shellSetupDone") || !this.get_bool("shellSetupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
 	{
 		this.set_u32("timeActive",(10*30) + getGameTime());//10 seconds from now
 		this.set_f32("effectRadius",8*2);// 2 block radius
 		this.set_u32("attackRate",15); // half a second
 		this.getSprite().AddScript("BladedShell.as");//need to do this to get the sprite hooks to run
 
-		this.set_bool("setupDone",true);
+		this.set_bool("shellSetupDone",true);
 	}
 
 	if(this !is null)
@@ -72,13 +72,13 @@ void onTick(CBlob@ this)
 void onTick(CSprite@ this)
 {
 	CBlob@ b = this.getBlob();
-	if(!b.exists("spriteSetupDone") || !b.get_bool("spriteSetupDone"))
+	if(!b.exists("shellSpriteSetupDone") || !b.get_bool("shellSpriteSetupDone"))
 	{
 		for(int i = 0; i < 360; i += 45)//makes 8
 		{
 			CSpriteLayer@ layer = this.addSpriteLayer("knife" + i,"Knife.png",13,4,b.getTeamNum(),0);
 		}
-		b.set_bool("spriteSetupDone",true);
+		b.set_bool("shellSpriteSetupDone",true);
 	}
 
 	for(int i = 0; i < 360; i += 45)//makes 8
@@ -153,8 +153,8 @@ void cleanUp(CBlob@ this)//because we don't use onInit we need to cleanup so tha
 		this.Untag("doubleBlade");
 	}
 
-	this.set_bool("setupDone",false);
-	this.set_bool("spriteSetupDone",false);
+	this.set_bool("shellSetupDone",false);
+	this.set_bool("shellSpriteSetupDone",false);
 	this.set_bool("spriteSetupDone2",false);
 	this.getSprite().RemoveScript("BladedShell.as");
 	this.RemoveScript("BladedShell.as");

@@ -9,13 +9,13 @@ void onTick(CBlob@ this)
 	if( this is null )
 	{return;}
 
-	if(!this.exists("setupDone") || !this.get_bool("setupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
+	if(!this.exists("voltageSetupDone") || !this.get_bool("voltageSetupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
 	{
 		this.set_u32("remainingTime",(5*30) + getGameTime());//5 seconds from now
 		this.set_f32("effectRadius",9.7f);// increasing radius
 		this.getSprite().AddScript("VoltageField.as");//need to do this to get the sprite hooks to run
 
-		this.set_bool("setupDone",true);
+		this.set_bool("voltageSetupDone",true);
 	}
 
 	u16 remainingTime = this.get_u32("remainingTime");
@@ -86,11 +86,11 @@ void onTick(CSprite@ this)
 	if(b is null)
 	{return;}
 
-	if(!b.exists("sphereSetupDone") || !b.get_bool("sphereSetupDone"))
+	if(!b.exists("voltageSpriteSetupDone") || !b.get_bool("voltageSpriteSetupDone"))
 	{
 		CSpriteLayer@ layer = this.addSpriteLayer("sphere","active_sphere.png",128,128);
 		
-		b.set_bool("sphereSetupDone",true);
+		b.set_bool("voltageSpriteSetupDone",true);
 		layer.ScaleBy(Vec2f(0.15f,0.15f));
 		layer.setRenderStyle(RenderStyle::additive);
 	}
@@ -128,8 +128,8 @@ void cleanUp(CBlob@ this)//because we don't use onInit we need to cleanup so tha
 		this.getSprite().RemoveSpriteLayer("sphere");
 	}
 
-	this.set_bool("setupDone",false);
-	this.set_bool("sphereSetupDone",false);
+	this.set_bool("voltageSetupDone",false);
+	this.set_bool("voltageSpriteSetupDone",false);
 	this.getSprite().RemoveScript("VoltageField.as");
 	this.RemoveScript("VoltageField.as");
 }

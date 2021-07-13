@@ -1649,7 +1649,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			if(this.hasScript("FlameSlash.as"))
 			{
 				this.set_Vec2f("flame_slash_aimpos",aimpos);
-				this.set_bool("slashSetupDone", false);
+				this.set_bool("slashSpriteSetupDone", false);
 				this.set_bool("flame_slash_activation", true);
 
 				switch(charge_state)

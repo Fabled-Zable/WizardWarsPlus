@@ -4,14 +4,14 @@
 
 void onTick(CBlob@ this)
 {
-	if(!this.exists("setupDone") || !this.get_bool("setupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
+	if(!this.exists("slashSetupDone") || !this.get_bool("slashSetupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
 	{
 		this.set_u32("endTime",(1*30) + getGameTime());//1 second from now
 		this.set_u32("timePassed", 0); //counter system
 		this.getSprite().AddScript("FlameSlash.as");//need to do this to get the sprite hooks to run
 		this.set_bool("flame_slash_activation", false);
 
-		this.set_bool("setupDone",true);
+		this.set_bool("slashSetupDone",true);
 	}
 
 	if(this !is null)
@@ -131,7 +131,7 @@ void onTick(CSprite@ this)
 
 	Vec2f thisPos = b.getPosition();
 	
-	if(!b.exists("slashSetupDone") || !b.get_bool("slashSetupDone"))
+	if(!b.exists("slashSpriteSetupDone") || !b.get_bool("slashSpriteSetupDone"))
 	{
 		if( !b.get_bool("flame_slash_activation") )
 		{
@@ -168,10 +168,10 @@ void onTick(CSprite@ this)
 			}
 		}
 
-		b.set_bool("slashSetupDone",true);
+		b.set_bool("slashSpriteSetupDone",true);
 	}
 
-	if(!b.get_bool("slashSetupDone"))
+	if(!b.get_bool("slashSpriteSetupDone"))
 	{
 		return;
 	}
@@ -276,8 +276,8 @@ void cleanUp(CBlob@ this)//because we don't use onInit we need to cleanup so tha
 		this.getSprite().RemoveSpriteLayer("slash");
 	}
 
-	this.set_bool("setupDone",false);
 	this.set_bool("slashSetupDone",false);
+	this.set_bool("slashSpriteSetupDone",false);
 	this.getSprite().RemoveScript("FlameSlash.as");
 	this.RemoveScript("FlameSlash.as");
 }
