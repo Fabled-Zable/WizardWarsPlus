@@ -120,6 +120,11 @@ void onTick(CBlob@ this)
 			}
 		}
 		this.setVelocity(Vec2f_zero);
+
+		if( time_passed > 20 )
+		{
+			cleanUp(this);
+		}
 	}
 }
 
