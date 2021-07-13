@@ -135,7 +135,7 @@ void onTick(CSprite@ this)
 	{
 		if( !b.get_bool("flame_slash_activation") )
 		{
-			CSpriteLayer@ layer = this.addSpriteLayer("slash","Flash1.png",32,32);
+			CSpriteLayer@ layer = this.addSpriteLayer("slash","floating_flame_sword.png",32,32);
 			if(isClient())
 			{
 				layer.SetFrame(0);
@@ -228,10 +228,16 @@ void onTick(CSprite@ this)
 			slashLayer.SetOffset(layerNextPos);
 		}
 
+		float layerRotation = spriteIsFacingLeft ? -travelVec.x : travelVec.x;
+		layerRotation /= 3.0f;
+		
+		slashLayer.ResetTransform();
+		slashLayer.RotateByDegrees(layerRotation, Vec2f_zero);
+
 		uint16 currentFrame = slashLayer.getFrame(); //animation loop
 		if(getGameTime() % 2 == 0)
 		{
-			if(currentFrame != 3) //reset after fourth frame (0->3)
+			if(currentFrame != 8) //reset after ninth frame (0->8)
 			{
 				slashLayer.SetFrame(currentFrame+1);
 			}
