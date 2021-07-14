@@ -364,8 +364,8 @@ void intitializeClasses()
 	playerClassButtons.registerWWPlayerClassButton("SwordCaster", 
 													"     \"This is a good day for SwordCasters all around the world.\" " +
 													"\n\n     Health: 70" +
-													"\n     Mana: 120" +
-													"\n     Mana Regen: 5 mana/sec",
+													"\n     Mana: 70" +
+													"\n     Mana Regen: 3 mana/sec",
 													"swordcaster", 4, 0, 5, 0, "WizardWars");
 	playerClassButtons.registerWWPlayerClassButton("Entropist", 
 													"     There is no better feeling than giving the enemy a taste of their own medicine." +

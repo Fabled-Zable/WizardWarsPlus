@@ -17,6 +17,7 @@ void onInit(CBlob @ this)
 	this.set_u8("launch team", 255);
 	this.server_setTeamNum(-1);
 	this.Tag("super heavy weight");
+	this.set_bool("inprisoning", false);
 
 	LimitedAttack_setup(this);
 
@@ -44,15 +45,20 @@ void onInit(CBlob @ this)
 void onTick(CBlob@ this)
 {
 	CSprite@ sprite = this.getSprite();
-	if ( this.get_bool("frozen target detected") == false && this.getTickSinceCreated() > 2 )
+	CShape@ shape = this.getShape();
+
+	if ( this.get_bool("frozen target detected") == false && this.getTickSinceCreated() < 3 )
 	{
 		CBlob@ blob = this.getAttachments().getAttachedBlob( "PICKUP2" );
 		if (blob !is null)
 		{
+			this.set_bool("inprisoning", true);
+			shape.setFriction(0.5f);
+
 			f32 blobRadius = blob.getRadius();
 			f32 prisonRadius = this.getRadius();
 			
-			this.getShape().getConsts().radius = blobRadius + 2.0f;
+			shape.getConsts().radius = blobRadius + 2.0f;
 			sprite.SetVisible(false);
 			
 			CSpriteLayer@ layer = sprite.addSpriteLayer( "IcePrison", 16, 16 );
@@ -71,11 +77,11 @@ void onTick(CBlob@ this)
 	}
 
 	//rock and roll mode
-	if (!this.getShape().getConsts().collidable)
+	if (!shape.getConsts().collidable)
 	{
 		Vec2f vel = this.getVelocity();
 		f32 angle = vel.Angle();
-		Slam(this, angle, vel, this.getShape().vellen * 1.5f);
+		Slam(this, angle, vel, shape.vellen * 1.5f);
 	}
 	//normal mode
 	else if (!this.isOnGround())
@@ -236,4 +242,9 @@ void onInit(CSprite@ this)
 {
 	this.animation.frame = (this.getBlob().getNetworkID() % 4);
 	this.getCurrentScript().runFlags |= Script::remove_after_this;
+}
+
+bool canBePickedUp(CBlob@ this, CBlob@ byBlob)
+{
+	return !this.get_bool("inprisoning");
 }

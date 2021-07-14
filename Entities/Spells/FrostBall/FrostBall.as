@@ -4,8 +4,8 @@
 
 const int pierce_amount = 8;
 
-const f32 MIN_FROZEN_TIME = 1;
-const f32 MAX_FROZEN_TIME = 6;
+const f32 MIN_FROZEN_TIME = 0.5f;
+const f32 MAX_FROZEN_TIME = 5;
 
 void onInit( CBlob @ this )
 {
