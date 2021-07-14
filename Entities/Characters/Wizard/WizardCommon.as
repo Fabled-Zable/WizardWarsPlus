@@ -34,7 +34,7 @@ namespace WizardParams
 			SpellType::other, 15, 10, 0, 64.0f, true),
 			
 		Spell("frost_ball", "Ball of Frost", 13, "Send forth a slow travelling ball of pure cold essence to freeze your enemies in place and deal a small amount of damage. Freeze duration increases as your own health declines.",
-			SpellType::other, 18, 25, 0, 360.0f, true),
+			SpellType::other, 20, 25, 0, 360.0f, true),
 			
 		Spell("heal", "Lesser Heal", 14, "Salves the least of your allies' wounds to restore a moderate portion of their health. Fully charge in order to heal yourself with less efficiency.",
 			SpellType::other, 18, 30, 0, 360.0f), 

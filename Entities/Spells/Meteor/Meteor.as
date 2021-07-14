@@ -34,11 +34,11 @@ void onInit( CBlob @ this )
 	this.getShape().getVars().waterDragScale = 8.0f;
 	this.getShape().getConsts().collideWhenAttached = true;
 	
-	this.set_f32("explosive_radius",96.0f);
-	this.set_f32("explosive_damage",10.0f);
+	this.set_f32("explosive_radius",80.0f);
+	this.set_f32("explosive_damage",8.0f);
 	this.set_string("custom_explosion_sound", "FireBlast8.ogg");
 	this.set_f32("map_damage_radius", 64.0f);
-	this.set_f32("map_damage_ratio", 0.4f);
+	this.set_f32("map_damage_ratio", 0.5f);
 	this.set_bool("map_damage_raycast", true);
 	this.set_bool("explosive_teamkill", false);
     this.Tag("exploding");
