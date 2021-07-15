@@ -1170,23 +1170,37 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			u16 lifetime = 20;
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
-			Vec2f dirNorm = (targetPos - this.getPosition());
+			Vec2f orbPos = aimpos;
+			Vec2f targetPos = orbPos + Vec2f(0.0f,2.0f);
+			Vec2f dirNorm = (targetPos - thispos);
 			dirNorm.Normalize();
-			Vec2f orbPos = aimpos;	
-			if(!isServer()){
-				return;
-			}
-			CBlob@ orb = server_CreateBlob( "magic_barrier" ); 
-			if (orb !is null)
-			{	
-				orb.set_u16("lifetime", lifetime);
 
-				//orb.IgnoreCollisionWhileOverlapped( this );
-				orb.SetDamageOwnerPlayer( this.getPlayer() );
-				orb.server_setTeamNum( this.getTeamNum() );
-				orb.setPosition( orbPos );
-				orb.setAngleDegrees(-dirNorm.Angle()+90.0f);
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				break;
+				
+				case super_cast:
+				{
+					lifetime += 5;
+				}
+				break;
+				
+				default:return;
+			}
+
+			if (isServer())
+			{
+				CBlob@ orb = server_CreateBlob( "magic_barrier", this.getTeamNum(), orbPos ); 
+				if (orb !is null)
+				{
+					orb.set_u16("lifetime", lifetime);
+
+					orb.SetDamageOwnerPlayer( this.getPlayer() );
+					orb.setAngleDegrees(-dirNorm.Angle()+90.0f);
+				}
 			}
 		}
 		break;
@@ -1255,23 +1269,21 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
-			Vec2f dirNorm = (targetPos - this.getPosition());
+			Vec2f orbPos = aimpos;
+			Vec2f targetPos = orbPos + Vec2f(0.0f,2.0f);
+			Vec2f dirNorm = (targetPos - thispos);
 			dirNorm.Normalize();
-			Vec2f orbPos = aimpos;	
-			if(!isServer()){
-				return;
-			}
-			CBlob@ orb = server_CreateBlob( "rock_wall" ); 
-			if (orb !is null)
-			{	
-				orb.set_u16("lifetime", lifetime);
 
-				//orb.IgnoreCollisionWhileOverlapped( this );
-				orb.SetDamageOwnerPlayer( this.getPlayer() );
-				orb.server_setTeamNum( 255 );
-				orb.setPosition( orbPos );
-				orb.setAngleDegrees(-dirNorm.Angle()+90.0f);
+			if (isServer())
+			{
+				CBlob@ orb = server_CreateBlob( "rock_wall", this.getTeamNum(), orbPos ); 
+				if (orb !is null)
+				{
+					orb.set_u16("lifetime", lifetime);
+
+					orb.SetDamageOwnerPlayer( this.getPlayer() );
+					orb.setAngleDegrees(-dirNorm.Angle()+90.0f);
+				}
 			}
 		}
 		break;
@@ -1291,14 +1303,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 			else
 			{
-				Vec2f castPos = this.getPosition();
-				ParticleAnimated( "Flash3.png",
-								castPos,
-								Vec2f(0,0),
-								float(XORRandom(360)),
-								1.0f, 
-								3, 
-								0.0f, true );
+				Vec2f castPos = thispos;
 				
 				Vec2f aimVector = aimpos - castPos;
 				Vec2f aimNorm = aimVector;
@@ -1313,13 +1318,14 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				{
 					for (uint i = 0; i < hitInfos.length; i++)
 					{
-						if ( teleBlock == true ){continue;}
+						if ( teleBlock == true ){break;}
 
 						HitInfo@ hi = hitInfos[i];
 						if (hi.blob !is null) // check
 						{
 							if (hi.blob.getTeamNum() == this.getTeamNum())
 							{continue;}
+
 							if (!hi.blob.hasTag("TeleportBlocker"))
 							{continue;}
 							else 
@@ -1332,22 +1338,27 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 						}
 					}
 				}
-				
-				for (uint step = 0; step < aimVector.Length(); step += 8)
+
+				if(isClient())
 				{
-					teleSparks( castPos + aimNorm*step, 5, aimNorm*4.0f );
-				}
+					Vec2f clientCastPos = this.getPosition();
+
+					for (uint step = 0; step < aimVector.Length(); step += 8)
+					{
+						teleSparks( clientCastPos + aimNorm*step, 5, aimNorm*4.0f );
+					}
 				
-				this.setVelocity( Vec2f_zero );
-				this.setPosition( aimpos );
-				
-				ParticleAnimated( "Flash3.png",
-								castPos,
+					ParticleAnimated( "Flash3.png",
+								clientCastPos,
 								Vec2f(0,0),
 								float(XORRandom(360)),
 								1.0f, 
 								3, 
-								0.0f, true );     
+								0.0f, true );
+				}
+
+				this.setVelocity( Vec2f_zero );
+				this.setPosition( aimpos );
 								
 				this.getSprite().PlaySound("Teleport.ogg", 0.8f, 1.0f);
 			}
@@ -1356,8 +1367,6 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -2025350104: //recall_undead
 		{
-			Vec2f thisPos = this.getPosition();
-		
 			CPlayer@ thisPlayer = this.getPlayer();
 			if ( thisPlayer !is null )
 			{		
@@ -1371,16 +1380,16 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					{
 						if ( isClient() )
 							ParticleZombieLightning( zombie.getPosition() );
-						zombie.setPosition( thisPos );
+						zombie.setPosition( thispos );
 						zombie.setVelocity( Vec2f(0,0) );
 					}
 				}
 			}
 			
-			if (!isServer())
+			if (isClient())
 			{
 				this.getSprite().PlaySound("Summon1.ogg", 1.0f, 1.0f);
-				ParticleZombieLightning( thisPos );
+				ParticleZombieLightning( this.getPosition() );
 			}
 		}
 		break;
@@ -1430,7 +1439,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			int castTime = getGameTime();
 		
-			this.set_Vec2f("spell aim vec", aimpos - this.getPosition());
+			this.set_Vec2f("spell aim vec", aimpos - thispos);
 			
 			this.Tag("in spell sequence");
 			this.set_u16("FoN cast time", castTime);
@@ -1741,12 +1750,11 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				scale = 0.375f;
 			}
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
-			Vec2f userPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f castDir = (targetPos- userPos);
+			Vec2f casterPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f castDir = (aimpos - casterPos);
 			castDir.Normalize();
 			castDir *= 24; //all of this to get offset 3 blocks in front of caster
-			Vec2f castPos = userPos + castDir;  //exact position of effect
+			Vec2f castPos = casterPos + castDir;  //exact position of effect
 
 			if ( isClient() ) //temporary Counterspell effect
 			{
@@ -1937,23 +1945,38 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			u16 lifetime = 30;
 
-			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
-			Vec2f dirNorm = (targetPos - this.getPosition());
+			Vec2f orbPos = aimpos;
+			Vec2f targetPos = orbPos + Vec2f(0.0f,2.0f);
+			Vec2f dirNorm = (targetPos - thispos);
 			dirNorm.Normalize();
-			Vec2f orbPos = aimpos;	
-			if(!isServer()){
-				return;
-			}
-			CBlob@ orb = server_CreateBlob( "no_teleport_barrier" ); 
-			if (orb !is null)
-			{	
-				orb.set_u16("lifetime", lifetime);
 
-				orb.SetDamageOwnerPlayer( this.getPlayer() );
-				orb.server_setTeamNum( this.getTeamNum() );
-				orb.setPosition( orbPos );
-				orb.setAngleDegrees(-dirNorm.Angle()+90.0f);
-				orb.getShape().SetStatic(true);
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				break;
+				
+				case super_cast:
+				{
+					lifetime += 5;
+				}
+				break;
+				
+				default:return;
+			}
+
+			if (isServer())
+			{
+				CBlob@ orb = server_CreateBlob( "no_teleport_barrier", this.getTeamNum(), orbPos ); 
+				if (orb !is null)
+				{
+					orb.set_u16("lifetime", lifetime);
+
+					orb.SetDamageOwnerPlayer( this.getPlayer() );
+					orb.setAngleDegrees(-dirNorm.Angle()+90.0f);
+					orb.getShape().SetStatic(true);
+				}
 			}
 		}
 		break;
@@ -1989,16 +2012,14 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
-			CBlob@ orb = server_CreateBlob( "negatisphere" );
+			CBlob@ orb = server_CreateBlob( "negatisphere" , this.getTeamNum() , orbPos);
 			if (orb !is null)
 			{
-				orb.set_Vec2f("caster", this.getPosition());
+				orb.set_Vec2f("caster", orbPos);
 				orb.set_s8("lifepoints", 10); //"life" that drains when cancelling other spells.
 
 				orb.IgnoreCollisionWhileOverlapped( this );
 				orb.SetDamageOwnerPlayer( this.getPlayer() );
-				orb.server_setTeamNum( this.getTeamNum() );
-				orb.setPosition( orbPos );
 				orb.setVelocity( orbVel );
 
 				if(this.get_bool("shifting"))
@@ -2031,7 +2052,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 			int castTime = getGameTime();
 		
-			this.set_Vec2f("spell aim vec", aimpos - this.getPosition());
+			this.set_Vec2f("spell aim vec", aimpos - thispos);
 			this.set_f32("DW_damage", damage); //sets damage for Disruption Wave to use
 			
 			this.Tag("in spell sequence");
@@ -2123,7 +2144,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			CBlob@ orb = server_CreateBlob( "plasma_shot" );
+			CBlob@ orb = server_CreateBlob( "plasma_shot" , this.getTeamNum() , thispos);
 			if (orb !is null)
 			{
 				orb.set_f32("damage", orbDamage);
@@ -2132,8 +2153,6 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 				orb.IgnoreCollisionWhileOverlapped( this );
 				orb.SetDamageOwnerPlayer( this.getPlayer() );
-				orb.server_setTeamNum( this.getTeamNum() );
-				orb.setPosition( this.getPosition() );
 				orb.setVelocity( Vec2f_zero );
 			}
 		}
@@ -2526,7 +2545,7 @@ void Heal( CBlob@ blob, f32 healAmount )
 
 void makeHealParticles(CBlob@ this, const f32 velocity = 1.0f, const int smallparticles = 12, const bool sound = true)
 {
-	if (isServer()){
+	if ( !isClient() ){
 		return;	
 	}
 
@@ -2619,8 +2638,9 @@ void UnholyRes( CBlob@ blob )
 
 void makeReviveParticles(CBlob@ this, const f32 velocity = 1.0f, const int smallparticles = 12, const bool sound = true)
 {
-	if ( !isClient() )
+	if ( !isClient() ){
 		return;
+	}
 		
 	//makeSmokeParticle(this, Vec2f(), "Smoke");
 	for (int i = 0; i < smallparticles; i++)
@@ -2902,9 +2922,6 @@ void manaShot( CBlob@ blob, u8 manaUsed, u8 casterMana, bool silent = false)
 Random _sprk_r2(12345);
 void teleSparks(Vec2f pos, int amount, Vec2f pushVel = Vec2f(0,0))
 {
-	if ( !isClient() )
-		return;
-
 	for (int i = 0; i < amount; i++)
     {
         Vec2f vel(_sprk_r2.NextFloat() * 1.0f, 0);
