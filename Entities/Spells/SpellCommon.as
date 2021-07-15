@@ -39,13 +39,11 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			if(isServer())
 			{
-
-			Vec2f pos = this.getPosition();
 			Vec2f aim = aimpos;
-			Vec2f vel = aim - pos;
+			Vec2f vel = aim - thispos;
 			Vec2f norm = vel;
 			norm.Normalize();
-			CBlob@ b = server_CreateBlob('boulder',this.getTeamNum(),this.getPosition() + norm*2);
+			CBlob@ b = server_CreateBlob('boulder',this.getTeamNum(),thispos + norm*2);
 			b.server_SetHealth(999);
 			b.server_SetTimeToDie(3);
 			b.setVelocity(vel/32);
@@ -157,8 +155,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -216,7 +214,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
 			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
@@ -263,7 +261,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
 			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
@@ -299,8 +297,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbDamage *= 0.0f;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -347,8 +345,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -392,8 +390,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= 2;
 
@@ -441,7 +439,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
 			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
@@ -501,8 +499,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 			
@@ -547,8 +545,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 			
@@ -574,7 +572,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -456270322://counter_spell
 		{
-			counterSpell(this, aimpos);
+			counterSpell(this, aimpos, thispos);
 		}
 		break;
 
@@ -604,8 +602,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;	
 			
@@ -667,8 +665,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -710,7 +708,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
 			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
@@ -757,8 +755,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -822,8 +820,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;	
 			
@@ -886,8 +884,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;	
 			
@@ -933,8 +931,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			
 			u16 manaUsed = spell.mana;
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -1025,8 +1023,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -1094,8 +1092,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -1142,8 +1140,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			f32 orbspeed = 4.0f;
 			u16 effectTime = 600;
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -1389,7 +1387,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 770505718://leech
 		{
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
 		
 			if (isServer())
 			{
@@ -1410,7 +1408,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -401411067://lightning
 		{
-            Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+            Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
 		
 			if (isServer())
 			{
@@ -1478,8 +1476,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			
 			float anglePerOrb = 360/numOrbs;
 			float swordWheelRot = XORRandom(anglePerOrb);
@@ -1601,13 +1599,14 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f shootVec = (aimpos - orbPos);
+			Vec2f orbVel = shootVec;
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
 			//distance between you and the target
-			float stopLength = (aimpos - orbPos).Length();
+			float stopLength = shootVec.Length();
 			u32 lifetime = stopLength / orbspeed;
 
 			CBlob@ orb = server_CreateBlob("executioner",this.getTeamNum(),orbPos);
@@ -1705,8 +1704,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbDamage *= 1.5f;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -1874,8 +1873,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbDamage *= 1.5f;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -1916,7 +1915,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 
 			Vec2f targetPos = aimpos + Vec2f(0.0f,-2.0f);
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
 			Vec2f orbVel = (targetPos- orbPos) / 10;
 			orbVel *= orbspeed;
 
@@ -1985,8 +1984,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
 
@@ -2075,8 +2074,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbDamage += 1.0f;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
-			Vec2f orbVel = (aimpos- orbPos);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
+			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= 2;
 
@@ -2208,7 +2207,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				orbspeed *= 1.4;
 			}
 
-			Vec2f orbPos = this.getPosition() + Vec2f(0.0f,-2.0f);
+			Vec2f orbPos = thispos + Vec2f(0.0f,-2.0f);
 			Vec2f orbVel = (aimpos - orbPos);
 			orbVel.Normalize();
 			orbVel *= orbspeed;
@@ -2644,14 +2643,13 @@ void makeReviveParticles(CBlob@ this, const f32 velocity = 1.0f, const int small
 	}
 }
 
-void counterSpell( CBlob@ caster , Vec2f aimpos)
+void counterSpell( CBlob@ caster , Vec2f aimpos, Vec2f thispos)
 {		
 	CMap@ map = getMap();
 	
 	if (map is null){return;}
 
-	Vec2f thisPos = caster.getPosition();
-	Vec2f aimVec = aimpos - thisPos;
+	Vec2f aimVec = aimpos - thispos;
 	float aimAngle = aimVec.getAngleDegrees();
 
 	float counterspellRange = 64.0f;
@@ -2661,7 +2659,7 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 	float arcLimitDegrees = (counterspellArc/2)+6.0f;
 
 	CBlob@[] blobsInRadius;
-	map.getBlobsInRadius(thisPos, counterspellRange, @blobsInRadius);
+	map.getBlobsInRadius(thispos, counterspellRange, @blobsInRadius);
 
 	for (uint i = 0; i < blobsInRadius.length; i++)
 	{
@@ -2669,7 +2667,7 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 		if (b !is null)
 		{
 			Vec2f bPos = b.getPosition();
-			Vec2f bVec = bPos - thisPos;
+			Vec2f bVec = bPos - thispos;
 			float bAngle = bVec.getAngleDegrees();
 
 			float angleDiff = bAngle - aimAngle;
@@ -2739,7 +2737,7 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 				if(damage == 0)
 				{return;}
 
-				caster.server_Hit(b, caster.getPosition(), Vec2f(0, 0), damage, Hitters::fire, true);
+				caster.server_Hit(b, b.getPosition(), Vec2f(0, 0), damage, Hitters::fire, true);
 					
 				countered = true;
 			}
@@ -2788,7 +2786,7 @@ void counterSpell( CBlob@ caster , Vec2f aimpos)
 	if ( isClient() )
 	{
 		CParticle@ p = ParticleAnimated( "Shockwave90deg.png",
-						caster.getPosition(),
+						thispos,
 						Vec2f(0,0),
 						-aimAngle + 45,
 						1.0f, 

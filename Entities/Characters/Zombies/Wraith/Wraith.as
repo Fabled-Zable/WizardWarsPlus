@@ -314,6 +314,7 @@ void onTick(CBlob@ this)
 
 			CBitStream params;
 			params.write_Vec2f(this.getAimPos());
+			params.write_Vec2f(this.getPosition());
 			this.SendCommand(this.getCommandID("self ignite"), params);
 		}
 	}
@@ -436,7 +437,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		server_setFireOn(this);
 		
-		Vec2f aimPos = params.read_Vec2f();
-		counterSpell(this, aimPos);
+		Vec2f aimpos = params.read_Vec2f();
+		Vec2f thispos = params.read_Vec2f();
+		counterSpell(this, aimpos, thispos);
 	}
 }
