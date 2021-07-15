@@ -1311,9 +1311,13 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				aimVector -= aimNorm*4;
 				aimpos -= aimNorm*4;
 
+				CMap@ map = getMap(); //standard map check
+				if(map is null)
+				{return;}
+
 				HitInfo@[] hitInfos;
 				bool teleBlock = false;
-				bool hasHit = this.getMap().getHitInfosFromRay(castPos, -aimNorm.getAngle(), aimVector.Length(), this, @hitInfos);
+				bool hasHit = map.getHitInfosFromRay(castPos, -aimNorm.getAngle(), aimVector.Length(), this, @hitInfos);
 				if ( hasHit )
 				{
 					for (uint i = 0; i < hitInfos.length; i++)
@@ -1735,19 +1739,28 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 1647813557://parry
 		{
-			u16 ownTeam = this.getTeamNum(); //Team of caster shortcut
-			CMap@ map = getMap(); //going to need map in order to see what blobs are in the radius
-			CBlob@[] blobs;//blob handle array to store blobs we want to effect
-			float effectRadius = 8;
-			f32 extraRadius = this.hasTag("extra_damage") ? 0.3f : 0.0f; //if yes, a bit more range
+			float effectRadius = 8.0f; //length of a block
 			f32 scale = 0.25f;
-            if (charge_state == NecromancerParams::cast_3) {
-				effectRadius *= 2.0f + extraRadius; //2 block radius
-				scale = 0.25f;
-			}
-			else if (charge_state == NecromancerParams::extra_ready) {
-				effectRadius *= 3.0f + extraRadius; //3 block radius
-				scale = 0.375f;
+			f32 extraRadius = this.hasTag("extra_damage") ? 0.3f : 0.0f; //if yes, a bit more range
+
+			switch(charge_state)
+			{
+				case minimum_cast:
+				case medium_cast:
+				case complete_cast:
+				{
+					effectRadius *= (2.0f + extraRadius); //2 block radius
+				}
+				break;
+				
+				case super_cast:
+				{
+					effectRadius *= (3.0f + extraRadius); //3 block radius
+					scale *= (1.5f + extraRadius);
+				}
+				break;
+				
+				default:return;
 			}
 
 			Vec2f casterPos = thispos + Vec2f(0.0f,-2.0f);
@@ -1787,6 +1800,13 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				}
 				this.getSprite().PlaySound("CounterSpell.ogg", 0.8f, 1.0f);
 			}
+
+			CMap@ map = getMap(); //standard map check
+			if(map is null)
+			{return;}
+
+			CBlob@[] blobs;//blob handle array to store blobs we want to effect
+			int ownTeam = this.getTeamNum(); //Team of caster shortcut
 
 			map.getBlobsInRadius(castPos,effectRadius, @blobs);//get the blobs
 			for(uint i = 0; i < blobs.length(); i++)//itterate through blobs
@@ -2185,7 +2205,11 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			Vec2f tilespace(int(aimpos.x / 8), int(aimpos.y / 8));
 			Vec2f worldspace = tilespace * 8 + Vec2f(4, 4);
 			Vec2f spawnpos = Vec2f_zero;
-			CMap@ map = getMap();
+			
+			CMap@ map = getMap(); //standard map check
+			if(map is null)
+			{return;}
+
 			for(int i = 0; i < 50; i++)
 			{
 				if(!map.isTileSolid(worldspace + Vec2f(0, i * 8)) && map.isTileSolid(worldspace + Vec2f(0, i * 8 + 8)))
@@ -2355,8 +2379,8 @@ void CastNegentropy( CBlob@ this )
 	if (!this.get( "manaInfo", @manaInfo ))
 	{return;}
 
-	CMap@ map = getMap();
-	if (map is null)
+	CMap@ map = getMap(); //standard map check
+	if(map is null)
 	{return;}
 
 	u32 gatheredMana = 0;
@@ -2665,9 +2689,9 @@ void makeReviveParticles(CBlob@ this, const f32 velocity = 1.0f, const int small
 
 void counterSpell( CBlob@ caster , Vec2f aimpos, Vec2f thispos)
 {		
-	CMap@ map = getMap();
-	
-	if (map is null){return;}
+	CMap@ map = getMap(); //standard map check
+	if(map is null)
+	{return;}
 
 	Vec2f aimVec = aimpos - thispos;
 	float aimAngle = aimVec.getAngleDegrees();
@@ -2940,7 +2964,10 @@ void teleSparks(Vec2f pos, int amount, Vec2f pushVel = Vec2f(0,0))
 
 u32 getLandHeight(Vec2f pos)
 {
-	CMap@ map = getMap();	
+	CMap@ map = getMap(); //standard map check
+	if(map is null)
+	{return 0;}
+
 	u16 tilesdown = 0;
 	
 	u32 pos_y = pos.y - pos.y % map.tilesize;//Store the y pos floored to the nearest top of a tile

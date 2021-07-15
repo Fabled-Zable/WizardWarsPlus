@@ -42,6 +42,7 @@ void onTick(CBlob@ this)
 			CMap@ map = getMap();
 			if(map is null)
 			{return;}
+			
 			HitInfo@[] hitsInRay;
 			CBlob@[] blobsHit;
 
