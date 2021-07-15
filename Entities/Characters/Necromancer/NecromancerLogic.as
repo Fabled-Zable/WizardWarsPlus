@@ -232,6 +232,7 @@ void ManageSpell( CBlob@ this, NecromancerInfo@ necromancer, PlayerPrefsInfo@ pl
 				castSpellID = playerPrefsInfo.primarySpellID;
             params.write_u8(castSpellID);
             params.write_Vec2f(spellPos);
+			params.write_Vec2f(pos);
             this.SendCommand(this.getCommandID("spell"), params);
 			
 			playerPrefsInfo.spell_cooldowns[castSpellID] = NecromancerParams::spells[castSpellID].cooldownTime*getTicksASecond();
@@ -446,7 +447,8 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		
         Spell spell = NecromancerParams::spells[spellID];
         Vec2f aimpos = params.read_Vec2f();
-        CastSpell(this, charge_state, spell, aimpos);
+		Vec2f thispos = params.read_Vec2f();
+        CastSpell(this, charge_state, spell, aimpos, thispos);
 		
 		manaInfo.mana -= spell.mana;
     }

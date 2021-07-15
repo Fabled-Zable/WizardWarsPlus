@@ -15,7 +15,7 @@ const int complete_cast = NecromancerParams::cast_3;
 const int super_cast = NecromancerParams::extra_ready;
 const float necro_shoot_speed = NecromancerParams::shoot_max_vel;
 
-void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimpos )
+void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimpos , Vec2f thispos)
 {	//To get a spell hash to add more spells type this in the console (press home in game)
 	//print('cfg_name'.getHash()+'');
 	//As an example with the meteor spell, i'd type out
@@ -1339,9 +1339,9 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				{
 					teleSparks( castPos + aimNorm*step, 5, aimNorm*4.0f );
 				}
-					
-				this.setPosition( aimpos );
+				
 				this.setVelocity( Vec2f_zero );
+				this.setPosition( aimpos );
 				
 				ParticleAnimated( "Flash3.png",
 								castPos,
