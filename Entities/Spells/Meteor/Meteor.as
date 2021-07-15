@@ -34,7 +34,7 @@ void onInit( CBlob @ this )
 	this.getShape().getVars().waterDragScale = 8.0f;
 	this.getShape().getConsts().collideWhenAttached = true;
 	
-	this.set_f32("explosive_radius",80.0f);
+	this.set_f32("explosive_radius",96.0f);
 	this.set_f32("explosive_damage",8.0f);
 	this.set_string("custom_explosion_sound", "FireBlast8.ogg");
 	this.set_f32("map_damage_radius", 64.0f);
