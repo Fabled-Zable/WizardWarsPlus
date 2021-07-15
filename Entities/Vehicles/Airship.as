@@ -140,7 +140,9 @@ void onTick(CBlob@ this)
 			}
 		}
 	}
-	this.setAngleDegrees(0);
+	//this.setAngleDegrees(0);
+	//this.setAngularVelocity(0);
+	this.getShape().SetRotationsAllowed(false);
 }
 
 void Vehicle_onFire(CBlob@ this, VehicleInfo@ v, CBlob@ bullet, const u8 charge) {}
