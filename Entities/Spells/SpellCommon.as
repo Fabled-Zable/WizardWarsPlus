@@ -1315,6 +1315,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				if(map is null)
 				{return;}
 
+				Vec2f hitPos = Vec2f_zero;
+
 				HitInfo@[] hitInfos;
 				bool teleBlock = false;
 				bool hasHit = map.getHitInfosFromRay(castPos, -aimNorm.getAngle(), aimVector.Length(), this, @hitInfos);
@@ -1322,7 +1324,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				{
 					for (uint i = 0; i < hitInfos.length; i++)
 					{
-						if ( teleBlock == true ){break;}
+						if ( teleBlock ){break;}
 
 						HitInfo@ hi = hitInfos[i];
 						if (hi.blob !is null) // check
@@ -1334,7 +1336,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 							{continue;}
 							else 
 							{
-								Vec2f hitPos = hitInfos[i].hitpos;
+								hitPos = hitInfos[i].hitpos;
 								aimpos = hitPos - aimNorm*4; //sets both aimpos and aimVector to correspond with the teleport blocker
 								aimVector = hitPos - castPos;
 								teleBlock = true; //no more blob checking
@@ -1347,9 +1349,17 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				{
 					Vec2f clientCastPos = this.getPosition();
 
-					for (uint step = 0; step < aimVector.Length(); step += 8)
+					//if teleport was blocked, set particle destination to raycast hitpos
+					Vec2f clientAimVector = teleBlock ? hitPos : aimpos ; 
+					clientAimVector -= clientCastPos;
+					Vec2f clientAimNorm = clientAimVector;
+					clientAimNorm.Normalize();
+
+					clientAimVector -= clientAimNorm*4; //reduction in range of half a block
+
+					for (uint step = 0; step < clientAimVector.Length(); step += 8)
 					{
-						teleSparks( clientCastPos + aimNorm*step, 5, aimNorm*4.0f );
+						teleSparks( clientCastPos + clientAimNorm*step, 5, clientAimNorm*4.0f );
 					}
 				
 					ParticleAnimated( "Flash3.png",
