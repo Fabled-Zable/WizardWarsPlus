@@ -119,14 +119,16 @@ void onTick( CBlob@ this)
 				//TODO: sort on proximity? done by engine?
 				CBlob@ other = blobs[step];
 
-				if (other is this) continue; //lets not run away from / try to eat ourselves...
+				if (other is this)
+				{continue;} //lets not run away from / try to eat ourselves...
 				
-				//does action according to targetting type
-				switch(targetType)
+				bool sameTeam = this.getTeamNum() == other.getTeamNum();
+				
+				switch(targetType) //does action according to targetting type
 				{
 					case 0: //follows allies
 					{
-						if (other.getTeamNum() == this.getTeamNum() && !isOwnerBlob(this, other) && other.hasTag("player") && !other.hasTag("dead")) //home in on living allies
+						if (sameTeam && !isOwnerBlob(this, other) && other.hasTag("player") && !other.hasTag("dead")) //home in on living allies
 						{
 							Vec2f tpos = other.getPosition();									  
 							f32 dist = (tpos - thisPos).getLength();
@@ -142,7 +144,7 @@ void onTick( CBlob@ this)
 				
 					case 1: //follows dead allies
 					{
-						if (other.getTeamNum() == this.getTeamNum() && other.hasTag("gravestone") ) //home in on gravestones
+						if (sameTeam && other.hasTag("gravestone") ) //home in on gravestones
 						{
 							Vec2f tpos = other.getPosition();									  
 							f32 dist = (tpos - thisPos).getLength();
@@ -158,7 +160,7 @@ void onTick( CBlob@ this)
 				
 					case 2: //follows enemies
 					{
-						if (other.getTeamNum() != this.getTeamNum() && other.hasTag("player") && !other.hasTag("dead")) //home in on enemies
+						if (!sameTeam && other.hasTag("player") && !other.hasTag("dead")) //home in on enemies
 						{
 							Vec2f tpos = other.getPosition();									  
 							f32 dist = (tpos - thisPos).getLength();
@@ -355,19 +357,6 @@ bool isOwnerBlob(CBlob@ this, CBlob@ target)
 	if (!this.exists("explosive_parent")) { return false; }
 
 	return (target.getNetworkID() == this.get_u16("explosive_parent"));
-}
-
-bool isEnemy( CBlob@ this, CBlob@ target )
-{
-	CBlob@ friend = getBlobByNetworkID(target.get_netid("brain_friend_id"));
-	return (
-		target.hasTag("flesh") 
-		&& !target.hasTag("dead") 
-		&& target.getTeamNum() != this.getTeamNum() 
-		&& (friend is null
-			|| friend.getTeamNum() != this.getTeamNum()
-		)
-	);
 }
 
 void makeSmokeParticle(CBlob@ this, const Vec2f vel, const string filename = "Smoke")

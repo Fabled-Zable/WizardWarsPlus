@@ -56,11 +56,12 @@ void onTick(CBlob@ this)
         if ( !b.get( "manaInfo", @manaInfo ) ) 
         {continue;}
         
-        float mana = manaInfo.mana;
-        mana -= (fullCharge ? 4 : 3);
-        if(mana >= 0)
+        s32 currentMana = manaInfo.mana;
+        s32 manaRegen = b.get_s32("mana regen rate");
+        s32 manaDrain = fullCharge ? manaRegen+1 : manaRegen;
+        if ( currentMana >= 0 && (currentMana - manaDrain) < currentMana )
         {
-            manaInfo.mana -= manaInfo.manaRegen + (fullCharge ? 4 : 3);
+            manaInfo.mana -= manaDrain;
         }
 
         if(isClient())

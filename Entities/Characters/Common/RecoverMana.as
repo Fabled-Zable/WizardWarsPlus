@@ -11,6 +11,8 @@ void onInit(CBlob@ this)
     {
         this.set_u16("focus", 0);
     }
+
+    this.set_s32("mana regen rate", 3);
 }
 
 void onTick(CBlob@ this)
