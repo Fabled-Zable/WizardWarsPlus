@@ -47,7 +47,7 @@ void onTick(CBlob@ this)
 	CSprite@ sprite = this.getSprite();
 	CShape@ shape = this.getShape();
 
-	if ( !this.get_bool("frozen target detected") )
+	if ( !this.get_bool("frozen target detected") && this.getTickSinceCreated() > 2 )
 	{
 		CBlob@ blob = this.getAttachments().getAttachedBlob( "PICKUP2" );
 		if (blob !is null)
