@@ -8,6 +8,7 @@
 #include "Hitters.as";
 #include "PlayerPrefsCommon.as";
 #include "SpellHashDecoder.as";
+#include "EffectMissileEnum.as";
 
 const int minimum_cast = NecromancerParams::cast_1;
 const int medium_cast = NecromancerParams::cast_2;
@@ -509,7 +510,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
-					orb.set_string("effect", "heal");
+					orb.set_u8("effect", heal_effect_missile);
 					orb.set_f32("heal_amount", healAmount);
 
 					orb.IgnoreCollisionWhileOverlapped( this );
@@ -692,10 +693,6 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				case minimum_cast:
 				case medium_cast:
 				case complete_cast:
-				{
-					orbspeed *= 1.0f;
-					effectTime *= 1.0f;
-				}
 				break;
 				
 				case super_cast:
@@ -718,7 +715,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
-					orb.set_string("effect", "slow");
+					orb.set_u8("effect", slow_effect_missile);
 					orb.set_u16("effect_time", effectTime);
 
 					orb.IgnoreCollisionWhileOverlapped( this );
@@ -776,7 +773,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
-					orb.set_string("effect", "haste");
+					orb.set_u8("effect", haste_effect_missile);
 					orb.set_u16("effect_time", effectTime);
 					
 					if(!targetless)
@@ -806,14 +803,11 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				case minimum_cast:
 				case medium_cast:
 				case complete_cast:
-				{
-					orbspeed *= 0.8f;
-				}
 				break;
 				
 				case super_cast:
 				{
-					orbspeed *= 1.2f;
+					orbspeed *= 1.3f;
 				}
 				break;
 				
@@ -827,31 +821,10 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			
 			if (isServer())
 			{
-				bool targetless = true;
-
-				CBlob@[] blobs;
-				getBlobsByTag("gravestone",@blobs);
-				int bestIndex = closestBlobIndex(this,blobs,true);
-
-				if(bestIndex != -1)
-				{
-					targetless = false;
-				}
-
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
-					orb.set_string("effect", "revive");
-
-					if(!targetless)
-					{
-						CBlob@ target = blobs[bestIndex];
-						if(target !is null)
-						{
-							orb.set_netid("target", target.getNetworkID());
-							orb.set_bool("target found", true);
-						}
-					}
+					orb.set_u8("effect", revive_effect_missile);
 
 					orb.IgnoreCollisionWhileOverlapped( this );
 					orb.SetDamageOwnerPlayer( this.getPlayer() );
@@ -905,7 +878,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
-					orb.set_string("effect", "unholy_res");
+					orb.set_u8("effect", unholyRes_effect_missile);
 
 					if(!targetless)
 					{
@@ -961,7 +934,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
-					orb.set_string("effect", "mana");
+					orb.set_u8("effect", mana_effect_missile);
 					orb.set_u8("mana_used", manaUsed);
 					orb.set_u8("caster_mana", casterMana);
 					orb.set_bool("silent", false);
@@ -1044,7 +1017,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
-					orb.set_string("effect", "airblastShield");
+					orb.set_u8("effect", airblastShield_effect_missile);
 					orb.set_u16("effect_time", effectTime);
 
 					if(!targetless)
@@ -1113,7 +1086,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
-					orb.set_string("effect", "fireProt");
+					orb.set_u8("effect", fireProt_effect_missile);
 					orb.set_u16("effect_time", effectTime);
 
 					if(!targetless)
@@ -1137,6 +1110,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -954155722://stone_skin
 		{
+			/*
 			f32 orbspeed = 4.0f;
 			u16 effectTime = 600;
 
@@ -1154,7 +1128,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), orbPos ); 
 				if (orb !is null)
 				{
-					orb.set_string("effect", "stoneSkin");
+					orb.set_u8("effect", "stoneSkin");
 					orb.set_u16("effect_time", effectTime);
 
 					orb.IgnoreCollisionWhileOverlapped( this );
@@ -1162,7 +1136,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					orb.setVelocity( orbVel );
 				}
 			}
-			
+			*/
 		}
 		break;
 

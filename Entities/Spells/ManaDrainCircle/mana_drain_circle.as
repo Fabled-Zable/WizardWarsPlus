@@ -1,4 +1,5 @@
 #include "MagicCommon.as";
+#include "EffectMissileEnum.as";
 
 void onInit(CBlob@ this)
 {
@@ -30,58 +31,41 @@ void onTick(CBlob@ this)
     if(reverse && this.get_u8("frame") < 1) this.server_Die();
 
     if(!this.hasTag("finished")) return;
+    if(getGameTime() % 20 != 0) return;
 
-    CMap@ map = getMap();
+    CMap@ map = getMap(); //standard map check
+	if(map is null)
+	{return;}
+
     CBlob@[] blobs;
     map.getBlobsInRadius(this.getPosition(),effectRadius,@blobs);
 
     for(int i = 0; i < blobs.length; i++)
     {
         CBlob@ b = blobs[i];
+		if (b is null)
+		{continue;}
 
-        if(b.getPlayer() is null || b.getTeamNum() == this.getTeamNum()) continue;
-        if(isClient())
-        {
-            Vec2f vel = b.getVelocity();
-            b.setVelocity(Vec2f(vel.x * 0.5,vel.y * 0.9));
-
-            if(getGameTime() % 20 != 0) return;
-
-            ManaInfo@ manaInfo;
-            if (!b.get( "manaInfo", @manaInfo )) 
-            {
-                return;
-            }
+        if ( !b.hasTag("flesh") || this.getTeamNum() == b.getTeamNum() ) //if not made of flesh or not same team, abort
+        {continue;}
         
-            float mana = manaInfo.mana;
-            mana -= (fullCharge ? 4 : 3);
+        Vec2f vel = b.getVelocity();
+        b.setVelocity(Vec2f(vel.x * 0.5,vel.y * 0.9));
 
-            if(mana >= 0)
-            {
-                manaInfo.mana -= manaInfo.manaRegen + (fullCharge ? 4 : 3);
-            }
+        ManaInfo@ manaInfo;
+        if ( !b.get( "manaInfo", @manaInfo ) ) 
+        {continue;}
+        
+        float mana = manaInfo.mana;
+        mana -= (fullCharge ? 4 : 3);
+        if(mana >= 0)
+        {
+            manaInfo.mana -= manaInfo.manaRegen + (fullCharge ? 4 : 3);
         }
 
-        if (isServer())
-		{
-            if(getGameTime() % 20 != 0) return;
-			CBlob@ orb = server_CreateBlob( "effect_missile_circle", this.getTeamNum(), b.getPosition() ); 
-			if (orb !is null)
-			{
-				orb.set_string("effect", "mana");
-				orb.set_u8("mana_used", 1);
-				orb.set_u8("caster_mana", 3);
-                orb.set_bool("silent", true);
-
-				orb.IgnoreCollisionWhileOverlapped( this );
-                Vec2f orbVel = Vec2f( 0.1f , 0 ).RotateByDegrees(XORRandom(360));
-				orb.setVelocity( orbVel );
-			}
-		}
-
         if(isClient())
         {
-            for(int i = 0; i < 30; i++)
+            for(int i = 0; i < 30; i++) //particle splash
             {
                 CParticle@ p = ParticlePixelUnlimited(b.getPosition(), b.getVelocity() + Vec2f(XORRandom(12) - 6, XORRandom(12) - 6), randomManaColor(), true);
                 if(p !is null)
@@ -93,7 +77,23 @@ void onTick(CBlob@ this)
                 }
             }
         }
-            
+
+        if (isServer()) //compensation mana creation
+		{
+			CBlob@ orb = server_CreateBlob( "effect_missile_circle", this.getTeamNum(), b.getPosition() ); 
+			if (orb !is null)
+			{
+				orb.set_u8("effect", mana_effect_missile);
+				orb.set_u8("mana_used", 1);
+				orb.set_u8("caster_mana", 3);
+                orb.set_bool("silent", true);
+
+				orb.IgnoreCollisionWhileOverlapped( this );
+                Vec2f orbVel = Vec2f( 0.1f , 0 ).RotateByDegrees(XORRandom(360));
+				orb.setVelocity( orbVel );
+			}
+		}
+    
     }
 }
 

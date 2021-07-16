@@ -31,6 +31,7 @@ void onInit( CBlob @ this )
 	this.set_bool("segments updating", false);
 	this.set_u32("dead segment", 0);
 	this.set_u8("target_type", 3);
+	this.set_u8("effect", 255);
 	
 	this.set_bool("target found", false);
 	
@@ -38,7 +39,6 @@ void onInit( CBlob @ this )
 	
 	this.set_bool("onCollision triggered", false);
 	this.set_netid("onCollision blob", 0);
-	this.set_bool("setupDone",false);
 }
 
 void onTick( CBlob@ this)
@@ -47,43 +47,45 @@ void onTick( CBlob@ this)
 	Vec2f thisPos = this.getPosition();
 	Vec2f thisVel = this.getVelocity();
 
+	u8 effectType = this.get_u8("effect");
+
 	if(!this.exists("setupDone") || !this.get_bool("setupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
 	{
-		string effect = this.get_string("effect");
-		if(effect == "heal")
-		{
-			thisSprite.SetFrame(1);
-		}
-		else if(effect == "haste")
-		{
-			thisSprite.SetFrame(0);
-		}
-		else if(effect == "slow"){
-			thisSprite.SetFrame(3);
-		}
-		else if(effect == "revive")
-		{
-			thisSprite.SetFrame(2);
-		}
-		else if(effect == "mana")
-		{
-			thisSprite.SetFrame(4);
-		}
-		else if(effect == "airblastShield")
-		{
-			thisSprite.SetFrame(5);
-		}
-		else if(effect == "fireProt")
-		{
-			thisSprite.SetFrame(6);
-		}
-		else if(effect == "stoneSkin")
-		{
-			thisSprite.SetFrame(7);
-		}
 		this.set_bool("setupDone",true);
-		this.set_u8("target_type", targetIdentifier(this));
+		u8 targetType = 3;
+
+		switch(effectType)
+		{
+			case haste_effect_missile:
+			case heal_effect_missile:
+			case mana_effect_missile:
+			case airblastShield_effect_missile:
+			case fireProt_effect_missile:
+			{
+				targetType = 0;
+			}
+			break;
+			
+			case revive_effect_missile:
+			case unholyRes_effect_missile:
+			{
+				targetType = 1;
+			}
+			break;
+
+			case slow_effect_missile:
+			{
+				targetType = 2;
+			}
+			break;
+				
+			default: targetType = 3;
+		}
+
+		this.set_u8("target_type", targetType);
 	}
+
+	u8 targetType = this.get_u8("target_type");
 	
 	bool onCollisionTriggered = this.get_bool("onCollision triggered");	//used to sync server and client onCollision 
 	
@@ -120,7 +122,7 @@ void onTick( CBlob@ this)
 				if (other is this) continue; //lets not run away from / try to eat ourselves...
 				
 				//does action according to targetting type
-				switch(this.get_u8("target_type"))
+				switch(targetType)
 				{
 					case 0: //follows allies
 					{
@@ -205,90 +207,118 @@ void onTick( CBlob@ this)
 	}
 	
 	//activate onCollision events
-	if ( onCollisionTriggered == true && this !is null)
+	if ( onCollisionTriggered && this !is null)
 	{
 		CBlob@ blob = getBlobByNetworkID( this.get_netid("onCollision blob") );
 		
-		if ( blob !is null )
-		{	
-			string effectType = this.get_string("effect");
-			u8 targetType = this.get_u8("target_type");
-			
-			if (blob.hasTag("player") && !blob.hasTag("dead"))
-			{	
-				if ( !isEnemy(this, blob) && targetType == 0 && !isOwnerBlob(this, blob) )	//buff status effects
-				{
-					if ( effectType == "heal" )
-						Heal(blob, this.get_f32("heal_amount"));
-					else if ( effectType == "haste" )
-						Haste(blob, this.get_u16("effect_time"));
-					else if ( effectType == "mana" )
-						manaShot(blob, this.get_u8("mana_used"), this.get_u8("caster_mana"), this.get_bool("silent"));
-					else if ( effectType == "airblastShield" )
-						AirblastShield(blob, this.get_u16("effect_time"));
-					else if ( effectType == "fireProt" )
-						FireWard(blob, this.get_u16("effect_time"));
-					else if ( effectType == "stoneSkin" )
-						StoneSkin(blob, this.get_u16("effect_time"));
-					this.server_Die();
-				}
-				else if ( isEnemy(this, blob) && targetType == 2 )	//curse status effects
-				{
-					if ( effectType == "slow" )
-						Slow(blob, this.get_u16("effect_time"));
-						
-					this.server_Die();
-				}
-			}
-			else if ( blob.getName() == "gravestone" && blob.getTeamNum() == this.getTeamNum() && targetType == 1 )	//ally revive spells
-			{
-				if ( effectType == "revive" )
-					Revive(blob);
-					
-				if ( effectType == "unholy_res" )
-					UnholyRes(blob);
-					
-				this.server_Die();
-			}
-			
-			this.set_bool("onCollision triggered", false);
-		}
-	}
+		if ( blob is null )
+		{return;}
 
-	if(!isClient()) 
-	return;
+		bool sameTeam = blob.getTeamNum() == this.getTeamNum();
+
+		if (blob.hasTag("player") && !blob.hasTag("dead"))
+		{
+			if ( sameTeam && targetType == 0 && !isOwnerBlob(this, blob) )	//buff status effects
+			{
+				switch(effectType)
+				{
+					case haste_effect_missile:
+					{
+						Haste(blob, this.get_u16("effect_time"));
+					}
+					break;
+
+					case heal_effect_missile:
+					{
+						Heal(blob, this.get_f32("heal_amount"));
+					}
+					break;
+
+					case mana_effect_missile:
+					{
+						manaShot(blob, this.get_u8("mana_used"), this.get_u8("caster_mana"), this.get_bool("silent"));
+					}
+					break;
+					
+					case airblastShield_effect_missile:
+					{
+						AirblastShield(blob, this.get_u16("effect_time"));
+					}
+					break;
+
+					case fireProt_effect_missile:
+					{
+						FireWard(blob, this.get_u16("effect_time"));
+					}
+					break;
+
+					default: break; 
+				} //switch end
+
+				this.server_Die();
+				return;
+			}
+			else if ( !sameTeam && targetType == 2 )	//curse status effects
+			{
+				if ( effectType == slow_effect_missile )
+				{
+					Slow(blob, this.get_u16("effect_time"));
+				}
+						
+				this.server_Die();
+				return;
+			}
+		}
+		else if ( blob.getName() == "gravestone" && sameTeam && targetType == 1 )	//ally revive spells
+		{
+			switch(effectType)
+			{
+				case revive_effect_missile:
+				{
+					Revive(blob);
+				}
+				break;
+			
+				case unholyRes_effect_missile:
+				{
+					UnholyRes(blob);
+				}
+				break;
+				
+				default: break;
+			} //switch end
+
+			this.server_Die();
+			return;
+		}
 		
-	//face towards target like a ballista bolt
-	f32 angle = thisVel.Angle();	
-	thisSprite.ResetTransform();
-	thisSprite.RotateBy( -angle, Vec2f(0,0) );
-	
-	sparks(this, this.getPosition(), 1);
+		this.set_bool("onCollision triggered", false);
+	}
 }
 
-u8 targetIdentifier( CBlob@ this )
-{		
-	string effectType = this.get_string("effect");
+void onTick(CSprite@ this)
+{
+	if(!isClient())
+	{return;}
+
+	CBlob@ b = this.getBlob();
+	if(b is null)
+	{return;}
+
+	Vec2f thisPos = b.getPosition();
+	u8 effectType = b.get_u8("effect");
+
+	if ( (!b.exists("spriteSetupDone") || !b.get_bool("spriteSetupDone")) && effectType != 255)//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
+	{
+		this.SetFrame(effectType);
+		b.set_bool("spriteSetupDone", true);
+	}
 	
-	if  
-	(  effectType == "heal"
-	|| effectType == "haste" 
-	|| effectType == "mana" 
-	|| effectType == "airblastShield"
-	|| effectType == "fireProt"
-	|| effectType == "stoneSkin" )
-	{return 0;}
-
-	else if
-	(  effectType == "revive"
-	|| effectType == "unholy_res" )
-	{return 1;}
-
-	else if( effectType == "slow" )
-	{return 2;}
-
-
-	return 3; //default
+	f32 angle = b.getVelocity().Angle();	//face towards moving direction
+	this.ResetTransform();
+	this.RotateBy( -angle, Vec2f(0,0) );
+	
+	sparks(b, thisPos, 1);
 }
 
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
@@ -382,9 +412,6 @@ void onDie( CBlob@ this )
 Random _sprk_r(2345);
 void sparks(CBlob@ this, Vec2f pos, int amount)
 {
-	if ( !isClient() )
-		return;
-
 	for (int i = 0; i < amount; i++)
     {
         Vec2f vel(_sprk_r.NextFloat() * 0.5f, 0);
@@ -396,7 +423,6 @@ void sparks(CBlob@ this, Vec2f pos, int amount)
 			case 0: //allies
 			case 1: //dead allies
 			{
-		
 				CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, colorShade, colorShade ), true );
 				if(p !is null) //bail if we stop getting particles
 				{
@@ -423,11 +449,7 @@ void sparks(CBlob@ this, Vec2f pos, int amount)
 			}
 			break;
 
-			default:
-			{
-				return;
-			}
-
+			default: return;
 		} //switch end
     }
 }
@@ -460,10 +482,7 @@ void selectedTargetIndicator( CBlob@ this , Vec2f pos )
 		}
 		break;
 
-		default:
-		{
-			return;
-		}
+		default: return;
 	} //switch end
 
 	for(int i = 0; i < dist; i += 2)

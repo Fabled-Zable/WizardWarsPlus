@@ -6,6 +6,7 @@
 #include "MakeSeed.as";
 #include "MakeCrate.as";
 #include "MakeScroll.as";
+#include "EffectMissileEnum.as";
 
 void onInit(CRules@ this)
 {
@@ -44,7 +45,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 			CBlob@ orb = server_CreateBlob( "effect_missile", blob.getTeamNum(), blob.getPosition() ); 
 			if (orb !is null)
 			{
-				orb.set_string("effect", "mana");
+				orb.set_u8("effect", mana_effect_missile);
 				orb.set_u8("mana_used", 20);
 				orb.set_u8("caster_mana", 3);
                 orb.set_bool("silent", true);
