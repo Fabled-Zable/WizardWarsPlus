@@ -12,7 +12,7 @@ void onInit(CBlob@ this)
 	this.Tag("counterable");
 	shape.SetGravityScale( 0.0f );
 	
-	this.set_u32("lifetime",0);
+	this.set_f32("lifetime",0);
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
 
@@ -49,7 +49,7 @@ void onTick(CBlob@ this)
     }
 	//start of sword launch logic
 	this.Sync("lifetime", true);
-	u32 lifetime = this.get_u32("lifetime");		//base for timer system
+	f32 lifetime = this.get_f32("lifetime");		//base for timer system
 
 	if (!this.hasTag("aimMode") && !this.hasTag("cruiseMode"))
 	{

@@ -1599,14 +1599,14 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			orbVel *= orbspeed;
 
 			//distance between you and the target
-			float stopLength = shootVec.Length();
-			u32 lifetime = stopLength / orbspeed;
+			float stopLength = shootVec.Length() - 4.0f;
+			f32 lifetime = stopLength / orbspeed;
 
 			CBlob@ orb = server_CreateBlob("executioner",this.getTeamNum(),orbPos);
 			if (orb !is null)
 			{
 				orb.set_f32("damage", orbDamage);
-				orb.set_u32("lifetime", lifetime);
+				orb.set_f32("lifetime", lifetime);
 
 				orb.SetDamageOwnerPlayer( this.getPlayer() );
 				orb.getShape().SetGravityScale(0);
@@ -1827,7 +1827,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 							}
 							if(other.exists("lifetime"))
 							{
-								orb.set_u32("lifetime", other.get_u32("lifetime"));
+								orb.set_f32("lifetime", other.get_f32("lifetime"));
 							}
 							if(other.hasTag("extra_damage"))
 							{
