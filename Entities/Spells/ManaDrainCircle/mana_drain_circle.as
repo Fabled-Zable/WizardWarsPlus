@@ -31,7 +31,6 @@ void onTick(CBlob@ this)
     if(reverse && this.get_u8("frame") < 1) this.server_Die();
 
     if(!this.hasTag("finished")) return;
-    if(getGameTime() % 20 != 0) return;
 
     CMap@ map = getMap(); //standard map check
 	if(map is null)
@@ -51,6 +50,9 @@ void onTick(CBlob@ this)
         
         Vec2f vel = b.getVelocity();
         b.setVelocity(Vec2f(vel.x * 0.5,vel.y * 0.9));
+
+        if(getGameTime() % 20 != 0) //only run code below every 20th tick
+        {continue;}
 
         ManaInfo@ manaInfo;
         if ( !b.get( "manaInfo", @manaInfo ) ) 
