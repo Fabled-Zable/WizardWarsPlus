@@ -409,28 +409,24 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 18140583://frost_ball
 		{
-			if (!isServer()){
-           		return;
-			}
+			if (!isServer())
+			{return;}
+
 			f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
 			f32 orbspeed = 6.0f;
-			f32 orbDamage = 4.0f * extraDamage;
+			f32 orbDamage = 1.0f * extraDamage;
 
 			switch(charge_state)
 			{
 				case minimum_cast:
 				case medium_cast:
 				case complete_cast:
-				{
-					orbspeed *= 1.0f;
-					orbDamage *= 1.0f;
-				}
 				break;
 
 				case super_cast:
 				{
 					orbspeed *= 1.2f;
-					orbDamage *= 1.5f;
+					orbDamage += 0.4f;
 				}
 				break;
 				default:return;
@@ -450,6 +446,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			if (orb !is null)
 			{
 				orb.set_f32("freeze_power", freezePower);
+				orb.set_f32("damage", orbDamage);
 
 				orb.IgnoreCollisionWhileOverlapped( this );
 				orb.SetDamageOwnerPlayer( this.getPlayer() );

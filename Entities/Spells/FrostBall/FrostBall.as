@@ -15,6 +15,7 @@ void onInit( CBlob @ this )
 	
     this.set_u8("launch team",255);
 	this.set_f32("freeze_power", 0.0f);
+	this.set_f32("damage", 1.0f);
     //this.server_setTeamNum(1);
 	this.Tag("medium weight");
     
@@ -170,7 +171,7 @@ void ExplodeWithIce(CBlob@ this)
 			if (b !is null)
 			{
 				Vec2f bPos = b.getPosition();
-				float damage = 1.0f;
+				float damage = this.get_f32("damage");
 				if(this.getTeamNum() == b.getTeamNum() && !isOwnerBlob(this,b))
 				{
 					damage = 0.0f;
