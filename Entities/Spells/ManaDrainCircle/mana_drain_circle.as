@@ -1,6 +1,8 @@
 #include "MagicCommon.as";
 #include "EffectMissileEnum.as";
 
+Random _mana_circle_r(53124); //with the seed, I extract a float ranging from 0 to 1 for random events
+
 void onInit(CBlob@ this)
 {
     this.set_u8("frame", 0);
@@ -36,6 +38,8 @@ void onTick(CBlob@ this)
 	if(map is null)
 	{return;}
 
+    bool drainedMana = false;
+
     CBlob@[] blobs;
     map.getBlobsInRadius(this.getPosition(),effectRadius,@blobs);
 
@@ -57,6 +61,8 @@ void onTick(CBlob@ this)
         ManaInfo@ manaInfo;
         if ( !b.get( "manaInfo", @manaInfo ) ) 
         {continue;}
+
+        drainedMana = true;
         
         s32 currentMana = manaInfo.mana;
         s32 manaRegen = b.get_s32("mana regen rate");
@@ -68,15 +74,23 @@ void onTick(CBlob@ this)
 
         if(isClient())
         {
-            for(int i = 0; i < 30; i++) //particle splash
+            float pRot = 180.0f;
+            Vec2f pVel = Vec2f_zero;
+            for(int i = 0; i < 80; i++) //particle splash
             {
-                CParticle@ p = ParticlePixelUnlimited(b.getPosition(), b.getVelocity() + Vec2f(XORRandom(12) - 6, XORRandom(12) - 6), randomManaColor(), true);
+                pRot = 360.0f * _mana_circle_r.NextFloat();
+                pVel = Vec2f( 5.0f*_mana_circle_r.NextFloat() , 0 );
+                pVel.RotateByDegrees(pRot);
+                u16 pTimeout = 10 * _mana_circle_r.NextFloat();
+
+                CParticle@ p = ParticlePixelUnlimited(b.getPosition(), b.getVelocity() + pVel, randomManaColor(), true);
                 if(p !is null)
                 {
                     p.gravity = Vec2f(0,0);
                     p.fastcollision = true;
                     p.bounce = 0;
-                    p.timeout = 10;
+                    p.damping = 0.95f;
+                    p.timeout = pTimeout + 10;
                 }
             }
         }
@@ -91,12 +105,15 @@ void onTick(CBlob@ this)
 				orb.set_u8("caster_mana", 3);
                 orb.set_bool("silent", true);
 
-				orb.IgnoreCollisionWhileOverlapped( this );
                 Vec2f orbVel = Vec2f( 0.1f , 0 ).RotateByDegrees(XORRandom(360));
 				orb.setVelocity( orbVel );
 			}
 		}
-    
+    }
+
+    if ( isClient() && drainedMana )
+    {
+        sprite.PlaySound("ManaDraining.ogg", 0.4f, 1.0f + (_mana_circle_r.NextFloat()*0.2f) );
     }
 }
 
@@ -126,16 +143,7 @@ void onTick(CSprite@ this)
     this.RotateBy(rotateSpeed, Vec2f_zero);
     bar.RotateBy(rotateSpeed * -2, Vec2f_zero);
 
-
-    /*CParticle@ p = ParticlePixel(blob.getPosition() + Vec2f(XORRandom(effectRadius*2) - effectRadius, XORRandom(effectRadius*2) - effectRadius),Vec2f(0,-1), randomManaColor(), true,30);
-    if(p !is null)
-    {
-        p.gravity = Vec2f(0,0);
-        p.damping = 1;
-        p.collides = false;
-    }*/
     const Vec2f aimPos = blob.getPosition();
-    //print(currentCharge +'');
                 
     //PARTICLESSSS
     CParticle@[] particleList;
@@ -197,5 +205,8 @@ void onTick(CSprite@ this)
 
 SColor randomManaColor()
 {
-    return SColor(255,XORRandom(85) + 100,XORRandom(80),XORRandom(55) + 200);
+    u8 red = 100 + (85*_mana_circle_r.NextFloat());
+    u8 green = 80*_mana_circle_r.NextFloat();
+    u8 blue = 200 + (55*_mana_circle_r.NextFloat());
+    return SColor( 255 , red , green , blue );
 }
