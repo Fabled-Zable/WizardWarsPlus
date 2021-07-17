@@ -1,10 +1,6 @@
 //Spells Common
 #include "MagicCommon.as";
 #include "NecromancerCommon.as";
-#include "DruidCommon.as";
-#include "SwordCasterCommon.as";
-#include "EntropistCommon.as";
-#include "FrigateCommon.as";
 #include "Hitters.as";
 #include "PlayerPrefsCommon.as";
 #include "SpellHashDecoder.as";
