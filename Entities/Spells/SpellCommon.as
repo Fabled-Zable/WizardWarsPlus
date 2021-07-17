@@ -518,7 +518,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			f32 orbspeed = 5.0f;
 			f32 healAmount = 0.2f;
-			int numOrbs = 10;
+			int numOrbs = 8;
 
 			switch(charge_state)
 			{
@@ -1135,7 +1135,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -2014033180://magic_barrier
 		{
-			u16 lifetime = 20;
+			u16 extraLifetime = this.hasTag("extra_damage") ? 5 : 0;
+			u16 lifetime = 20 + extraLifetime;
 
 			Vec2f orbPos = aimpos;
 			Vec2f targetPos = orbPos + Vec2f(0.0f,2.0f);
@@ -1173,8 +1174,9 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		break;
 		
 		case 652962395:	//healing_plant
-		{			
-			u16 lifetime = 10;
+		{
+			u16 extraLifetime = this.hasTag("extra_damage") ? 5 : 0;
+			u16 lifetime = 10 + extraLifetime;
 
 			u32 landheight = getLandHeight(aimpos);
 			if(landheight != 0)
@@ -1211,7 +1213,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 382419657://rock_wall
 		{
-			u16 lifetime = 1;
+			u16 extraLifetime = this.hasTag("extra_damage") ? 2 : 0;
+			u16 lifetime = 1 + extraLifetime;
 
 			switch(charge_state) //trickle down lifetime adder
 			{
@@ -1433,9 +1436,9 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		case 482205956://sword_cast - also known as Expunger
 		{
 			this.getSprite().PlaySound("swordsummon.ogg");
-			if (!isServer()){
-           		return;
-			}
+
+			if (!isServer())
+			{return;}
 
 			bool extra_damage = this.hasTag("extra_damage");
 			bool charged = false;
@@ -1508,23 +1511,32 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -32608566://crusader
 		{
-			u16 lifetime = 10;
-
 			u32 landheight = getLandHeight(aimpos);
 			if(landheight != 0)
 			{
-                if (!isServer()){
-				    return;
-			    }
+                if (!isServer())
+				{return;}
+
+				u16 extraLifetime = this.hasTag("extra_damage") ? 5 : 0;
+				u16 lifetime = 20 + extraLifetime;
 
 				f32 extraDamage = this.hasTag("extra_damage") ? 1.3f : 1.0f;
 				f32 orbDamage = 1.0f * extraDamage;
-            	
-            	if (charge_state == NecromancerParams::cast_3) {
-					orbDamage *= 1.0f;
-				}
-				else if (charge_state == NecromancerParams::extra_ready) {
-					orbDamage *= 1.2f;
+
+				switch(charge_state)
+				{
+					case minimum_cast:
+					case medium_cast:
+					case complete_cast:
+					break;
+				
+					case super_cast:
+					{
+						orbDamage *= 1.2f;
+						lifetime += 5;
+					}
+					break;
+					default:return;
 				}
 
 				Vec2f baseSite = Vec2f(aimpos.x , landheight - 8);
@@ -1539,6 +1551,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 						orb.set_f32("damage", orbDamage);
 						u32 shooTime = getGameTime() + (XORRandom(16) +42); //half a second randomness for fall delay (makes it look cooler)
 						orb.set_u32("shooTime", shooTime);
+						orb.set_u16("lifetime", lifetime);
 
 						orb.SetDamageOwnerPlayer( this.getPlayer() );
 						orb.getShape().SetGravityScale(0);
@@ -1550,9 +1563,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
             else//Can't place this under the map
             {
 				ManaInfo@ manaInfo;
-				if (!this.get( "manaInfo", @manaInfo )) {
-					return;
-				}
+				if (!this.get( "manaInfo", @manaInfo ))
+				{return;}
 				
 				manaInfo.mana += spell.mana;
 				
@@ -1940,7 +1952,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 39628416://no_teleport_barrier
 		{
-			u16 lifetime = 30;
+			u16 extraLifetime = this.hasTag("extra_damage") ? 5 : 0;
+			u16 lifetime = 30 + extraLifetime;
 
 			Vec2f orbPos = aimpos;
 			Vec2f targetPos = orbPos + Vec2f(0.0f,2.0f);
