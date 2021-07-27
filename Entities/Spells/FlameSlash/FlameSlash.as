@@ -161,7 +161,7 @@ void onTick(CSprite@ this)
 			if(isClient())
 			{
 				Vec2f blobAimPos = b.get_Vec2f("flame_slash_aimpos");
-				Vec2f aimDir = blobAimPos-thisPos;
+				Vec2f aimDir = blobAimPos - b.get_Vec2f("flame_slash_blobpos");
 				float aimAngle = aimDir.getAngleDegrees();
 		
 				Vec2f layerOffset = Vec2f(-25.0f,0);
