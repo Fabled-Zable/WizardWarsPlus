@@ -32,9 +32,9 @@ namespace ArcherParams
 }
 
 //TODO: move vars into archer params namespace
-const f32 archer_grapple_length = 72.0f;
+const f32 archer_grapple_length = 144.0f;
 const f32 archer_grapple_slack = 16.0f;
-const f32 archer_grapple_throw_speed = 20.0f;
+const f32 archer_grapple_throw_speed = 30.0f;
 
 const f32 archer_grapple_force = 2.0f;
 const f32 archer_grapple_accel_limit = 1.5f;
