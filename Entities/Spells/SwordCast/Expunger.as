@@ -119,29 +119,34 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
-	
+	bool swordDeath = false;
+
 	if (blob !is null)
 	{
 		if (isEnemy(this, blob))
 		{
-		float expundamage = this.get_f32("damage");
-		if (!this.hasTag("collided"))
+			float expunDamage = this.get_f32("damage");
+			if (!this.hasTag("collided"))
 			{
 				if (this.hasTag("cruiseMode"))
 				{
-					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expundamage, Hitters::arrow, true);
-				}
-				if (blob.hasTag("barrier"))
-				{
-					this.server_Die();
+					if (blob.hasTag("barrier"))
+					{
+						expunDamage += 0.2f;
+						swordDeath = true;
+					}
+					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expunDamage, Hitters::arrow, true);
 				}
 			}
 			else
 			{
-				this.server_Die();
+				swordDeath = true;
 			}
 		}
 	}
+
+	if ( swordDeath )
+	{ this.server_Die(); }
 }
 
 bool isEnemy( CBlob@ this, CBlob@ target )

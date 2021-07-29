@@ -1445,23 +1445,20 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			f32 extraDamage = extra_damage ? 1.3f : 1.0f;
 			f32 orbDamage = 0.4f * extraDamage;
 			f32 orbspeed = necro_shoot_speed * 1.1f * extraDamage;
-			int numOrbs = 10;  //number of swords
+			int numOrbs = extra_damage ? 15 : 10;  //number of swords
 			
             switch(charge_state)
 			{
 				case minimum_cast:
 				case medium_cast:
 				case complete_cast:
-				{
-					numOrbs = extra_damage ? 15 : 10;
-				}
 				break;
 				
 				case super_cast:
 				{
 					orbspeed *= 1.3f;
 					orbDamage += 0.2f;
-					numOrbs = this.hasTag("extra_damage") ? 24 : 15; //24 swords if damage buff
+					numOrbs += extra_damage ? 10 : 5; //25 swords if damage buff, 15 if not
 					charged = true;
 				}
 				break;

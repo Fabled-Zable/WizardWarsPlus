@@ -133,7 +133,7 @@ void onDie( CBlob@ this )
 
 		if (blob.hasTag("barrier"))
 		{
-			finalDamage *= 1.5f;
+			finalDamage = 5.0f;
 		}
 		else if (blob.getName() == "knight")
 		{
@@ -145,7 +145,8 @@ void onDie( CBlob@ this )
                 finalDamage *= 0.2;
             }
         }
-		else if (!blob.hasTag("flesh")) {continue;}
+		else if (!blob.hasTag("flesh"))
+		{ continue; }
 
 		Vec2f attackNorm = blob.getPosition() - thisPos;
 		attackNorm.Normalize();
