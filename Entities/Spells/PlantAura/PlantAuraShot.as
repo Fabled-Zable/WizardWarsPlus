@@ -24,10 +24,6 @@ void onInit(CBlob@ this)
 	if (isClient())
 	{
 		CSprite@ sprite = this.getSprite();
-
-    	sprite.SetEmitSound("MolotovBurning.ogg");
-    	sprite.SetEmitSoundVolume(5.0f);
-    	sprite.SetEmitSoundPaused(false);
 		sprite.getConsts().accurateLighting = false;
 	}
 }

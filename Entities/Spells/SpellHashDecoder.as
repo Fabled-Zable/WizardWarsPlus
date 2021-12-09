@@ -324,6 +324,7 @@ s8 parryTargetIdentifier( CBlob@ b )
 		case _arcane_circle:
 		case _mana_drain_circle:
 		case _force_of_nature:
+		case _plant_aura_shot:
 		case _plant_aura:
 		case _mushroom:
 		case _rock_wall:
@@ -391,6 +392,7 @@ bool doesShardDefend ( CBlob@ b )
 		case _ice_prison:
 		case _magic_barrier:
 		case _rock_wall:
+		case _plant_aura_shot:
 		case _plant_aura:
 		case _black_hole:
 		case _black_hole_big:
