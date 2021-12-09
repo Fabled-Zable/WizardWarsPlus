@@ -1184,7 +1184,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			{
 				if (isClient())
 				{
-					Sound::Play("PlantShotLaunch.ogg", thispos, 1.0f, 0.2f + XORRandom(10)/10.0f);
+					Sound::Play("PlantShotLaunch.ogg", thispos, 2.0f, 0.2f + XORRandom(10)/10.0f);
 				}
 				
 				if (!isServer())

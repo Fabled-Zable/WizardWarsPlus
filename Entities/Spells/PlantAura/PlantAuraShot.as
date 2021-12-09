@@ -130,7 +130,7 @@ void blast( Vec2f pos , int amount)
 	if(!isClient())
 	{return;}
 
-	Sound::Play("PlantShotHit.ogg", pos, 1.5f, 0.8f + XORRandom(10)/10.0f);
+	Sound::Play("PlantShotHit.ogg", pos, 3.0f, 0.8f + XORRandom(10)/10.0f);
 
 	for (int i = 0; i < amount; i++)
     {
