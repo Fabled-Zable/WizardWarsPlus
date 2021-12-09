@@ -13,6 +13,8 @@ void onInit(CBlob@ this)
 	this.Tag("counterable");
 	shape.SetGravityScale( 0.0f );
 
+	this.set_f32("damage", 0.2f);
+
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
 
@@ -132,7 +134,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 				{
 					if (blob.hasTag("barrier"))
 					{
-						expunDamage += 0.2f;
+						expunDamage += 1.2f;
 						swordDeath = true;
 					}
 					this.server_Hit(blob, blob.getPosition(), this.getVelocity(), expunDamage, Hitters::arrow, true);

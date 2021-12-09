@@ -133,7 +133,7 @@ void onDie( CBlob@ this )
 
 		if (blob.hasTag("barrier"))
 		{
-			finalDamage = 5.0f;
+			finalDamage = 3.0f;
 		}
 		else if (blob.getName() == "knight")
 		{

@@ -2769,7 +2769,7 @@ void counterSpell( CBlob@ caster , Vec2f aimpos, Vec2f thispos)
 				if(damage == 0)
 				{return;}
 
-				caster.server_Hit(b, b.getPosition(), Vec2f(0, 0), damage, Hitters::fire, true);
+				caster.server_Hit(b, b.getPosition(), Vec2f(0, 0), damage, Hitters::explosion, true);
 					
 				countered = true;
 			}
