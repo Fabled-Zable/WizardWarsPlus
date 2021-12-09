@@ -4,27 +4,15 @@ void onInit(CBlob@ this)
     this.Tag("counterable");
 
 	//default values
-	if (!this.exists("lifetime") || this.get_u16("lifetime") < 10)
-	{
-		this.set_u16("lifetime", 10);
-		print("Missing lifetime value");
-	}
-	if (!this.exists("move_Speed") || this.get_f32("move_Speed") < 0.1f)
-	{
-		this.set_f32("move_Speed", 4.0f);
-		print("Missing move speed");
-	}
-	if (!this.exists("target"))
-	{
-		this.set_Vec2f("target", Vec2f_zero);
-		print("Missing target position");
-	}
+	this.set_u16("lifetime", 10);
+	this.set_f32("move_Speed", 4.0f);
+	this.set_Vec2f("target", Vec2f_zero);
 	//^
 
 	CShape@ thisShape = this.getShape();
     thisShape.SetGravityScale(0);
 	thisShape.getConsts().mapCollisions = false;
-	
+
 	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath) ); //dont collide with edge of the map
 
     if (isServer())

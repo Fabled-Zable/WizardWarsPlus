@@ -11,11 +11,7 @@ void onInit(CBlob@ this)
 	this.Tag("counterable");
 
 	//default values
-	if (!this.exists("lifetime") || this.get_u16("lifetime") < 10)
-	{
-		this.set_u16("lifetime", 10);
-		print("Missing lifetime value");
-	}
+	this.set_u16("lifetime", 10);
 	//^
 
 	this.set_u8("frame",0);
