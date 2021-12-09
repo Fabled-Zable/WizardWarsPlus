@@ -53,6 +53,7 @@ enum EntityHash
 	_stone_spike = 1843332075,
 	_mushroom = -825046729,
 	_rock_wall = 382419657,
+	_plant_aura_shot = -88761399,
 	_plant_aura = 452290988,
 	//swordcaster spells
 	_expunger = 131361395,

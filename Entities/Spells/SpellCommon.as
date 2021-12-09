@@ -1177,24 +1177,34 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			u16 extraLifetime = this.hasTag("extra_damage") ? 5 : 0;
 			u16 lifetime = 10 + extraLifetime;
+			f32 moveSpeed = 4.0f;
 
 			u32 landheight = getLandHeight(aimpos);
 			if(landheight != 0)
 			{
-                if (!isServer()){
-				    return;
-			    }
-				CBlob@ plant = server_CreateBlob( "plant_aura", this.getTeamNum(), Vec2f(aimpos.x , landheight - 8) );
+				if (isClient())
+				{
+					Sound::Play("PlantShotHit.ogg", thispos, 1.5f, 0.8f + XORRandom(10)/10.0f);
+				}
 				
-				if (plant !is null)
+				if (!isServer())
+				{ return; }
+
+				Vec2f targetPos = Vec2f(aimpos.x , landheight - 8);
+
+				CBlob@ plantShot = server_CreateBlob( "plant_aura_shot", this.getTeamNum(), thispos );
+				if (plantShot !is null)
 				{
 					if( charge_state == super_cast )//full charge
 					{
 						lifetime = 15;
+						moveSpeed += 1.0f;
 					}
-					//plant.IgnoreCollisionWhileOverlapped( this );
-					plant.set_u16("lifetime", lifetime);
-					plant.SetDamageOwnerPlayer( this.getPlayer() );
+					plantShot.set_u16("lifetime", lifetime);
+					plantShot.set_f32("move_Speed", moveSpeed);
+					plantShot.SetDamageOwnerPlayer( this.getPlayer() );
+
+					plantShot.set_Vec2f("target", targetPos);
 				}
 			}
             else//Can't place this under the map
