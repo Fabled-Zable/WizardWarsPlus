@@ -6,6 +6,7 @@
 #include "CTF_Structs.as";
 #include "RulesCore.as";
 #include "RespawnSystem.as";
+#include "PlayerPrefsCommon.as";
 
 #include "CTF_PopulateSpawnList.as"
 
@@ -149,6 +150,12 @@ shared class CTFSpawns : RespawnSystem
 				CBlob @blob = player.getBlob();
 				blob.server_SetPlayer(null);
 				blob.server_Die();
+			}
+
+			PlayerPrefsInfo@ playerPrefsInfo;
+			if ( player.get( "playerPrefsInfo", @playerPrefsInfo ) && playerPrefsInfo !is null )
+			{
+				p_info.blob_name = playerPrefsInfo.classConfig;
 			}
 
 			CBlob@ playerBlob = SpawnPlayerIntoWorld(getSpawnLocation(p_info), p_info);
@@ -316,6 +323,7 @@ shared class CTFCore : RulesCore
 		@ctf_spawns = cast < CTFSpawns@ > (_respawns);
 		_rules.set_string("music - base name", base_name());
 		server_CreateBlob("ctf_music");
+		//server_CreateBlob("ww_music");
 		players_in_small_team = -1;
 	}
 
@@ -391,7 +399,7 @@ shared class CTFCore : RulesCore
 		{
 			team = player.getTeamNum();
 		}
-		CTFPlayerInfo p(player.getUsername(), team, (XORRandom(512) >= 256 ? "knight" : "archer"));
+		CTFPlayerInfo p(player.getUsername(), team, player.isBot() ? "knight" : "wizard" );
 		players.push_back(p);
 		ChangeTeamPlayerCount(p.team, 1);
 	}
