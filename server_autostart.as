@@ -14,16 +14,8 @@ void InitializeGame()
 
 	if (getNet().CreateServer())
 	{
-		if(false) //TRUE for TDM, FALSE for CTF
-		{
-	    	LoadRules(  "Rules/TDM/gamemode.cfg" );
-	    	LoadMapCycle( "Rules/TDM/mapcycle.cfg" );
-		}
-		else
-		{
-			LoadRules(  "Rules/CTF/gamemode.cfg" );
-	    	LoadMapCycle( "Rules/CTF/mapcycle.cfg" );
-		}
+	    LoadRules(  "Rules/CTF/gamemode.cfg" );
+	    LoadMapCycle( "Rules/CTF/mapcycle.cfg" );
 	    LoadNextMap();
 	}
 }
