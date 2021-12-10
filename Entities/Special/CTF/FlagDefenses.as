@@ -3,10 +3,6 @@
 #include "CTF_FlagCommon.as"
 #include "CTF_Structs.as"
 
-const string return_prop = "return time";
-const u16 return_time = 600;
-const u16 fast_return_speedup = 3;
-
 void onInit(CBlob@ this)
 {
 	this.getShape().SetRotationsAllowed(false);
