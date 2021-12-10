@@ -25,7 +25,8 @@ void Config(CTFCore@ this)
 
 	//how long to wait for everyone to spawn in?
 	s32 warmUpTimeSeconds = cfg.read_s32("warmup_time", 30);
-	this.warmUpTime = (getTicksASecond() * warmUpTimeSeconds);
+	//this.warmUpTime = (getTicksASecond() * warmUpTimeSeconds);
+	this.warmUpTime = getTicksASecond() * 150;
 
 	s32 stalemateTimeSeconds = cfg.read_s32("stalemate_time", 30);
 	this.stalemateTime = (getTicksASecond() * stalemateTimeSeconds);
@@ -47,8 +48,8 @@ void Config(CTFCore@ this)
 	this.scramble_teams = cfg.read_bool("scramble_teams", true);
 
 	//spawn after death time
-	this.spawnTime = (getTicksASecond() * cfg.read_s32("spawn_time", 15));
-
+	//this.spawnTime = (getTicksASecond() * cfg.read_s32("spawn_time", 15));
+	this.spawnTime = getTicksASecond() * 30;
 }
 
 shared string base_name() { return "tent"; }
@@ -322,8 +323,8 @@ shared class CTFCore : RulesCore
 		gamestart = getGameTime();
 		@ctf_spawns = cast < CTFSpawns@ > (_respawns);
 		_rules.set_string("music - base name", base_name());
-		server_CreateBlob("ctf_music");
-		//server_CreateBlob("ww_music");
+		//server_CreateBlob("ctf_music");
+		server_CreateBlob("ww_music");
 		players_in_small_team = -1;
 	}
 
