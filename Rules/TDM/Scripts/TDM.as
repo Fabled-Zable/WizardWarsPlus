@@ -6,7 +6,6 @@
 #include "TDM_Structs.as";
 #include "RulesCore.as";
 #include "RespawnSystem.as";
-#include "PlayerPrefsCommon.as";
 
 //edit the variables in the config file below to change the basics
 // no scripting required!
@@ -46,6 +45,11 @@ void Config(TDMCore@ this)
 	//whether to scramble each game or not
 	this.scramble_teams = cfg.read_bool("scrambleTeams", true);
 	this.all_death_counts_as_kill = cfg.read_bool("dying_counts", false);
+
+	s32 scramble_maps = cfg.read_s32("scramble_maps", -1);
+	if(scramble_maps != -1) {
+		sv_mapcycle_shuffle = (scramble_maps != 0);
+	}
 
 	// modifies if the fall damage velocity is higher or lower - TDM has lower velocity
 	rules.set_f32("fall vel modifier", cfg.read_f32("fall_dmg_nerf", 1.3f));
@@ -124,7 +128,6 @@ shared class TDMSpawns : RespawnSystem
 				RemovePlayerFromSpawn(p_info);
 				return;
 			}
-			
 			if (player.getTeamNum() != int(p_info.team))
 			{
 				player.server_setTeamNum(p_info.team);
@@ -137,15 +140,7 @@ shared class TDMSpawns : RespawnSystem
 				blob.server_SetPlayer(null);
 				blob.server_Die();
 			}
-			
-			PlayerPrefsInfo@ playerPrefsInfo;
-			if ( player.get( "playerPrefsInfo", @playerPrefsInfo ) && playerPrefsInfo !is null )
-			{
-				p_info.blob_name = playerPrefsInfo.classConfig;
-			}
-			
-			//print("class config: " + classConfig);
-				
+
 			CBlob@ playerBlob = SpawnPlayerIntoWorld(getSpawnLocation(p_info), p_info);
 
 			if (playerBlob !is null)
@@ -296,7 +291,7 @@ shared class TDMCore : RulesCore
 		RulesCore::Setup(_rules, _respawns);
 		gametime = getGameTime() + 100;
 		@tdm_spawns = cast < TDMSpawns@ > (_respawns);
-		server_CreateBlob("ww_music");
+		server_CreateBlob("Entities/Meta/TDMMusic.cfg");
 		players_in_small_team = -1;
 		all_death_counts_as_kill = false;
 		sudden_death = false;
@@ -326,7 +321,8 @@ shared class TDMCore : RulesCore
 		}
 		else if (ticksToStart > 0 && rules.isWarmup()) //is the start of the game, spawn everyone + give mats
 		{
-			rules.SetGlobalMessage("Match starts in " + ((ticksToStart / 30) + 1));
+			rules.SetGlobalMessage("Match starts in {SEC}");
+			rules.AddGlobalMessageReplacement("SEC", "" + ((ticksToStart / 30) + 1));
 			tdm_spawns.force = true;
 
 			//set kills and cache #players in smaller team
@@ -473,7 +469,7 @@ shared class TDMCore : RulesCore
 
 	void AddPlayer(CPlayer@ player, u8 team = 0, string default_config = "")
 	{
-		TDMPlayerInfo p(player.getUsername(), player.getTeamNum(), player.isBot() ? "knight" : "wizard" );
+		TDMPlayerInfo p(player.getUsername(), player.getTeamNum(), player.isBot() ? "knight" : (XORRandom(512) >= 256 ? "knight" : "archer"));
 		players.push_back(p);
 		ChangeTeamPlayerCount(p.team, 1);
 	}
@@ -498,8 +494,7 @@ shared class TDMCore : RulesCore
 					}
 				}
 			}
-			
-			
+
 		}
 	}
 
@@ -544,9 +539,6 @@ shared class TDMCore : RulesCore
 			// team 0 ruins
 			Vec2f[] respawnPositions;
 			Vec2f respawnPos;
-
-			if(map.tilesize == 0)
-				{ map.tilesize = 8; }
 
 			if (!getMap().getMarkers("blue main spawn", respawnPositions))
 			{
@@ -669,8 +661,10 @@ shared class TDMCore : RulesCore
 			//no teams survived, draw
 			if (teams_alive_count == 0)
 			{
-				winteamIndex = -255;
-				team_wins_on_end = -1;
+				rules.SetTeamWon(-1);   //game over!
+				rules.SetCurrentState(GAME_OVER);
+				rules.SetGlobalMessage("It's a tie!");
+				return;
 			}
 
 		}
@@ -687,36 +681,63 @@ shared class TDMCore : RulesCore
 				for (uint i = 0; i < players.length; i++)
 				{
 					CPlayer@ player = players[i].getPlayer();
-					if (player !is null && player.getTeamNum() == winteamIndex)
+					if (player !is null)
 					{
-						player.server_setCoins(player.getCoins() + 10);
+						if (player.getTeamNum() == winteamIndex)
+						{
+							player.server_setCoins(player.getCoins() + 10);
+						}
+
+						CBlob@ blob = player.getBlob();
+						if (blob !is null)
+						{
+							ConfigFile cfg = ConfigFile();
+							cfg.loadFile("tdm_vars.cfg");
+
+							//give coins for items in your inventory
+							CInventory@ inventory = blob.getInventory();
+							for (uint j = 0; j < inventory.getItemsCount(); j++)
+							{
+								CBlob@ blob = inventory.getItem(j);
+								giveCoinsBack(player, blob, cfg);
+							}
+
+							//give coins for held item
+							CBlob@ heldBlob = blob.getCarriedBlob();
+							if (heldBlob !is null)
+							{
+								giveCoinsBack(player, heldBlob, cfg);
+							}
+						}
 					}
 				}
 			}
 
 			rules.SetTeamWon(winteamIndex);   //game over!
 			rules.SetCurrentState(GAME_OVER);
-			rules.SetGlobalMessage(winteam.name + " wins the game!");
-			
-			CRules@ regRules = getRules();
-			regRules.set_bool("winner", true);
-			for (int i = 0; i < getPlayerCount(); i++)
+		}
+	}
+
+	void giveCoinsBack(CPlayer@ player, CBlob@ blob, ConfigFile cfg)
+	{
+		if (blob.exists("buyer"))
+		{
+			u16 buyerID = blob.get_u16("buyer");
+
+			CPlayer@ buyer = getPlayerByNetworkId(buyerID);
+			if (buyer !is null && player is buyer)
 			{
-				CPlayer@ player = getPlayer(i);
-				if(player.getTeamNum() == winteamIndex)
+				string blobName = blob.getName();
+				string costName = "cost_" + blobName;
+				if (cfg.exists(costName) && blobName != "mat_arrows")
 				{
-					regRules.SyncToPlayer("winner", player);
-					regRules.SyncToPlayer("coreHP", player);
+					s32 cost = cfg.read_s32(costName);
+					if (cost > 0)
+					{
+						player.server_setCoins(player.getCoins() + Maths::Round(cost / 2));
+					}
 				}
 			}
-			regRules.set_bool("winner", false);
-			regRules.set_f32("coreHP", 0.0f);
-		}
-		else if(winteamIndex == -255)
-		{
-			rules.SetTeamWon(-1);   //game over!
-			rules.SetCurrentState(GAME_OVER);
-			rules.SetGlobalMessage("Draw!");
 		}
 	}
 
@@ -813,6 +834,7 @@ void Reset(CRules@ this)
 	this.set("core", @core);
 	this.set("start_gametime", getGameTime() + core.warmUpTime);
 	this.set_u32("game_end_time", getGameTime() + core.gameDuration); //for TimeToEnd.as
+	this.set_s32("restart_rules_after_game_time", (core.spawnTime < 0 ? 5 : 10) * 30 );
 }
 
 void onRestart(CRules@ this)
@@ -823,35 +845,4 @@ void onRestart(CRules@ this)
 void onInit(CRules@ this)
 {
 	Reset(this);
-}
-
-void onPlayerLeave(CRules@ this, CPlayer@ player)
-{
-    uint team0 = 0;
-    uint team1 = 0;
-    for (u32 i = 0; i < getPlayersCount(); i++)
-    {
-        CPlayer@ p = getPlayer(i);
-        if (p !is null)
-        {
-            if (p.getTeamNum() == 0)
-                team0++;
-            else if (p.getTeamNum() == 1)
-                team1++;
-            else
-                continue;
-        }
-    }
-    bool lastteamplayer = false;
-    
-    if(player.getTeamNum() == 0 || player.getTeamNum() == 1)//If the player that just left was not a spectator
-    {
-        lastteamplayer = true;
-    }
-    if((team0 + team1 == 1 && lastteamplayer) || getPlayerCount() == 1)//Next map when the last player on a team leaves or the last player in the game leaves
-	{//We check for lastteamplayer to confirm that the player that left was not a spectator, if the player that left WAS a spectator the map would reset, it does this because we only check
-    //for the amount of players in the team, and this only checks onPlayerLeave so we need to make sure it was the last player in a team that left
-		print("Next mapping due to the last player on a team or last player on the server leaving");
-        LoadNextMap();
-	}
 }
