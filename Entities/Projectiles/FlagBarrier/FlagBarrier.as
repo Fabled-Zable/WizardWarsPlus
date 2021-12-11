@@ -41,6 +41,12 @@ void onTick( CBlob@ this )
 		this.server_Die();
 		return;
 	}
+	
+	if (ownerBlob.getTeamNum() != this.getTeamNum())
+	{
+		this.server_Die();
+		return;
+	}
 
 	CMap@ map = getMap(); //standard map check
 	if (map is null)

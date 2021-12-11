@@ -35,6 +35,12 @@ void onTick( CBlob@ this )
 		return;
 	}
 
+	if (ownerBlob.getTeamNum() != this.getTeamNum())
+	{
+		this.server_Die();
+		return;
+	}
+
 	Vec2f targetPos = ownerBlob.getPosition();
 
 	this.setPosition( targetPos );
