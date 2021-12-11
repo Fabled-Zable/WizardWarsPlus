@@ -15,6 +15,9 @@ void onInit(CBlob@ this)
 
 void onTick( CBlob@ this )
 {
+	if (this is null)
+	{return;}
+
 	if (this.getTickSinceCreated() < 1)
 	{		
 		this.getSprite().PlaySound("EnergySound1.ogg", 1.0f, 1.0f);	
@@ -26,11 +29,13 @@ void onTick( CBlob@ this )
 		sprite.SetRelativeZ(1000);
 	}
 
-	CPlayer@ p = this.getDamageOwnerPlayer();
+	f32 maxHealth = this.getInitialHealth();
+	if (this.getHealth() < maxHealth)
+	{
+		this.server_SetHealth(maxHealth);
+	}
 
-	if (p is null) { return; }
-
-	CBlob@ ownerBlob = p.getBlob();
+	CBlob@ ownerBlob = getBlobByNetworkID(this.get_u16("ownerNetID"));
 
 	if (ownerBlob is null)
 	{
@@ -38,25 +43,27 @@ void onTick( CBlob@ this )
 		return;
 	}
 
-	if (!ownerBlob.hasTag("materializing"))
-	{
-		this.server_Die();
-		return;
-	}
-
-	if (this is null || ownerBlob is null)
+	CMap@ map = getMap(); //standard map check
+	if (map is null)
 	{return;}
 
-	Vec2f targetPos = ownerBlob.getAimPos() + Vec2f(0.0f,-2.0f);
-	Vec2f userPos = ownerBlob.getPosition() + Vec2f(0.0f,-2.0f);
-	Vec2f castDir = (targetPos- userPos);
-	castDir.Normalize();
-	castDir *= 20; //all of this to get deviation 3 blocks in front of caster
-	Vec2f castPos = userPos + castDir; //exact position of effect
+	Vec2f blobPos = ownerBlob.getPosition() + Vec2f(0.0f,-2.0f);
+	
+	f32 barrierHeight = (blobPos.y - (8 * 15));
+	f32 maxBarrierHeight = (map.tilemapheight * 0.15f); //max height is basically 85% of the map's height
 
-	this.setPosition( castPos );
+	if (barrierHeight < maxBarrierHeight) //do not let it go to space, aiight
+	{
+		barrierHeight = maxBarrierHeight;
+	}
+
+	Vec2f targetPos = Vec2f(blobPos.x, barrierHeight); //position over the flag
+
+	this.setPosition( targetPos );
+	this.setAngleDegrees(0);
+
 	this.setVelocity(Vec2f_zero);
-	this.setAngleDegrees(-castDir.Angle()+90.0f);
+	this.setAngularVelocity(0);
 }
 
 void onDie(CBlob@ this)
