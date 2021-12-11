@@ -1294,8 +1294,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 						failedTeleport = true;
 						break;
 					}
-
-					if (blobName == "tent" && b.getTeamNum() != this.getTeamNum())
+					
+					if (b.hasTag("TeleportCancel") && b.getTeamNum() != this.getTeamNum())
 					{
 						failedTeleport = true;
 						break;

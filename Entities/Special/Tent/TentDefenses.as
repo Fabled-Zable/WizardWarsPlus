@@ -8,7 +8,7 @@ Random _tent_defenses_r(94712); //with the seed, I extract a float ranging from 
 
 void onInit(CBlob@ this)
 {
-
+	this.Tag("TeleportCancel");
 }
 
 void onTick(CBlob@ this)
