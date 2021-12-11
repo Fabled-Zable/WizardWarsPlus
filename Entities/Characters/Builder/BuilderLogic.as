@@ -123,7 +123,7 @@ void onTick(CBlob@ this)
     	    	CBlob@ newMat = server_CreateBlob("mat_stone", this.getTeamNum(), this.getPosition());
     	    	if (newMat != null)
     	   		{
-					newMat.server_SetQuantity(newMat.maxQuantity * 0.1f);
+					newMat.server_SetQuantity(newMat.maxQuantity * 0.2f);
     	    	    this.server_PutInInventory(newMat);
     	   		}
 			}
