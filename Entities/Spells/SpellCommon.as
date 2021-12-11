@@ -1294,7 +1294,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 						failedTeleport = true;
 						break;
 					}
-					
+
 					if (b.hasTag("TeleportCancel") && b.getTeamNum() != this.getTeamNum())
 					{
 						failedTeleport = true;
@@ -2040,6 +2040,8 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			u16 extraLifetime = this.hasTag("extra_damage") ? 5 : 0;
 			u16 lifetime = 30 + extraLifetime;
+			if (sv_gamemode == "CTF")
+			{ lifetime *= 2; }
 
 			Vec2f orbPos = aimpos;
 			Vec2f targetPos = orbPos + Vec2f(0.0f,2.0f);
