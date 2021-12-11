@@ -1270,13 +1270,48 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case -1005340482://teleport
 		{
+			CMap@ map = getMap(); //standard map check
+			if (map is null)
+			{return;}
+
+			bool failedTeleport = false;
+			
+			if (sv_gamemode == "CTF")
+			{
+				CBlob@[] blobsInRadius;
+				map.getBlobsInRadius(thispos, 64.0f, @blobsInRadius);
+			
+				for (uint i = 0; i < blobsInRadius.length; i++)
+				{
+					CBlob@ b = blobsInRadius[i];
+					if (b is null)
+					{ continue; }
+					
+					string blobName = b.getName();
+
+					if (blobName == "ctf_flag")
+					{
+						failedTeleport = true;
+						break;
+					}
+
+					if (blobName == "tent" && b.getTeamNum() != this.getTeamNum())
+					{
+						failedTeleport = true;
+						break;
+					}
+				}
+			}
+
 			if ( this.get_u16("slowed") > 0 )	//cannot teleport while slowed
+			{ failedTeleport = true; }
+
+			if (failedTeleport)
 			{
 				ManaInfo@ manaInfo;
 				if (!this.get( "manaInfo", @manaInfo )) {
 					return;
 				}
-				
 				manaInfo.mana += spell.mana;
 				
 				this.getSprite().PlaySound("ManaStunCast.ogg", 1.0f, 1.0f);
@@ -1290,10 +1325,6 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				aimNorm.Normalize();
 				aimVector -= aimNorm*4;
 				aimpos -= aimNorm*4;
-
-				CMap@ map = getMap(); //standard map check
-				if(map is null)
-				{return;}
 
 				Vec2f hitPos = Vec2f_zero;
 
@@ -1928,8 +1959,55 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 
 		case 2065576553://vectorial_dash
 		{
-			this.getSprite().PlaySound("bunkercast.ogg", 100.0f);
+			if (!isClient())
+			{ return; }
+
+			CMap@ map = getMap(); //standard map check
+			if (map is null)
+			{return;}
+
+			bool failedTeleport = false;
+
+			if (sv_gamemode == "CTF")
+			{
+				CBlob@[] blobsInRadius;
+				map.getBlobsInRadius(thispos, 64.0f, @blobsInRadius);
 			
+				for (uint i = 0; i < blobsInRadius.length; i++)
+				{
+					CBlob@ b = blobsInRadius[i];
+					if (b is null)
+					{ continue; }
+					
+					string blobName = b.getName();
+
+					if (blobName == "ctf_flag")
+					{
+						failedTeleport = true;
+						break;
+					}
+
+					if (blobName == "tent" && b.getTeamNum() != this.getTeamNum())
+					{
+						failedTeleport = true;
+						break;
+					}
+				}
+			}
+
+			if (failedTeleport)
+			{
+				ManaInfo@ manaInfo;
+				if (!this.get( "manaInfo", @manaInfo )) {
+					return;
+				}
+				manaInfo.mana += spell.mana;
+				
+				this.getSprite().PlaySound("ManaStunCast.ogg", 1.0f, 1.0f);
+				return;
+			}
+
+			this.getSprite().PlaySound("bunkercast.ogg", 100.0f);
 			f32 orbspeed = 1.0f;
 
             if (charge_state == NecromancerParams::cast_3) {

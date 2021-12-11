@@ -2,8 +2,6 @@
 #include "SpellCommon.as";
 #include "TeamColour.as";
 
-#include "FireCommon.as"
-
 void onInit(CBlob@ this)
 {
 	CShape@ shape = this.getShape();
@@ -21,12 +19,12 @@ void onTick( CBlob@ this )
 	if (this.getTickSinceCreated() < 1)
 	{		
 		this.getSprite().PlaySound("EnergySound1.ogg", 1.0f, 1.0f);	
-		this.server_SetTimeToDie(99);
+		this.server_SetTimeToDie(9999);
 		
 		CSprite@ sprite = this.getSprite();
 		sprite.getConsts().accurateLighting = false;
 		sprite.setRenderStyle(RenderStyle::additive);
-		sprite.SetRelativeZ(1000);
+		sprite.SetRelativeZ(888);
 	}
 
 	f32 maxHealth = this.getInitialHealth();

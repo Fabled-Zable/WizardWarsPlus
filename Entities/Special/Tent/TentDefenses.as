@@ -2,8 +2,9 @@
 
 #include "CTF_FlagCommon.as"
 #include "CTF_Structs.as"
+#include "TeamColour.as";
 
-Random _flag_defenses_r(94217); //with the seed, I extract a float ranging from 0 to 1 for random events
+Random _tent_defenses_r(94712); //with the seed, I extract a float ranging from 0 to 1 for random events
 
 void onInit(CBlob@ this)
 {
@@ -84,6 +85,7 @@ void onTick(CBlob@ this)
 				}
 			}
 		}*/
+		int teamNum = this.getTeamNum();
 
 		if (!owningBarrier)
 		{
@@ -92,7 +94,7 @@ void onTick(CBlob@ this)
 			if (barrier !is null)
 			{
 				barrier.set_u16("ownerNetID", FlagNetID); //<<important
-				barrier.server_setTeamNum( this.getTeamNum() );
+				barrier.server_setTeamNum( teamNum );
 				barrier.setPosition( Vec2f_zero );
 				barrier.setAngleDegrees(0);
 			}
@@ -105,7 +107,7 @@ void onTick(CBlob@ this)
 			if (aura !is null)
 			{
 				aura.set_u16("ownerNetID", FlagNetID); //<<important
-				aura.server_setTeamNum( -1 );
+				aura.server_setTeamNum( teamNum );
 				aura.setPosition( Vec2f_zero );
 				aura.setAngleDegrees(0);
 
@@ -121,13 +123,17 @@ void onTick(CBlob@ this)
 	Vec2f thisPos = this.getPosition();
 	u16 particleNum = 40;
 
+	int teamNum = this.getTeamNum();
+	SColor color = getTeamColor(teamNum);
+
 	for(int i = 0; i < particleNum; i++)
     {
-		SColor color = randomFlagParticleColor(); //randomize alpha
+		u8 alpha = 40 + (170.0f * _tent_defenses_r.NextFloat()); //randomize alpha
+		color.setAlpha(alpha);
 
-		f32 randomDeviation = (i*0.3f) * _flag_defenses_r.NextFloat(); //random pixel deviation
+		f32 randomDeviation = (i*0.3f) * _tent_defenses_r.NextFloat(); //random pixel deviation
 		Vec2f prePos = Vec2f(66.0f - randomDeviation, 0);
-		prePos.RotateByDegrees(360.0f * _flag_defenses_r.NextFloat()); //random 360 rotation
+		prePos.RotateByDegrees(360.0f * _tent_defenses_r.NextFloat()); //random 360 rotation
 
 		Vec2f pPos = thisPos + prePos;
 		Vec2f pGrav = (pPos - thisPos) * -0.01f;
@@ -142,13 +148,4 @@ void onTick(CBlob@ this)
             p.timeout = 4;
         }
     }
-}
-
-SColor randomFlagParticleColor()
-{
-	u8 alpha = 40 + (170.0f * _flag_defenses_r.NextFloat());
-    u8 red = 255;
-    u8 green = 255;
-    u8 blue = 255;
-    return SColor( alpha , red , green , blue );
 }
