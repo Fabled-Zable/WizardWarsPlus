@@ -20,3 +20,38 @@ void makeManaDrainParticles( Vec2f pos, int amount )
 		p.Z = 200;
     }
 }
+
+SColor getTeamColorWW( int teamNum = -1, SColor color = SColor(255, 255, 0, 0) )
+{
+    switch (teamNum)
+		{
+			case 0: //blue
+			{	
+				color = SColor(255, 30, 30, 255);
+			}
+			break;
+
+			case 1: //red
+			{	
+				color = SColor(255, 255, 0, 0);
+			}
+			break;
+			case 2: //green
+			{	
+				color = SColor(255, 0, 200, 0);
+			}
+			break;
+            case 3: //violet
+			{	
+				color = SColor(255, 255, 0, 255);
+			}
+			break;
+
+			default:
+			{	
+				color = SColor(255, 255, 255, 255);
+			}
+		}
+    
+    return color;
+}
