@@ -136,16 +136,19 @@ void onTick(CBlob@ this)
 		prePos.RotateByDegrees(360.0f * _tent_defenses_r.NextFloat()); //random 360 rotation
 
 		Vec2f pPos = thisPos + prePos;
-		Vec2f pGrav = (pPos - thisPos) * -0.01f;
+		Vec2f pGrav = -prePos * 0.005f;
 
-        CParticle@ p = ParticlePixelUnlimited(pPos, Vec2f_zero, color, true);
+		prePos.Normalize();
+		prePos *= 1.0f;
+
+        CParticle@ p = ParticlePixelUnlimited(pPos, prePos, color, true);
         if(p !is null)
         {
             p.collides = false;
             p.gravity = pGrav;
             p.bounce = 0;
             p.Z = 7;
-            p.timeout = 4;
+            p.timeout = 8;
         }
     }
 }
