@@ -9,6 +9,7 @@ void onInit(CBlob@ this)
 	shape.getConsts().mapCollisions = false;
 	
 	this.Tag("barrier");
+	this.Tag("phasing");
 }
 
 void onTick( CBlob@ this )

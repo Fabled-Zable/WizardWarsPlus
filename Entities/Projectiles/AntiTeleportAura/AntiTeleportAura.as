@@ -8,6 +8,9 @@ void onInit(CBlob@ this)
 	shape.getConsts().mapCollisions = false;
 	
 	this.Tag("TeleportBlocker");
+	this.Tag("projectile");
+	this.Tag("invincible");
+	this.Tag("phasing");
 }
 
 void onTick( CBlob@ this )

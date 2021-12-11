@@ -375,7 +375,10 @@ void Pickaxe(CBlob@ this)
 	bool noBuildZone = inNoBuildZone(map, tilepos, tile.type);
 	bool isgrass = false;
 
-	if ((tilepos - aimPos).Length() < bestDistance - 4.0f && map.getBlobAtPosition(tilepos) is null)
+	CBlob@ blobAtTile = map.getBlobAtPosition(tilepos);
+	bool hittableBlobAtTile = ( blobAtTile is null || blobAtTile.hasTag("phasing") );
+
+	if ((tilepos - aimPos).Length() < bestDistance - 4.0f && hittableBlobAtTile)
 	{
 		Tile tile = map.getTile(surfacepos);
 
