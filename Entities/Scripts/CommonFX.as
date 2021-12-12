@@ -9,7 +9,7 @@ void makeManaDrainParticles( Vec2f pPos, int amount )
         Vec2f pVel(_sprk_r2.NextFloat() * 7.0f, 0);
         pVel.RotateBy(_sprk_r2.NextFloat() * 360.0f);
 		
-		CParticle@ p = ParticlePixelUnlimited(pPos, pVel, SColor( 255, 120+XORRandom(40), true);
+		CParticle@ p = ParticlePixelUnlimited(pPos, pVel, SColor( 255, 120+XORRandom(40), 0, 255), true);
         if(p !is null)
         {
             p.collides = false;

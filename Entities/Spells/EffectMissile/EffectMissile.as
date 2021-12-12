@@ -385,15 +385,19 @@ void onDie( CBlob@ this )
 	Vec2f initVec = Vec2f(2.0f,0);
 	for(u16 i = 0; i < 45; i++)
 	{
-		Vec2f pVec = initVec.RotateByDegrees(i*8);
+		Vec2f pVel = initVec.RotateByDegrees(i*8);
 
-		CParticle@ p = ParticlePixel( this.getPosition() , pVec , SColor( 255, 255, 255, 255) , true , 15);
-		if(p !is null)
-    	{
-    	    p.gravity = Vec2f_zero;
+		CParticle@ p = ParticlePixelUnlimited(this.getPosition(), pVel, SColor( 255, 255, 255, 255), true);
+    	if(p !is null)
+		{
+		    p.collides = false;
+		    p.gravity = Vec2f_zero;
+		    p.bounce = 0;
+ 			p.Z = 200;
+ 			p.timeout = 15;
+			p.scale = 0.5f + _sprk_r.NextFloat();
 			p.damping = 0.85f;
-			p.fastcollision = false;
-    	}
+        }
 	}
 	
 }
@@ -412,29 +416,33 @@ void sparks(CBlob@ this, Vec2f pos, int amount)
 			case 0: //allies
 			case 1: //dead allies
 			{
-				CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, colorShade, colorShade ), true );
-				if(p !is null) //bail if we stop getting particles
-				{
-					p.timeout = 40 + _sprk_r.NextRanged(20);
+				CParticle@ p = ParticlePixelUnlimited(pos, vel, SColor( 255, colorShade, colorShade, colorShade ), true);
+    		    if(p !is null)
+		        {
+		            p.fastcollision = true;
+		            p.gravity = Vec2f_zero;
+		            p.bounce = 0;
+ 					p.Z = 200;
+ 		        	p.timeout = 40 + _sprk_r.NextRanged(20);
 					p.scale = 0.5f + _sprk_r.NextFloat();
-    				p.fastcollision = true;
 					p.damping = 0.95f;
-					p.gravity = Vec2f(0,0);
-				}
+        		}
 			}
 			break;
 		
 			case 2: //enemies
 			{
-				CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, colorShade, 0 ), true );
-				if(p !is null) //bail if we stop getting particles
-				{
-					p.timeout = 40 + _sprk_r.NextRanged(20);
+				CParticle@ p = ParticlePixelUnlimited(pos, vel, SColor( 255, colorShade, colorShade, 0 ), true);
+    		    if(p !is null)
+		        {
+		            p.fastcollision = true;
+		            p.gravity = Vec2f_zero;
+		            p.bounce = 0;
+ 					p.Z = 200;
+ 		        	p.timeout = 40 + _sprk_r.NextRanged(20);
 					p.scale = 0.5f + _sprk_r.NextFloat();
-    				p.fastcollision = true;
 					p.damping = 0.95f;
-					p.gravity = Vec2f(0,0);
-				}
+        		}
 			}
 			break;
 
@@ -476,14 +484,16 @@ void selectedTargetIndicator( CBlob@ this , Vec2f pos )
 
 	for(int i = 0; i < dist; i += 2)
 	{
-		CParticle@ p = ParticlePixel( thisPos + pVector*i, Vec2f_zero, color, true );
-		if(p !is null) //bail if we stop getting particles
-		{
-			p.timeout = _sprk_r.NextRanged(5);
+		CParticle@ p = ParticlePixelUnlimited(thisPos + pVector*i, Vec2f_zero, color, true);
+        if(p !is null)
+        {
+            p.fastcollision = true;
+            p.gravity = Vec2f_zero;
+            p.bounce = 0;
+            p.Z = 200;
+            p.timeout = _sprk_r.NextRanged(5);
 			p.scale = 0.5f + _sprk_r.NextFloat();
-    		p.fastcollision = true;
 			p.damping = 0.8f;
-			p.gravity = Vec2f(0,0);
-		}
+        }
 	}
 }
