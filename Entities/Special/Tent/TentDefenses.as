@@ -5,9 +5,11 @@
 #include "TeamColour.as";
 
 Random _tent_defenses_r(94712); //with the seed, I extract a float ranging from 0 to 1 for random events
+const string tent_player_push_ID = "tent_player_push";
 
 void onInit(CBlob@ this)
 {
+	this.addCommandID(tent_player_push_ID);
 	this.Tag("TeleportCancel");
 }
 
@@ -16,6 +18,8 @@ void onTick(CBlob@ this)
 	CMap@ map = getMap(); //standard map check
 	if (map is null)
 	{return;}
+
+	int teamNum = this.getTeamNum();
 
 	if ( isServer() && getGameTime() % 30 == 0 ) //Barrier spawn code
 	{
@@ -85,7 +89,6 @@ void onTick(CBlob@ this)
 				}
 			}
 		}*/
-		int teamNum = this.getTeamNum();
 
 		if (!owningBarrier)
 		{
@@ -102,7 +105,7 @@ void onTick(CBlob@ this)
 
 		if (!owningAura)
 		{
-			print("Creating Aura");
+			//print("Creating Aura");
 			CBlob@ aura = server_CreateBlob( "anti_teleport_aura_large" ); 
 			if (aura !is null)
 			{
@@ -116,14 +119,104 @@ void onTick(CBlob@ this)
 		}
 	}
 
+	Vec2f thisPos = this.getPosition();
+	u32 gameTime = getGameTime();
+	CBitStream params;
+
+	CBlob@[] enemiesInRadius;
+	map.getBlobsInRadius(thisPos, 128.0f, @enemiesInRadius); //tent aura push
+	for (uint i = 0; i < enemiesInRadius.length; i++)
+	{
+		CBlob@ b = enemiesInRadius[i];
+		if (b is null)
+		{ continue; }
+
+		if (b.getTeamNum() == teamNum)
+		{ continue; }
+
+		if (!b.hasTag("flesh") && !b.hasTag("counterable"))
+		{ continue; }
+
+		Vec2f blobPos = b.getPosition();
+
+		Vec2f kickDir = blobPos - thisPos;
+		kickDir.Normalize();
+
+		Vec2f kickVel = kickDir * 50.0f;
+
+		CPlayer@ targetPlayer = b.getPlayer();
+		if (targetPlayer == null)
+		{
+			b.AddForce(kickVel);
+		}
+		else
+		{
+			if (isServer())
+			{
+				params.write_Vec2f(kickVel);
+				params.write_u16(b.getNetworkID());
+				this.server_SendCommandToPlayer(this.getCommandID(tent_player_push_ID), params, targetPlayer);
+			}
+		}
+
+		if (!isClient())
+		{ continue; }
+
+		Vec2f rayVec = blobPos - thisPos;
+		int steps = rayVec.getLength();
+
+		Vec2f rayNorm = rayVec;
+		rayNorm.Normalize();
+
+		Vec2f rayDeviation = rayNorm;
+		rayDeviation.RotateByDegrees(90);
+		rayDeviation *= 4.0f;
+
+		SColor color = getTeamColor(teamNum);
+
+		for(int i = 0; i < steps; i++)
+   		{
+			u8 alpha = 40 + (170.0f * _tent_defenses_r.NextFloat()); //randomize alpha
+			color.setAlpha(alpha);
+
+			f32 waveTravel = i - gameTime;
+			f32 sinInput = waveTravel * 0.2f;
+			f32 stepDeviation = Maths::Sin(sinInput);
+
+			if (i < 8)
+			{
+				f32 deviationReduction = float(i) / 8.0f;
+				stepDeviation *= deviationReduction;
+			}
+			if (i > (steps - 8))
+			{
+				f32 deviationReduction = -1.0f * ((float(i) - float(steps)) / 8.0f);
+				stepDeviation *= deviationReduction;
+			}
+
+			Vec2f finalRayDeviation = rayDeviation * stepDeviation;
+
+			Vec2f pPos = (rayNorm * i) + finalRayDeviation;
+			pPos += thisPos;
+
+ 	    	CParticle@ p = ParticlePixelUnlimited(pPos, Vec2f_zero, color, true);
+ 	    	if(p !is null)
+  	    	{
+				p.collides = false;
+				p.gravity = Vec2f_zero;
+				p.bounce = 0;
+				p.Z = 8;
+				p.timeout = 3;
+			}
+		}
+		
+	}
 
 	if (!isClient())
 	{ return; }
 
-	Vec2f thisPos = this.getPosition();
 	u16 particleNum = 50;
 
-	int teamNum = this.getTeamNum();
 	SColor color = getTeamColor(teamNum);
 
 	for(int i = 0; i < particleNum; i++)
@@ -139,7 +232,7 @@ void onTick(CBlob@ this)
 		Vec2f pGrav = -prePos * 0.005f;
 
 		prePos.Normalize();
-		prePos *= 1.0f;
+		prePos *= 2.0f;
 
         CParticle@ p = ParticlePixelUnlimited(pPos, prePos, color, true);
         if(p !is null)
@@ -148,7 +241,24 @@ void onTick(CBlob@ this)
             p.gravity = pGrav;
             p.bounce = 0;
             p.Z = 7;
-            p.timeout = 8;
+            p.timeout = 12;
         }
+    }
+}
+
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
+{
+    if(this.getCommandID(tent_player_push_ID) == cmd)
+    {
+		if (!isClient())
+		{ return; }
+
+		Vec2f kickVel = params.read_Vec2f();
+		CBlob@ targetBlob = getBlobByNetworkID(params.read_u16());
+
+		if (targetBlob != null)
+		{
+			targetBlob.AddForce(kickVel);
+		}
     }
 }

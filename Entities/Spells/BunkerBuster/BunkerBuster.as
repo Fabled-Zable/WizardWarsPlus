@@ -5,6 +5,8 @@
 const f32 arrowMediumSpeed = 8.0f;
 const f32 arrowFastSpeed = 13.0f;
 
+const string bunker_player_push_ID = "bunker_player_push";
+
 void onInit(CBlob@ this)
 {
 	CShape@ shape = this.getShape();
@@ -22,7 +24,7 @@ void onInit(CBlob@ this)
 
     this.server_SetTimeToDie(10);
 
-	this.addCommandID("bunker_player_push");
+	this.addCommandID(bunker_player_push_ID);
 	this.addCommandID("bunker_dieFX");
 }
 
@@ -99,7 +101,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 				{
 					params.write_Vec2f(kickDir);
 					params.write_u16(blob.getNetworkID());
-					this.server_SendCommandToPlayer(this.getCommandID("bunker_player_push"), params, targetPlayer);
+					this.server_SendCommandToPlayer(this.getCommandID(bunker_player_push_ID), params, targetPlayer);
 					params2.write_Vec2f(thisPos);
 					this.SendCommand(this.getCommandID("bunker_dieFX"), params2);
 				}
@@ -148,17 +150,17 @@ bool isEnemy( CBlob@ this, CBlob@ target )
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if(this.getCommandID("bunker_player_push") == cmd)
+    if(this.getCommandID(bunker_player_push_ID) == cmd)
     {
 		if (!isClient())
 		{ return; }
 
-		Vec2f kickDir = params.read_Vec2f();
+		Vec2f kickVel = params.read_Vec2f();
 		CBlob@ targetBlob = getBlobByNetworkID(params.read_u16());
 
 		if (targetBlob != null)
 		{
-			targetBlob.AddForce(kickDir);
+			targetBlob.AddForce(kickVel);
 		}
     }
 
