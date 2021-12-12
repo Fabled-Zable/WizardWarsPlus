@@ -5,6 +5,7 @@
 #include "PlayerPrefsCommon.as";
 #include "SpellHashDecoder.as";
 #include "EffectMissileEnum.as";
+#include "CTFDefenseLogic.as";
 
 const int minimum_cast = NecromancerParams::cast_1;
 const int medium_cast = NecromancerParams::cast_2;
@@ -1276,39 +1277,19 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			if (map is null)
 			{return;}
 
-			bool failedTeleport = false;
+			int teamNum = this.getTeamNum();
+
+			bool failedCast = false;
 			
-			if (sv_gamemode == "CTF")
+			if (isTeleCancelInRange(map, thispos, teamNum))
 			{
-				CBlob@[] blobsInRadius;
-				map.getBlobsInRadius(thispos, 64.0f, @blobsInRadius);
-			
-				for (uint i = 0; i < blobsInRadius.length; i++)
-				{
-					CBlob@ b = blobsInRadius[i];
-					if (b is null)
-					{ continue; }
-					
-					string blobName = b.getName();
-
-					if (blobName == "ctf_flag")
-					{
-						failedTeleport = true;
-						break;
-					}
-
-					if (b.hasTag("TeleportCancel") && b.getTeamNum() != this.getTeamNum())
-					{
-						failedTeleport = true;
-						break;
-					}
-				}
+				failedCast = true;
 			}
 
 			if ( this.get_u16("slowed") > 0 )	//cannot teleport while slowed
-			{ failedTeleport = true; }
+			{ failedCast = true; }
 
-			if (failedTeleport)
+			if (failedCast)
 			{
 				ManaInfo@ manaInfo;
 				if (!this.get( "manaInfo", @manaInfo )) {
@@ -1342,7 +1323,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 						HitInfo@ hi = hitInfos[i];
 						if (hi.blob !is null) // check
 						{
-							if (hi.blob.getTeamNum() == this.getTeamNum())
+							if (hi.blob.getTeamNum() == teamNum)
 							{continue;}
 
 							if (!hi.blob.hasTag("TeleportBlocker"))
@@ -1968,36 +1949,16 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			if (map is null)
 			{return;}
 
-			bool failedTeleport = false;
+			int teamNum = this.getTeamNum();
 
-			if (sv_gamemode == "CTF")
+			bool failedCast = false;
+
+			if (isTeleCancelInRange(map, thispos, teamNum))
 			{
-				CBlob@[] blobsInRadius;
-				map.getBlobsInRadius(thispos, 64.0f, @blobsInRadius);
-			
-				for (uint i = 0; i < blobsInRadius.length; i++)
-				{
-					CBlob@ b = blobsInRadius[i];
-					if (b is null)
-					{ continue; }
-					
-					string blobName = b.getName();
-
-					if (blobName == "ctf_flag")
-					{
-						failedTeleport = true;
-						break;
-					}
-
-					if (blobName == "tent" && b.getTeamNum() != this.getTeamNum())
-					{
-						failedTeleport = true;
-						break;
-					}
-				}
+				failedCast = true;
 			}
 
-			if (failedTeleport)
+			if (failedCast)
 			{
 				ManaInfo@ manaInfo;
 				if (!this.get( "manaInfo", @manaInfo )) {
