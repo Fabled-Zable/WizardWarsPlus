@@ -21,7 +21,7 @@ void onTick(CBlob@ this)
 	{
 		bool owningBarrier = false;
 		bool owningAura = false;
-		u16 FlagNetID = this.getNetworkID();
+		u16 ThisNetID = this.getNetworkID();
 
 		CBlob@[] barriersByName;
 		getBlobsByName("air_barrier", @barriersByName);
@@ -34,7 +34,7 @@ void onTick(CBlob@ this)
 				if (b is null)
 				{ continue; }
 
-				if (b.get_u16("ownerNetID") == FlagNetID)
+				if (b.get_u16("ownerNetID") == ThisNetID)
 				{
 					owningBarrier = true;
 					break;
@@ -43,7 +43,7 @@ void onTick(CBlob@ this)
 		}
 
 		CBlob@[] aurasByName;
-		getBlobsByName("anti_teleport_aura", @aurasByName);
+		getBlobsByName("anti_teleport_aura_large", @aurasByName);
 
 		if (aurasByName.length > 0)
 		{
@@ -53,7 +53,7 @@ void onTick(CBlob@ this)
 				if (b is null)
 				{ continue; }
 
-				if (b.get_u16("ownerNetID") == FlagNetID)
+				if (b.get_u16("ownerNetID") == ThisNetID)
 				{
 					owningAura = true;
 					break;
@@ -93,7 +93,7 @@ void onTick(CBlob@ this)
 			CBlob@ barrier = server_CreateBlob( "air_barrier" ); //creates "supershield"
 			if (barrier !is null)
 			{
-				barrier.set_u16("ownerNetID", FlagNetID); //<<important
+				barrier.set_u16("ownerNetID", ThisNetID); //<<important
 				barrier.server_setTeamNum( teamNum );
 				barrier.setPosition( Vec2f_zero );
 				barrier.setAngleDegrees(0);
@@ -102,11 +102,11 @@ void onTick(CBlob@ this)
 
 		if (!owningAura)
 		{
-			//print("Creating Aura");
+			print("Creating Aura");
 			CBlob@ aura = server_CreateBlob( "anti_teleport_aura_large" ); 
 			if (aura !is null)
 			{
-				aura.set_u16("ownerNetID", FlagNetID); //<<important
+				aura.set_u16("ownerNetID", ThisNetID); //<<important
 				aura.server_setTeamNum( teamNum );
 				aura.setPosition( Vec2f_zero );
 				aura.setAngleDegrees(0);
