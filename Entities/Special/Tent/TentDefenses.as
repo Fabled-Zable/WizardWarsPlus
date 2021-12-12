@@ -103,7 +103,7 @@ void onTick(CBlob@ this)
 		if (!owningAura)
 		{
 			//print("Creating Aura");
-			CBlob@ aura = server_CreateBlob( "anti_teleport_aura" ); 
+			CBlob@ aura = server_CreateBlob( "anti_teleport_aura_large" ); 
 			if (aura !is null)
 			{
 				aura.set_u16("ownerNetID", FlagNetID); //<<important
@@ -121,7 +121,7 @@ void onTick(CBlob@ this)
 	{ return; }
 
 	Vec2f thisPos = this.getPosition();
-	u16 particleNum = 40;
+	u16 particleNum = 50;
 
 	int teamNum = this.getTeamNum();
 	SColor color = getTeamColor(teamNum);
@@ -132,7 +132,7 @@ void onTick(CBlob@ this)
 		color.setAlpha(alpha);
 
 		f32 randomDeviation = (i*0.3f) * _tent_defenses_r.NextFloat(); //random pixel deviation
-		Vec2f prePos = Vec2f(66.0f - randomDeviation, 0);
+		Vec2f prePos = Vec2f(130.0f - randomDeviation, 0);
 		prePos.RotateByDegrees(360.0f * _tent_defenses_r.NextFloat()); //random 360 rotation
 
 		Vec2f pPos = thisPos + prePos;
