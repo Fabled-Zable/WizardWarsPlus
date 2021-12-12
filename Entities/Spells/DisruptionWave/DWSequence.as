@@ -46,6 +46,7 @@ void onTick( CBlob@ this)
 			CBlob@ orb = server_CreateBlob( "disruption_point" );
 			if (orb !is null)
 			{
+				orb.set_f32("DW_blob_damage", this.get_f32("DW_damage")); //sets damage for the wave
 				orb.IgnoreCollisionWhileOverlapped( this );
 				orb.SetDamageOwnerPlayer( this.getPlayer() );
 				orb.setPosition( thisPos );
@@ -75,7 +76,7 @@ void onTick( CBlob@ this)
 			float damage = 2.0f;
 			if(b.hasTag("counterable"))
 			{damage = 4.0f;}
-			this.server_Hit(b, b.getPosition(), hitVec*8, damage, Hitters::water, true);
+			this.server_Hit(b, b.getPosition(), hitVec*8, damage, Hitters::explosion, true);
 		}
 
 		this.Untag("in spell sequence");

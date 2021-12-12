@@ -27,24 +27,28 @@ void onTick( CBlob@ this )
 	}
 
 	CPlayer@ p = this.getDamageOwnerPlayer();
-	CBlob@ owner = p.getBlob();
-	if (owner is null)
+
+	if (p is null) { return; }
+
+	CBlob@ ownerBlob = p.getBlob();
+
+	if (ownerBlob is null)
 	{
 		this.server_Die();
 		return;
 	}
 
-	if (!owner.hasTag("materializing"))
+	if (!ownerBlob.hasTag("materializing"))
 	{
 		this.server_Die();
 		return;
 	}
 
-	if (this is null || owner is null)
+	if (this is null || ownerBlob is null)
 	{return;}
 
-	Vec2f targetPos = owner.getAimPos() + Vec2f(0.0f,-2.0f);
-	Vec2f userPos = owner.getPosition() + Vec2f(0.0f,-2.0f);
+	Vec2f targetPos = ownerBlob.getAimPos() + Vec2f(0.0f,-2.0f);
+	Vec2f userPos = ownerBlob.getPosition() + Vec2f(0.0f,-2.0f);
 	Vec2f castDir = (targetPos- userPos);
 	castDir.Normalize();
 	castDir *= 20; //all of this to get deviation 3 blocks in front of caster
@@ -53,7 +57,6 @@ void onTick( CBlob@ this )
 	this.setPosition( castPos );
 	this.setVelocity(Vec2f_zero);
 	this.setAngleDegrees(-castDir.Angle()+90.0f);
-
 }
 
 void onDie(CBlob@ this)

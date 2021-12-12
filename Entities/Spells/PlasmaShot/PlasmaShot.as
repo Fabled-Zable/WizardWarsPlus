@@ -70,12 +70,7 @@ void onTick(CBlob@ this)
 
 	if( dist < 2.0f )
 	{
-		if(isClient())
-		{
-			this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
-			blast(this.getPosition(), 10);
-		}
-		explode(this);
+		this.server_Die();
 	}
 }
 
@@ -84,12 +79,7 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {
     if (solid)
     {
-		if(isClient())
-		{
-			this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
-			blast(this.getPosition(), 10);
-		}
-        explode(this);
+        this.server_Die();
 		return;
     }
 
@@ -99,17 +89,12 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
     {
 		if (blob.hasTag("barrier") || blob.hasTag("flesh") || blob.getName() == "plasma_shot")
 		{
-			if(isClient())
-			{
-				this.getSprite().PlaySound("GenericExplosion1.ogg", 0.8f, 0.8f + XORRandom(10)/10.0f);
-				blast(this.getPosition(), 10);
-			}
-			explode(this);
+			this.server_Die();
 		}
     }
 }
 
-void explode( CBlob@ this )
+void onDie( CBlob@ this )
 {
 	if(!this.hasTag("exploding"))
 	{return;}
@@ -118,19 +103,28 @@ void explode( CBlob@ this )
 	if (map is null || this is null)
 	return;
 
+	Vec2f thisPos = this.getPosition();
+
+	blast(thisPos, 10); //particles and client stuff effects
+
 	float damage = this.get_f32("damage");
 
 	CBlob@[] attacked;
-	map.getBlobsInRadius( this.getPosition(), 40.0f, @attacked );
+	map.getBlobsInRadius( thisPos, 40.0f, @attacked );
 	for (uint i = 0; i < attacked.size(); i++)
 	{
 		CBlob@ blob = attacked[i];
 		if(blob is null) {continue;}
 
-		CBlob@ caster = this.getDamageOwnerPlayer().getBlob();
-		if(caster !is null && blob is caster)
+		CPlayer@ player = this.getDamageOwnerPlayer();
+		if(player !is null)
 		{
-			this.server_Hit(blob, blob.getPosition(), Vec2f_zero, damage, Hitters::water, true);
+			CBlob@ caster = player.getBlob();
+			if(caster !is null && blob is caster)
+			{
+				this.server_Hit(blob, blob.getPosition(), Vec2f_zero, damage, Hitters::explosion, true);
+				continue;
+			}
 		}
 
 		if(blob.getTeamNum() == this.getTeamNum()) {continue;}
@@ -139,7 +133,7 @@ void explode( CBlob@ this )
 
 		if (blob.hasTag("barrier"))
 		{
-			finalDamage *= 1.5f;
+			finalDamage = 3.0f;
 		}
 		else if (blob.getName() == "knight")
 		{
@@ -151,15 +145,14 @@ void explode( CBlob@ this )
                 finalDamage *= 0.2;
             }
         }
-		else if (!blob.hasTag("flesh")) {continue;}
+		else if (!blob.hasTag("flesh"))
+		{ continue; }
 
-		Vec2f attackNorm = blob.getPosition() - this.getPosition();
+		Vec2f attackNorm = blob.getPosition() - thisPos;
 		attackNorm.Normalize();
 		blob.AddForce(attackNorm*100);
-        this.server_Hit(blob,this.getPosition(),Vec2f_zero,finalDamage,Hitters::water);
+        this.server_Hit(blob,thisPos,Vec2f_zero,finalDamage,Hitters::explosion);
 	}
-
-	this.server_Die();
 }
 
 bool doesCollideWithBlob( CBlob@ this, CBlob@ b )
@@ -207,6 +200,11 @@ void makeSmokeParticle( CBlob@ this , Vec2f targetPos )
 Random _blast_r(0x10002);
 void blast( Vec2f pos , int amount)
 {
+	if(!isClient())
+	{return;}
+
+	Sound::Play("GenericExplosion1.ogg", pos, 0.8f, 0.8f + XORRandom(10)/10.0f);
+
 	for (int i = 0; i < amount; i++)
     {
         Vec2f vel(_blast_r.NextFloat() * 3.0f, 0);

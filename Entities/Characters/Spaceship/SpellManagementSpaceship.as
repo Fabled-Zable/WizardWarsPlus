@@ -140,6 +140,7 @@ void ManageSpell( CBlob@ this, FrigateInfo@ frigate, PlayerPrefsInfo@ playerPref
 				castSpellID = playerPrefsInfo.primarySpellID;
             params.write_u8(castSpellID);
             params.write_Vec2f(spellPos);
+			params.write_Vec2f(pos);
             this.SendCommand(this.getCommandID("spell"), params);
 			
 			playerPrefsInfo.spell_cooldowns[castSpellID] = FrigateParams::spells[castSpellID].cooldownTime*getTicksASecond();

@@ -21,6 +21,9 @@ void onInit(CBlob@ this)
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
 
     this.server_SetTimeToDie(10);
+
+	this.addCommandID("bunker_player_push");
+	this.addCommandID("bunker_dieFX");
 }
 
 void onTick(CBlob@ this)
@@ -64,11 +67,17 @@ void onTick(CBlob@ this)
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
+	if (!isServer())
+	{ return; }
+
 	if (blob !is null && this !is null)
 	{
 		float blastStr = this.get_f32("blastStr");
 		if (isEnemy(this, blob))
 		{
+			CBitStream params;
+			CBitStream params2;
+
 			Vec2f thisPos = this.getPosition();
 			//Vec2f othPos = blob.getPosition();
 			//Vec2f kickDir = othPos - selfPos;
@@ -80,15 +89,25 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 			{
 				kickDir += Vec2f(0,-500);
 				kickDir *= 0.5f;
-				blob.AddForce(kickDir);
+
+				CPlayer@ targetPlayer = blob.getPlayer();
+				if (targetPlayer == null)
+				{
+					blob.AddForce(kickDir);
+				}
+				else
+				{
+					params.write_Vec2f(kickDir);
+					params.write_u16(blob.getNetworkID());
+					this.server_SendCommandToPlayer(this.getCommandID("bunker_player_push"), params, targetPlayer);
+					params2.write_Vec2f(thisPos);
+					this.SendCommand(this.getCommandID("bunker_dieFX"), params2);
+				}
 			}
 			else
 			{
 				blob.AddForceAtPosition(kickDir, thisPos);
 			}
-
-			
-			this.getSprite().PlaySound("bunkerbust.ogg", 100.0f);
 
 			float damage = this.get_f32("damage");
 
@@ -108,25 +127,9 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 				if(!isEnemy(this, radiusBlob))
 				{continue;}
 
-				this.server_Hit(radiusBlob, radiusBlob.getPosition(), Vec2f_zero, damage, Hitters::water, false);
+				this.server_Hit(radiusBlob, radiusBlob.getPosition(), Vec2f_zero, damage, Hitters::explosion, false);
 			}
 			
-			if ( isClient() ) //temporary Counterspell effect
-			{
-				CParticle@ pb = ParticleAnimated( "Shockwave3WIP.png",
-					this.getPosition(),
-					Vec2f(0,0),
-					float(XORRandom(360)),
-					0.25f, 
-					2, 
-					0.0f, true );    
-				if ( pb !is null)
-				{
-					pb.bounce = 0;
-    				pb.fastcollision = true;
-					pb.Z = -10.0f;
-				}
-			}
 			this.server_Die();
 		}
 	}
@@ -137,8 +140,50 @@ bool isEnemy( CBlob@ this, CBlob@ target )
 	return 
 	(
 		(
-			target.hasTag("barrier") || (target.hasTag("flesh") && !target.hasTag("dead") )
+			target.hasTag("barrier") || ( target.hasTag("flesh") && !target.hasTag("dead") )
 		)
 		&& target.getTeamNum() != this.getTeamNum() 
 	);
+}
+
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
+{
+    if(this.getCommandID("bunker_player_push") == cmd)
+    {
+		if (!isClient())
+		{ return; }
+
+		Vec2f kickDir = params.read_Vec2f();
+		CBlob@ targetBlob = getBlobByNetworkID(params.read_u16());
+
+		if (targetBlob != null)
+		{
+			targetBlob.AddForce(kickDir);
+		}
+    }
+
+	if(this.getCommandID("bunker_dieFX") == cmd)
+    {
+		if (!isClient())
+		{ return; }
+
+		Vec2f effectPos = params.read_Vec2f();
+
+		Sound::Play("bunkerbust.ogg", effectPos, 3.0f);
+
+		CParticle@ pb = ParticleAnimated( "Shockwave3WIP.png",
+			effectPos,
+			Vec2f(0,0),
+			float(XORRandom(360)),
+			0.25f, 
+			2, 
+			0.0f, true );
+
+		if ( pb !is null)
+		{
+			pb.bounce = 0;
+			pb.fastcollision = true;
+			pb.Z = -10.0f;
+		}
+    }
 }

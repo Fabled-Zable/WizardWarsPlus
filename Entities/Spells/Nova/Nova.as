@@ -3,7 +3,7 @@
 #include "TeamColour.as";
 #include "MakeDustParticle.as";
 
-const float STANDARD_SPEED = 64.0f;
+const float STANDARD_SPEED = 32.0f;
 
 void onInit( CBlob@ this )
 {
@@ -39,9 +39,6 @@ void onTick( CBlob@ this )
 		this.getSprite().PlaySound("SpriteFire1.ogg", 0.2f, 1.5f + XORRandom(10)/10.0f);
 		this.getSprite().SetZ(1000.0f);
 		this.Tag("fire bolt");
-		
-		//makes a stupid annoying sound
-		//ParticleZombieLightning( this.getPosition() );
 		
 		// done post init
 		this.set_bool("initialized", true);
@@ -93,12 +90,13 @@ void onTick( CBlob@ this )
 		if( dist > STANDARD_SPEED )
 		{
 			this.setVelocity(finalSpeed); //if farther away, use standard speed
+			dist = STANDARD_SPEED;
 		}
 		else
 		{
 			this.setVelocity(moveDir); //if closer than needed, jump to that spot
 		}
-
+		
 		if(isClient())
 		{
 			Vec2f pPos = thisPos;

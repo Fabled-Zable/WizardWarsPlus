@@ -2,9 +2,6 @@
 #include "ArcherCommon.as";
 #include "SpellCommon.as";
 
-const f32 arrowMediumSpeed = 8.0f;
-const f32 arrowFastSpeed = 13.0f;
-
 void onInit(CBlob@ this)
 {
 	CShape@ shape = this.getShape();
@@ -19,15 +16,20 @@ void onInit(CBlob@ this)
     //dont collide with top of the map
 	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
 
+	this.set_u16("lifetime", 20);
     this.server_SetTimeToDie(20);
-
+	
 	this.setAngleDegrees(90);
-
 }
 
 void onTick(CBlob@ this)
 {
     CShape@ shape = this.getShape();
+
+	if (this.getTickSinceCreated() < 1)
+	{
+		this.server_SetTimeToDie(this.get_u16("lifetime"));
+	}
 
     f32 angle;
     bool processSticking = true;
@@ -47,15 +49,10 @@ void onTick(CBlob@ this)
         angle = (this.getVelocity()).Angle();
 		Pierce(this);   //Pierce call
     }
+
 	//start of sword launch logic
 	u32 shooTime = this.get_u32("shooTime"); 		//base for timer system
 	u32 lTime = getGameTime();						//clock
-
-		if (this.hasTag("soundProducer"))  //check if this is the sword assigned for the spawn sound
-	{
-		this.getSprite().PlaySound("swordsummon.ogg");
-		this.Untag("soundProducer");
-	}
 
 	if (!this.hasTag("canStickNow"))
 	{
@@ -77,11 +74,11 @@ void onTick(CBlob@ this)
 	}
 }
 
-void Pierce(CBlob@ this, CBlob@ blob = null)
+void Pierce( CBlob@ this )
 {
 	Vec2f end;
 	CMap@ map = this.getMap();
-	Vec2f position = blob is null ? (this.getPosition() + Vec2f(0,20)) : blob.getPosition();
+	Vec2f position = this.getPosition() + Vec2f(0,20);
 	
 	if (this.hasTag("canStickNow"))  //doesn't do raycasts until needed
 	{
@@ -90,12 +87,16 @@ void Pierce(CBlob@ this, CBlob@ blob = null)
 			ArrowHitMap(this, end, this.getOldVelocity(), 0.5f, Hitters::arrow);
 		}
 	}
-	
 }
 
 void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 customData)
 {
-	this.getSprite().PlaySound("bling.ogg");
+	if(isClient())
+	{
+		this.getSprite().PlaySound("bling.ogg");
+	}
+
+	this.Tag("collided");
 
 	f32 radius = this.getRadius();
 
@@ -114,18 +115,13 @@ void ArrowHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 c
 
 	this.setVelocity(Vec2f(0, 0));
 	this.setPosition(lock);
-	//this.getShape().server_SetActive( false );
-
-	this.Tag("collided");
 
 	this.getShape().SetStatic(true);
 	this.getCurrentScript().tickFrequency = 0;
-	
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid )
 {	
-	
 	if (blob !is null)
 	{
 		if (isEnemy(this, blob))

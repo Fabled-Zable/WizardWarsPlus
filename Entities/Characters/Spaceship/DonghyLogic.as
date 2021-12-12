@@ -208,7 +208,8 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		
         Spell spell = FrigateParams::spells[spellID];
         Vec2f aimpos = params.read_Vec2f();
-        CastSpell(this, charge_state, spell, aimpos);
+		Vec2f thispos = params.read_Vec2f();
+        CastSpell(this, charge_state, spell, aimpos, thispos);
 		
 		//manaInfo.mana -= spell.mana;
     }
@@ -220,7 +221,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 			return;
 		}
 
-		CastNegentropy(this);
+		//CastNegentropy(this);
 
 		frigate.pulse_amount -= 1;
 	}

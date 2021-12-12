@@ -221,7 +221,7 @@ void onTick( CBlob@ this)
 				if (hi.blob !is null) // blob
 				{
 					CBlob@ target = hi.blob;
-					if (target is this || target.getTeamNum() == this.getTeamNum() || !target.isCollidable())
+					if (target is this || target.getTeamNum() == this.getTeamNum() || (!target.hasTag("barrier") && !target.hasTag("flesh")) )
 					{
 						continue;
 					}

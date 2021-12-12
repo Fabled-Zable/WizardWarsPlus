@@ -13,18 +13,32 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 		string classConfig = params.read_string();
 		
 		CPlayer@ player = getPlayerByNetworkId(playerID);
-		if ( player is null )
-			return;
+
+		changeWizDefaultClass(player, classConfig);
 			
 		PlayerPrefsInfo@ playerPrefsInfo;
 		if (!player.get( "playerPrefsInfo", @playerPrefsInfo ))
 		{
 			return;
 		}
+	}
+}
+
+void changeWizDefaultClass( CPlayer@ thisPlayer, string classConfig = "" )
+{
+	if (thisPlayer is null)
+	{ return; }
+	if (classConfig.length() < 1)
+	{ return; }
+
+	PlayerPrefsInfo@ playerPrefsInfo;
+	if (!thisPlayer.get( "playerPrefsInfo", @playerPrefsInfo ))
+	{ return; }
 		
-		playerPrefsInfo.classConfig = classConfig;
+	playerPrefsInfo.classConfig = classConfig;
 		
-		if ( player.isMyPlayer() )
-			client_AddToChat("You will now be a " + classConfig + " the next time you respawn or get revived.", SColor(255,0,200,200));
+	if ( thisPlayer.isMyPlayer() )
+	{
+		client_AddToChat("You will now be a " + classConfig + " the next time you respawn or get revived.", SColor(255,0,200,200));
 	}
 }

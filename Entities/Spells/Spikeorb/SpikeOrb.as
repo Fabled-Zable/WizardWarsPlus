@@ -1,3 +1,5 @@
+#include "Hitters.as"
+
 const f32 AOE = 12.0f;//radius
 const int min_detonation_time = 30;
 void onInit(CBlob@ this)
@@ -19,6 +21,9 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
+	if(this is null)
+	{return;}
+
 	if (this.getCurrentScript().tickFrequency == 1)
 	{
 		this.getShape().SetGravityScale(1.0f);
@@ -36,94 +41,118 @@ void onTick(CBlob@ this)
 		// done post init
 		this.getCurrentScript().tickFrequency = 10;
 	}
-
-	{
-		u16 id = this.get_u16("target");
-		if (id != 0xffff && id != 0)
-		{
-			CBlob@ b = getBlobByNetworkID(id);
-			if (b !is null)
-			{
-				Vec2f vel = this.getVelocity();
-				if (vel.LengthSquared() < 9.0f)
-				{
-					Vec2f dir = b.getPosition() - this.getPosition();
-					dir.Normalize();
-
-
-					this.setVelocity(vel + dir * 3.0f);
-				}
-			}
-		}
-	}
 }
 
 bool isEnemy( CBlob@ this, CBlob@ target )
 {
 	return 
 	(
-		( target.getTeamNum() != this.getTeamNum() && (target.hasTag("kill other spells") || target.hasTag("door") || target.getName() == "trap_block") )
-		||
+		target.getTeamNum() != this.getTeamNum()
+		&&
 		(
-			target.hasTag("flesh") 
-			&& !target.hasTag("dead") 
-			&& target.getTeamNum() != this.getTeamNum() 
+			target.hasTag("standingup")
+			||
+			target.hasTag("kill other spells") 
+			||
+			(
+				target.hasTag("flesh") 
+				&& !target.hasTag("dead")
+			)
 		)
 	);
 }
 
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 {
-	return ( isEnemy(this, blob) || blob.hasTag("barrier") || blob.hasTag("standingup") );
+	if(this is null || blob is null)
+	{return false;}
+
+	return 
+	( 
+		blob.hasTag("standingup")
+		||
+		(
+			blob.hasTag("barrier") && blob.getTeamNum() != this.getTeamNum()
+		)
+	);
 }
 
 void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal)
 {
-	if (solid || blob.hasTag("kill other spells"))
+	if(this is null)
+	{return;}
+
+	bool causeSparks = false;
+	bool blobDeath = false;
+
+	if (solid)
 	{
-		sparks(this.getPosition(), 4);
-		
+		causeSparks = true;
+	}
+
+	if( blob !is null && isEnemy(this, blob) )
+	{
+		causeSparks = true;
 		if (this.getTickSinceCreated() > min_detonation_time)	
 		{
-			if(blob !is null && isEnemy(this, blob))
-			{
-				this.server_Die();
-			}
+			blobDeath = true;
 		}
 	}
+
+	if(causeSparks)
+	{sparks(this.getPosition(), 4);}
+	if(blobDeath)
+	{this.server_Die();}
 }
 
 void onDie( CBlob@ this )
 {
+	if(this is null)
+	{return;}
 	if(!this.hasTag("exploding"))
 	{return;}
 
 	Vec2f pos = this.getPosition();
-	CBlob@[] aoeBlobs;
-	CMap@ map = getMap();
-	if(map is null)
-	{return;}
 	
 	if ( isServer() )
 	{
+		CMap@ map = getMap();
+		if(map is null)
+		{return;}
+
+		CBlob@[] aoeBlobs;
+
 		map.getBlobsInRadius( pos, AOE, @aoeBlobs );
 		for ( u8 i = 0; i < aoeBlobs.length(); i++ )
 		{
-			CBlob@ blob = aoeBlobs[i];
-			if(blob is null)
+			CBlob@ b = aoeBlobs[i]; //standard null check for blobs in radius
+			if (b is null)
 			{continue;}
-			if ( !getMap().rayCastSolidNoBlobs( pos, blob.getPosition() ) )
-				this.server_Hit( blob, pos, Vec2f_zero, this.get_f32("damage") , 40, blob.getName() == "spikeorb" );
+
+			if ( !map.rayCastSolidNoBlobs( pos, b.getPosition() ) )
+			{
+				this.server_Hit( b, pos, Vec2f_zero, this.get_f32("damage") , Hitters::explosion, isOwnerBlob(this, b) );
+			}
 		}
 	}
-	sparks(this.getPosition(), 10);
+	sparks(pos, 10);
+}
+
+bool isOwnerBlob(CBlob@ this, CBlob@ target)
+{
+	//easy check
+	if (this.getDamageOwnerPlayer() is target.getPlayer())
+	{
+		return true;
+	}
+	return false;
 }
 
 Random _sprk_r(13424);
 void sparks(Vec2f pos, int amount)
 {
-	if ( !getNet().isClient() )
-		return;
+	if ( !isClient() )
+	{return;}
 
 	for (int i = 0; i < amount; i++)
     {

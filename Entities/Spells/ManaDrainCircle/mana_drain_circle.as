@@ -1,4 +1,7 @@
 #include "MagicCommon.as";
+#include "EffectMissileEnum.as";
+
+Random _mana_circle_r(53124); //with the seed, I extract a float ranging from 0 to 1 for random events
 
 void onInit(CBlob@ this)
 {
@@ -31,69 +34,86 @@ void onTick(CBlob@ this)
 
     if(!this.hasTag("finished")) return;
 
-    CMap@ map = getMap();
+    CMap@ map = getMap(); //standard map check
+	if(map is null)
+	{return;}
+
+    bool drainedMana = false;
+
     CBlob@[] blobs;
     map.getBlobsInRadius(this.getPosition(),effectRadius,@blobs);
 
     for(int i = 0; i < blobs.length; i++)
     {
         CBlob@ b = blobs[i];
+		if (b is null)
+		{continue;}
 
-        if(b.getPlayer() is null || b.getTeamNum() == this.getTeamNum()) continue;
-        if(isClient())
-        {
-            Vec2f vel = b.getVelocity();
-            b.setVelocity(Vec2f(vel.x * 0.5,vel.y * 0.9));
-
-            if(getGameTime() % 20 != 0) return;
-
-            ManaInfo@ manaInfo;
-            if (!b.get( "manaInfo", @manaInfo )) 
-            {
-                return;
-            }
+        if ( !b.hasTag("flesh") || this.getTeamNum() == b.getTeamNum() ) //if not made of flesh or not same team, abort
+        {continue;}
         
-            float mana = manaInfo.mana;
-            mana -= (fullCharge ? 4 : 3);
+        Vec2f vel = b.getVelocity();
+        b.setVelocity(Vec2f(vel.x * 0.5,vel.y * 0.9));
 
-            if(mana >= 0)
-            {
-                manaInfo.mana -= manaInfo.manaRegen + (fullCharge ? 4 : 3);
-            }
+        if(getGameTime() % 20 != 0) //only run code below every 20th tick
+        {continue;}
+
+        ManaInfo@ manaInfo;
+        if ( !b.get( "manaInfo", @manaInfo ) ) 
+        {continue;}
+
+        drainedMana = true;
+        
+        s32 currentMana = manaInfo.mana;
+        s32 manaRegen = b.get_s32("mana regen rate");
+        s32 manaDrain = fullCharge ? manaRegen+1 : manaRegen;
+        if ( currentMana >= 0 && (currentMana - manaDrain) < currentMana )
+        {
+            manaInfo.mana -= manaDrain;
         }
 
-        if (isServer())
-		{
-            if(getGameTime() % 20 != 0) return;
-			CBlob@ orb = server_CreateBlob( "effect_missile", this.getTeamNum(), b.getPosition() ); 
-			if (orb !is null)
-			{
-				orb.set_string("effect", "mana");
-				orb.set_u8("mana_used", 1);
-				orb.set_u8("caster_mana", 3);
-                orb.set_bool("silent", true);
-
-				orb.IgnoreCollisionWhileOverlapped( this );
-                Vec2f orbVel = Vec2f( 0.1f , 0 ).RotateByDegrees(XORRandom(360));
-				orb.setVelocity( orbVel );
-			}
-		}
-
         if(isClient())
         {
-            for(int i = 0; i < 30; i++)
+            float pRot = 180.0f;
+            Vec2f pVel = Vec2f_zero;
+            for(int i = 0; i < 80; i++) //particle splash
             {
-                CParticle@ p = ParticlePixelUnlimited(b.getPosition(), b.getVelocity() + Vec2f(XORRandom(12) - 6, XORRandom(12) - 6), randomManaColor(), true);
+                pRot = 360.0f * _mana_circle_r.NextFloat();
+                pVel = Vec2f( 5.0f*_mana_circle_r.NextFloat() , 0 );
+                pVel.RotateByDegrees(pRot);
+                u16 pTimeout = 10 * _mana_circle_r.NextFloat();
+
+                CParticle@ p = ParticlePixelUnlimited(b.getPosition(), b.getVelocity() + pVel, randomManaColor(), true);
                 if(p !is null)
                 {
                     p.gravity = Vec2f(0,0);
                     p.fastcollision = true;
                     p.bounce = 0;
-                    p.timeout = 10;
+                    p.damping = 0.95f;
+                    p.timeout = pTimeout + 10;
                 }
             }
         }
-            
+
+        if (isServer()) //compensation mana creation
+		{
+			CBlob@ orb = server_CreateBlob( "effect_missile_circle", this.getTeamNum(), b.getPosition() ); 
+			if (orb !is null)
+			{
+				orb.set_u8("effect", mana_effect_missile);
+				orb.set_u8("mana_used", 1);
+				orb.set_u8("caster_mana", 3);
+                orb.set_bool("silent", true);
+
+                Vec2f orbVel = Vec2f( 0.1f , 0 ).RotateByDegrees(XORRandom(360));
+				orb.setVelocity( orbVel );
+			}
+		}
+    }
+
+    if ( isClient() && drainedMana )
+    {
+        sprite.PlaySound("ManaDraining.ogg", 0.4f, 1.0f + (_mana_circle_r.NextFloat()*0.2f) );
     }
 }
 
@@ -123,16 +143,7 @@ void onTick(CSprite@ this)
     this.RotateBy(rotateSpeed, Vec2f_zero);
     bar.RotateBy(rotateSpeed * -2, Vec2f_zero);
 
-
-    /*CParticle@ p = ParticlePixel(blob.getPosition() + Vec2f(XORRandom(effectRadius*2) - effectRadius, XORRandom(effectRadius*2) - effectRadius),Vec2f(0,-1), randomManaColor(), true,30);
-    if(p !is null)
-    {
-        p.gravity = Vec2f(0,0);
-        p.damping = 1;
-        p.collides = false;
-    }*/
     const Vec2f aimPos = blob.getPosition();
-    //print(currentCharge +'');
                 
     //PARTICLESSSS
     CParticle@[] particleList;
@@ -144,7 +155,7 @@ void onTick(CSprite@ this)
     {
         CParticle@ p = ParticlePixelUnlimited(getRandomVelocity(0,70,360) + aimPos, Vec2f(0,0), col,
             true);
-        if(p !is null)
+        if (p !is null)
         {
             p.fastcollision = true;
             p.gravity = Vec2f(0,0);
@@ -194,5 +205,8 @@ void onTick(CSprite@ this)
 
 SColor randomManaColor()
 {
-    return SColor(255,XORRandom(85) + 100,XORRandom(80),XORRandom(55) + 200);
+    u8 red = 100 + (85*_mana_circle_r.NextFloat());
+    u8 green = 80*_mana_circle_r.NextFloat();
+    u8 blue = 200 + (55*_mana_circle_r.NextFloat());
+    return SColor( 255 , red , green , blue );
 }

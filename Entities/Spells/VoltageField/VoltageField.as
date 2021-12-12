@@ -2,118 +2,95 @@
 #include "Hitters.as"//we need this so we can use the enums which allows for more readable code
 #include "SpellHashDecoder.as"
 
+const uint8 attackRate = 2; //hit rate for voltage field
 
 void onTick(CBlob@ this)
 {
-	if(!this.exists("setupDone") || !this.get_bool("setupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
+	if( this is null )
+	{return;}
+
+	if(!this.exists("voltageSetupDone") || !this.get_bool("voltageSetupDone"))//this is done instead of using onInit becuase onInit only runs once even if this script is removed and added again
 	{
 		this.set_u32("remainingTime",(5*30) + getGameTime());//5 seconds from now
-		this.set_u32("timeActive", 0); //counter system
 		this.set_f32("effectRadius",9.7f);// increasing radius
-		this.set_u32("attackRate",2);
 		this.getSprite().AddScript("VoltageField.as");//need to do this to get the sprite hooks to run
 
-		this.set_bool("setupDone",true);
-	}
-
-	u32 timeActive = this.get_u32("timeActive");
-
-	if(this !is null)
-	{
-		if(this.hasTag("dead") ) //removes script if user dies
-		{
-			cleanUp(this);
-			return;
-		}
+		this.set_bool("voltageSetupDone",true);
 	}
 
 	u16 remainingTime = this.get_u32("remainingTime");
-	if(remainingTime < getGameTime())//remove script if we are past the active time
-	{
-		if(this !is null)
-		{
-			cleanUp(this);
-			return;
-		}
-	}
 
+	if(this.hasTag("dead") || remainingTime < getGameTime()) //removes script if user dies or we are past the active time
+	{
+		cleanUp(this);
+		return;
+	}
 
 	f32 effectRadius = this.get_f32("effectRadius");
 	effectRadius *= 1.01f;
 	this.set_f32("effectRadius",effectRadius);
 
-	u32 attackRate = this.get_u32("attackRate"); //gets hit delay
 	if ( getGameTime() % attackRate != 0 )
 	{return;}
-	CMap@ map = getMap(); //going to need map in order to see what blobs are in the radius
+
+	CMap@ map = getMap(); //standard map check
+	if(map is null)
+	{return;}
+
+	Vec2f thisPos = this.getPosition();
 	CBlob@[] blobs;//blob handle array to store blobs we want to effect
-
-	map.getBlobsInRadius(this.getPosition(),effectRadius, @blobs);//get the blobs
-
-	u32 check = 0;
+	map.getBlobsInRadius(thisPos,effectRadius, @blobs);//get the blobs
 
 	for(s32 i = 0; i < blobs.length(); i++)//itterate through blobs
 	{
-		if(check <= 25)
-		{
-			check++;
-		}
-		else
-		{
-			print("looped like an idiot");
-			break;
-			return;
-		}
+		CBlob@ target = blobs[i]; //standard null check for blobs in radius
+		if (target is null)
+		{continue;}
 
-		CBlob@ target = @blobs[i];//setting target blob to a variable for readability
-		if(target is null){continue;}
-		if(target.getTeamNum() == this.getTeamNum()){continue;}//skip over like team numbers
-		if(!isEnemy(this,target)){continue;}//if target isn't an enemy then we don't need to do anything to it
+		if(target.getTeamNum() == this.getTeamNum()){continue;}//skip over same team entities
+		if(!tagCheck(target)){continue;}//if target fails tag checks, skip
 
 		float damage = 0.4f;
-		Vec2f norm = (target.getPosition() - this.getPosition());
+		Vec2f norm = (target.getPosition() - thisPos);
 		norm.Normalize();
 
 		if (target.hasTag("counterable"))
 		{
 			Vec2f targetVel = target.getVelocity();
-			if(targetVel != Vec2f(0,0))
+			if(targetVel != Vec2f_zero)
 			{
 				Vec2f targetNorm = targetVel;
 				targetNorm.Normalize();
-				float direcAngle = norm.getAngle();
-				float targetAngle = targetNorm.getAngle();
+				float direcAngle = norm.getAngleDegrees();
+				float targetAngle = targetNorm.getAngleDegrees();
 				float difference = targetAngle-direcAngle;
 				if (difference > 90 || difference < -90)
 				{
 					targetVel.RotateByDegrees(difference);
-					if(target is null){continue;}
 					target.setVelocity(targetVel);
 				}
 				damage = 0.6;
 			}
 		}
 
-		if(target is null){continue;}
 		if (voltageFieldDamage(target))
 		{
-			this.server_Hit(target, target.getPosition(), norm*3,damage,Hitters::water);// hit em
+			this.server_Hit(target, target.getPosition(), norm*3,damage,Hitters::explosion);// hit em
 		}
-		
 	}
-
-	timeActive++;
-	this.set_u32("timeActive", timeActive); //counts up by 1
 }
 
 void onTick(CSprite@ this)
 {
 	CBlob@ b = this.getBlob();
-	if(!b.exists("sphereSetupDone") || !b.get_bool("sphereSetupDone"))
+	if(b is null)
+	{return;}
+
+	if(!b.exists("voltageSpriteSetupDone") || !b.get_bool("voltageSpriteSetupDone"))
 	{
 		CSpriteLayer@ layer = this.addSpriteLayer("sphere","active_sphere.png",128,128);
 		
-		b.set_bool("sphereSetupDone",true);
+		b.set_bool("voltageSpriteSetupDone",true);
 		layer.ScaleBy(Vec2f(0.15f,0.15f));
 		layer.setRenderStyle(RenderStyle::additive);
 	}
@@ -141,25 +118,30 @@ void onTick(CSprite@ this)
 
 void cleanUp(CBlob@ this)//because we don't use onInit we need to cleanup so that the script is ready for when it is added again
 {
-	this.getSprite().RemoveSpriteLayer("sphere");
+	if(this is null || this.getSprite() is null)
+	{
+		return;
+	}
 
-	this.set_bool("setupDone",false);
-	this.set_bool("sphereSetupDone",false);
+	if(this.getSprite().getSpriteLayer("sphere") !is null)
+	{
+		this.getSprite().RemoveSpriteLayer("sphere");
+	}
+
+	this.set_bool("voltageSetupDone",false);
+	this.set_bool("voltageSpriteSetupDone",false);
 	this.getSprite().RemoveScript("VoltageField.as");
 	this.RemoveScript("VoltageField.as");
 }
 
-bool isEnemy( CBlob@ this, CBlob@ target )
+bool tagCheck( CBlob@ target )
 {
 	return 
 	(
-		(
-			target.hasTag("barrier")
-			||
-			target.hasTag("flesh") 
-			||
-			target.hasTag("counterable") 
-		)
-		&& target.getTeamNum() != this.getTeamNum() 
+		target.hasTag("barrier")
+		||
+		target.hasTag("flesh") 
+		||
+		target.hasTag("counterable") 
 	);
 }

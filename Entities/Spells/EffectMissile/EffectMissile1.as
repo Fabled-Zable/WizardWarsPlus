@@ -190,7 +190,7 @@ void onTick( CBlob@ this)
 						//	Die( this );
 					//	}
 				//}
-			string effectType = this.get_string("effect");
+			string effectType = this.get_u8("effect");
 			
 			if (blob.hasTag("player") && !blob.hasTag("dead"))
 			{	
@@ -224,21 +224,21 @@ void onTick( CBlob@ this)
 
 bool followsAllies( CBlob@ this )
 {		
-	string effectType = this.get_string("effect");
+	string effectType = this.get_u8("effect");
 	
 	return ( effectType == "heal" || effectType == "haste" );
 }
 
 bool followsEnemies( CBlob@ this )
 {		
-	string effectType = this.get_string("effect");
+	string effectType = this.get_u8("effect");
 	
 	return ( effectType == "heal" );
 }
 
 bool followsDeadAllies( CBlob@ this )
 {		
-	string effectType = this.get_string("effect");
+	string effectType = this.get_u8("effect");
 	
 	return ( effectType == "revive" || effectType == "unholy_res" );
 }

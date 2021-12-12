@@ -58,23 +58,24 @@ void updateLaserPositions(CBlob@ this)
 			
 			if (hi.blob !is null) // blob
 			{
+				CBlob@ hitBlob = hi.blob;
 				bool hitOwner = false;
 				CPlayer@ ownerPlayer = this.getDamageOwnerPlayer();
 				if ( ownerPlayer !is null )
 				{
 					CBlob@ ownerBlob = ownerPlayer.getBlob();
 					
-					if ( hi.blob is ownerBlob )
+					if ( hitBlob is ownerBlob )
 						hitOwner = true;
 				}
 				
-				if (hi.blob is this || (hi.blob.getTeamNum() == this.getTeamNum() && !hitOwner) || !hi.blob.isCollidable())
+				if (hitBlob is this || (hitBlob.getTeamNum() == this.getTeamNum() && !hitOwner) || (!hitBlob.hasTag("barrier") && !hitBlob.hasTag("flesh")) )
 				{
 					continue;
 				}
 				else if ( damageDealt == false )
 				{
-					this.server_Hit(hi.blob, hi.hitpos, Vec2f(0,1), DAMAGE, Hitters::explosion, true);
+					this.server_Hit(hitBlob, hi.hitpos, Vec2f(0,1), DAMAGE, Hitters::explosion, true);
 					
 					damageDealt = true;
 				}

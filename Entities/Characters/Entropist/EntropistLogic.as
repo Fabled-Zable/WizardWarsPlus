@@ -12,7 +12,7 @@
 #include "BombCommon.as";
 #include "SpellCommon.as";
 
-const u8 rechargeSeconds = 8; //seconds for recharge
+//const u8 rechargeSeconds = 8; //seconds for recharge
 
 void onInit( CBlob@ this )
 {
@@ -24,6 +24,7 @@ void onInit( CBlob@ this )
 	manaInfo.manaRegen = EntropistParams::MANA_REGEN;
 	this.set("manaInfo", @manaInfo);
 
+	this.set_bool("burnState", false);
 	this.set_s8( "charge_time", 0 );
 	this.set_u8( "charge_state", EntropistParams::not_aiming );
 	this.set_s32( "mana", 100 );
@@ -193,12 +194,27 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
 			entropist.spells_cancelling = false;
 		}
 	}
-	
-	bool canCastSpell = entropistMana >= spell.mana && playerPrefsInfo.spell_cooldowns[spellID] <= 0;
+
+	bool onCooldown = playerPrefsInfo.spell_cooldowns[spellID] <= 0;
+	bool canCastSpell = entropistMana >= spell.mana && onCooldown;
+
+	if(this.get_bool("burnState") && onCooldown) //burn override
+	{
+		canCastSpell = true;
+	}
+
     if (is_pressed && canCastSpell) 
     {
         moveVars.walkFactor *= 0.75f;
-        charge_time += 1;
+		if(this.get_bool("burnState"))
+		{
+			charge_time += 30;
+		}
+		else
+		{
+			charge_time += 1;
+		}
+
         if (charge_time >= spell.full_cast_period)
         {
             charge_state = EntropistParams::extra_ready;
@@ -235,6 +251,7 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
 				castSpellID = playerPrefsInfo.primarySpellID;
             params.write_u8(castSpellID);
             params.write_Vec2f(spellPos);
+			params.write_Vec2f(pos);
             this.SendCommand(this.getCommandID("spell"), params);
 			
 			playerPrefsInfo.spell_cooldowns[castSpellID] = EntropistParams::spells[castSpellID].cooldownTime*getTicksASecond();
@@ -280,9 +297,11 @@ void ManageSpell( CBlob@ this, EntropistInfo@ entropist, PlayerPrefsInfo@ player
 			else if (entropist.charge_time > 0) {
 				frame = entropist.charge_time * 12 /spell.cast_period; 
 			}
-			u8 pulses = entropist.pulse_amount;
+			getHUD().SetCursorFrame( frame );
+			/*u8 pulses = entropist.pulse_amount;
 			u8 frameoffset = 16 * pulses;
 			getHUD().SetCursorFrame( frame + frameoffset);
+			*/
 		}
 
         if (this.isKeyJustPressed(key_action3))
@@ -415,7 +434,7 @@ void onTick( CBlob@ this )
 		return;
 	}
 
-	if (getGameTime() % (30*rechargeSeconds) == 0) //Pulse regeneration
+	/*if (getGameTime() % (30*rechargeSeconds) == 0) //Pulse regeneration
 	{
 		s8 pulses = entropist.pulse_amount;
         
@@ -423,7 +442,7 @@ void onTick( CBlob@ this )
 		{
 			entropist.pulse_amount += 1;
         }
-    }
+    }*/
 
 	/*if(getKnockedRemaining(this) > 0)
 	{
@@ -461,9 +480,13 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		
         Spell spell = EntropistParams::spells[spellID];
         Vec2f aimpos = params.read_Vec2f();
-        CastSpell(this, charge_state, spell, aimpos);
+        Vec2f thispos = params.read_Vec2f();
+        CastSpell(this, charge_state, spell, aimpos, thispos);
 		
-		manaInfo.mana -= spell.mana;
+		if(!this.get_bool("burnState"))
+		{
+			manaInfo.mana -= spell.mana;
+		}
     }
 }
 

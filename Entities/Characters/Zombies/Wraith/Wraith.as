@@ -303,12 +303,19 @@ void onTick(CBlob@ this)
 		}
 	}
 	
-	
+	if(!this.isMyPlayer())
+	{return;}
+
 	if( this.isKeyJustPressed(key_action1) || this.getTickSinceCreated() > 30*getTicksASecond() )
 	{
 		if (!this.hasTag("activated"))
 		{
-			this.SendCommand(this.getCommandID("self ignite"));
+			this.Tag("activated");
+
+			CBitStream params;
+			params.write_Vec2f(this.getAimPos());
+			params.write_Vec2f(this.getPosition());
+			this.SendCommand(this.getCommandID("self ignite"), params);
 		}
 	}
 }
@@ -430,6 +437,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		server_setFireOn(this);
 		
-		counterSpell(this, this.getAimPos());
+		Vec2f aimpos = params.read_Vec2f();
+		Vec2f thispos = params.read_Vec2f();
+		counterSpell(this, aimpos, thispos);
 	}
 }

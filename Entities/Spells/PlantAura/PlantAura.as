@@ -10,7 +10,12 @@ void onInit(CBlob@ this)
 	
 	this.Tag("counterable");
 
+	//default values
+	this.set_u16("lifetime", 10);
+	//^
+
 	this.set_u8("frame",0);
+	this.set_u8("randomParticleRotation",XORRandom(90));
 }
 
 float effectRadius = 8*10;
@@ -21,7 +26,6 @@ void onTick( CBlob@ this )
 	{
 		this.getSprite().SetFrame(this.add_u8("frame",1));
 	}
-
 
 	if (this.getTickSinceCreated() < 1)
 	{		
@@ -93,6 +97,9 @@ void onInit(CSprite@ this)
 
 void onTick(CSprite@ this)
 {
+	if(!isClient())
+	{return;}
+	
 	this.SetVisible(false);
 
 	for(int i = 0; i < 6; i ++)
@@ -107,45 +114,58 @@ void onTick(CSprite@ this)
 		CSpriteLayer@ s = this.getSpriteLayer("flower" + i);
 		s.SetOffset(s.getOffset() + Vec2f(0,XORRandom(2) == 0 ? 0.05 : -0.05 ) );
 	}
-	
-
-
-	CBlob@[] plants;
-	getBlobsByName("plant_aura",@plants);
 
 	CBlob@ blob = this.getBlob();
 	if(blob is null)
 	{return;}
 	
-	//ParticleAnimated("heal_particle_animated.png",this.getPosition(),Vec2f(XORRandom(6) - 3,XORRandom(6) - 3),0,1,0,0, Vec2f(32,32),1,0.5,true);
+	Vec2f blobPos = blob.getPosition();
+
+	uint16 gameTime = getGameTime();
+	uint16 timeRotation = (gameTime % 90)*4;
+	uint8 randomExtraRotation = blob.get_u8("randomParticleRotation");
+
 	SColor color = SColor(255,XORRandom(191),255,XORRandom(191));
-	CParticle@ p = ParticlePixel(blob.getPosition() + Vec2f(XORRandom(effectRadius*2)-effectRadius,XORRandom(effectRadius*2)-effectRadius),Vec2f(XORRandom(8) - 4,XORRandom(8) - 4), color,true,60);
-	if(p !is null)
+
+	for(int i = 0; i < 2; i++)
 	{
-		p.gravity = Vec2f_zero;
-		p.damping = 0.9;
-		p.collides = false;
-		p.fastcollision = true;
-		p.bounce = 0;
-		p.lighting = false;
+		float pFinalRotation = timeRotation + randomExtraRotation;
+		pFinalRotation += 180*i;
+		Vec2f pPos = blobPos + Vec2f_lengthdir(effectRadius,pFinalRotation);//game time gets rid of some gaps and can add a rotation effect
+		Vec2f pVel = blobPos - pPos;
+		pVel.Normalize();
+
+		CParticle@ p = ParticlePixelUnlimited( pPos , pVel*1.8f , color , true );
+		if(p !is null)
+		{
+			p.timeout = 60;
+			p.gravity = Vec2f_zero;
+			//p.damping = 0.95;
+			p.collides = false;
+			p.fastcollision = true;
+			p.bounce = 0;
+			p.lighting = false;
+			p.Z = -20;
+		}
 	}
 
-	if(getGameTime() % 30 == 0)
+	if(gameTime % 15 == 0)
 	{
-		for(int i = 0; i < 360; i += plants.length + 1)
+		for(int i = 0; i < 180; i++)
 		{
-			SColor color = SColor(255,XORRandom(191),255,XORRandom(191));
-			Vec2f pos = blob.getPosition() + Vec2f_lengthdir(effectRadius,i);//game time gets rid of some gaps and can add a rotation effect
-			CParticle@ p = ParticlePixel( pos , Vec2f_zero , color , true , 60 );
-			if(p !is null)
+			color = SColor(255,XORRandom(191),255,XORRandom(191));
+			Vec2f pbPos = blobPos + Vec2f_lengthdir(effectRadius,i*2);//game time gets rid of some gaps and can add a rotation effect
+			CParticle@ pb = ParticlePixelUnlimited( pbPos , Vec2f_zero , color , true );
+			if(pb !is null)
 			{
-				p.gravity = Vec2f_zero;
-				p.damping = 0.9;
-				p.collides = false;
-				p.fastcollision = true;
-				p.bounce = 0;
-				p.lighting = false;
-				p.Z = 500;
+				pb.timeout = 30;
+				pb.gravity = Vec2f_zero;
+				pb.damping = 0.9;
+				pb.collides = false;
+				pb.fastcollision = true;
+				pb.bounce = 0;
+				pb.lighting = false;
+				pb.Z = 500;
 			}
 		}
 	}
