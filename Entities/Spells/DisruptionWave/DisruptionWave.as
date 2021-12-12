@@ -53,8 +53,10 @@ void onTick( CBlob@ this)
 			hitVec.Normalize();
 
 			float damage = this.get_f32("DW_blob_damage"); //damage carried over from DWSequence
+			if (!b.hasTag("flesh"))
+			{ damage *= 0.2f; }
 			if(b.hasTag("counterable"))
-			{damage = 3.0f;}
+			{ damage = 3.0f; }
 			print("damage: " +damage);
 			this.server_Hit(b, b.getPosition(), hitVec*6, damage, Hitters::explosion, true);
 		}

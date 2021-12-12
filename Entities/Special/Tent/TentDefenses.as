@@ -142,7 +142,7 @@ void onTick(CBlob@ this)
 		Vec2f blobPos = b.getPosition();
 		Vec2f kickDir = blobPos - thisPos;
 		kickDir.Normalize();
-		Vec2f kickVel = kickDir * 50.0f;
+		Vec2f kickVel = kickDir * 40.0f; //push force
 
 		CPlayer@ targetPlayer = b.getPlayer();
 		if (targetPlayer == null)
@@ -208,7 +208,7 @@ void onTick(CBlob@ this)
 				p.Z = 8;
 				p.timeout = 3;
 			}
-			
+
 			if (isZombie)
 			{ i++; }
 		}
@@ -233,7 +233,7 @@ void onTick(CBlob@ this)
 		prePos.RotateByDegrees(360.0f * _tent_defenses_r.NextFloat()); //random 360 rotation
 
 		Vec2f pPos = thisPos + prePos;
-		Vec2f pGrav = -prePos * 0.005f;
+		Vec2f pGrav = -prePos * 0.005f; //particle gravity
 
 		prePos.Normalize();
 		prePos *= 2.0f;

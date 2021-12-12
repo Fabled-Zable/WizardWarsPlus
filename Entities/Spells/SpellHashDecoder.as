@@ -369,7 +369,7 @@ float undeadCounterspellDamage( CBlob@ b )
 		case _skeleton:
 		case _zombieknight:
 		{
-			return 3.2f;
+			return 3.4f;
 		}
 		break;
 
