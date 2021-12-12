@@ -92,7 +92,7 @@ void onTick(CBlob@ this)
 			if (barrier !is null)
 			{
 				barrier.set_u16("ownerNetID", FlagNetID); //<<important
-				barrier.server_setTeamNum( this.getTeamNum() );
+				barrier.server_setTeamNum( -1 );
 				barrier.setPosition( Vec2f_zero );
 				barrier.setAngleDegrees(0);
 			}

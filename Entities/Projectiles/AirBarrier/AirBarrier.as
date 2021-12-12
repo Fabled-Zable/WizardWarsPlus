@@ -42,10 +42,13 @@ void onTick( CBlob@ this )
 		return;
 	}
 	
-	if (ownerBlob.getTeamNum() != this.getTeamNum())
+	if (ownerBlob.getName() != "ctf_flag")
 	{
-		this.server_Die();
-		return;
+		if (ownerBlob.getTeamNum() != this.getTeamNum())
+		{
+			this.server_Die();
+			return;
+		}
 	}
 
 	CMap@ map = getMap(); //standard map check
