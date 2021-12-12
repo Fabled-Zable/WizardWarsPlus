@@ -23,7 +23,7 @@ void onTick(CBlob@ this)
 		u16 FlagNetID = this.getNetworkID();
 
 		CBlob@[] barriersByName;
-		getBlobsByName("flag_barrier", @barriersByName);
+		getBlobsByName("air_barrier", @barriersByName);
 
 		if (barriersByName.length > 0)
 		{
@@ -88,7 +88,7 @@ void onTick(CBlob@ this)
 		if (!owningBarrier)
 		{
 			//print("Creating Barrier");
-			CBlob@ barrier = server_CreateBlob( "flag_barrier" ); //creates "supershield"
+			CBlob@ barrier = server_CreateBlob( "air_barrier" ); //creates "supershield"
 			if (barrier !is null)
 			{
 				barrier.set_u16("ownerNetID", FlagNetID); //<<important
