@@ -12,6 +12,8 @@ const int complete_cast = NecromancerParams::cast_3;
 const int super_cast = NecromancerParams::extra_ready;
 const float necro_shoot_speed = NecromancerParams::shoot_max_vel;
 
+Random _spell_common_r(26784);
+
 void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimpos , Vec2f thispos)
 {	//To get a spell hash to add more spells type this in the console (press home in game)
 	//print('cfg_name'.getHash()+'');
@@ -628,7 +630,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			}
 			else
 			{
-				this.getSprite().PlaySound("MagicMissile.ogg", 0.8f, 1.0f + XORRandom(3)/10.0f);
+				this.getSprite().PlaySound("MagicMissile.ogg", 0.8f, 1.0f + (0.2f * _spell_common_r.NextFloat()) );
 			}
 		}
 		break;
@@ -1184,7 +1186,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			{
 				if (isClient())
 				{
-					Sound::Play("PlantShotLaunch.ogg", thispos, 2.0f, 0.2f + XORRandom(10)/10.0f);
+					Sound::Play("PlantShotLaunch.ogg", thispos, 2.0f, 0.2f + _spell_common_r.NextFloat() );
 				}
 				
 				if (!isServer())
@@ -1376,7 +1378,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					ParticleAnimated( "Flash3.png",
 								clientCastPos,
 								Vec2f(0,0),
-								float(XORRandom(360)),
+								360.0f * _spell_common_r.NextFloat(),
 								1.0f, 
 								3, 
 								0.0f, true );
@@ -1511,13 +1513,13 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 			Vec2f orbVel = (aimpos - orbPos);
 			
 			float anglePerOrb = 360/numOrbs;
-			float swordWheelRot = XORRandom(anglePerOrb);
+			float swordWheelRot = anglePerOrb * _spell_common_r.NextFloat();
 			for (int i = 0; i < numOrbs; i++)
 			{
 				CBlob@ orb = server_CreateBlob( "expunger" );
 				if (orb !is null)
 				{
-					u32 shooTime = getGameTime() + (XORRandom(16) +42);
+					u32 shooTime = getGameTime() + ( (16.0f * _spell_common_r.NextFloat()) + 42.0f);
 					orb.set_Vec2f("targetto", orbVel);
 					orb.set_f32("speeddo", orbspeed);
 					orb.set_f32("damage", orbDamage);
@@ -1532,7 +1534,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					Vec2f spawnVel; //random sword spread system
 					if(extra_damage && charged)
 					{
-						float randomness = (XORRandom(40)/10)+1;
+						float randomness = (3.0f * _spell_common_r.NextFloat()) + 1;
 						spawnVel = Vec2f( 0 , randomness );
 					}
 					else
@@ -1587,7 +1589,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 					if (orb !is null)
 					{
 						orb.set_f32("damage", orbDamage);
-						u32 shooTime = getGameTime() + (XORRandom(16) +42); //half a second randomness for fall delay (makes it look cooler)
+						u32 shooTime = getGameTime() + ( (15.0f * _spell_common_r.NextFloat()) + 42.0f ); //half a second randomness for fall delay (makes it look cooler)
 						orb.set_u32("shooTime", shooTime);
 						orb.set_u16("lifetime", lifetime);
 
@@ -1816,7 +1818,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				CParticle@ pb = ParticleAnimated( "Shockwave2.png",
 						castPos,
 						Vec2f(0,0),
-						float(XORRandom(361)),
+						360.0f * _spell_common_r.NextFloat(),
 						scale, 
 						2, 
 						0.0f, true );    
@@ -2216,7 +2218,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			if(isClient())
 			{
-				this.getSprite().PlaySound("MagicMissile.ogg", 0.8f, 1.0f + XORRandom(3)/10.0f);
+				this.getSprite().PlaySound("MagicMissile.ogg", 0.8f, 1.0f + (0.2f * _spell_common_r.NextFloat()) );
 			}
 
 			if (!isServer()){
@@ -2592,12 +2594,16 @@ void CastNegentropy( CBlob@ this )
 		sprite.PlaySound("discharge2.ogg", 3.0f);
 	}
 
-	SColor color = SColor(255,255,255,XORRandom(191));
+	u8 blue = (190.0f * _spell_common_r.NextFloat());
+
+	SColor color = SColor(255, 255, 255, blue);
 	for(int i = 0; i < 90; i ++)
 	{
 		float particleDegrees = -aimAngle + i - 45;
-		Vec2f particlePos = Vec2f(XORRandom(64) , 0).RotateByDegrees(particleDegrees);
-		Vec2f particleVel = Vec2f( 0.4f ,0).RotateByDegrees(XORRandom(360));
+		Vec2f particlePos = Vec2f(64.0f * _spell_common_r.NextFloat() , 0).RotateByDegrees(particleDegrees);
+		Vec2f particleVel = Vec2f( 0.4f ,0).RotateByDegrees( 360.0f * _spell_common_r.NextFloat());
+		u32 pTimeout = 15.0f + (15.0f * _spell_common_r.NextFloat());
+
 		CParticle@ p = ParticlePixelUnlimited( this.getPosition() + particlePos , particleVel , color , false );
 		if(p !is null)
 		{
@@ -2608,7 +2614,7 @@ void CastNegentropy( CBlob@ this )
 			p.bounce = 0;
 			p.lighting = false;
 			p.Z = 500;
-			p.timeout = XORRandom(16) + 15;
+			p.timeout = pTimeout;
 		}
 	}
 }
@@ -2642,7 +2648,7 @@ void Heal( CBlob@ blob, f32 healAmount )
         SetScreenFlash( 80, 0, 225, 0 );
     }
 		
-	blob.getSprite().PlaySound("Heal.ogg", 0.8f, 1.0f + XORRandom(2)/10.0f);
+	blob.getSprite().PlaySound("Heal.ogg", 0.8f, 1.0f + (0.2f * _spell_common_r.NextFloat()) );
 	makeHealParticles(blob);
 }
 
@@ -2954,7 +2960,7 @@ void Haste( CBlob@ blob, u16 hasteTime )
 		blob.set_u16("hastened", hasteTime);
 		blob.Sync("hastened", true);
 		if(isClient())
-		{blob.getSprite().PlaySound("HasteOn.ogg", 0.8f, 1.0f + XORRandom(1)/10.0f);}
+		{blob.getSprite().PlaySound("HasteOn.ogg", 0.8f, 1.0f + (0.2f * _spell_common_r.NextFloat()) );}
 	}
 }
 
@@ -2963,7 +2969,7 @@ void Sidewind( CBlob@ blob, u16 windTime )
 	blob.set_u16("sidewinding", windTime);
 	blob.Sync("sidewinding", true);
 	if(isClient())
-	{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + XORRandom(1)/10.0f);}
+	{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + (0.2f * _spell_common_r.NextFloat()) );}
 }
 
 void AirblastShield( CBlob@ blob, u16 airshieldTime )
@@ -2971,14 +2977,14 @@ void AirblastShield( CBlob@ blob, u16 airshieldTime )
 	blob.set_u16("airblastShield", airshieldTime);
 	blob.Sync("airblastShield", true);
 	//if(isClient())
-	//{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + XORRandom(1)/10.0f);}
+	//{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + (0.2f * _spell_common_r.NextFloat()) );}
 }
 void FireWard( CBlob@ blob, u16 firewardTime )
 {	
 	blob.set_u16("fireProt", firewardTime);
 	blob.Sync("fireProt", true);
 	//if(isClient())
-	//{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + XORRandom(1)/10.0f);}
+	//{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + (0.2f * _spell_common_r.NextFloat()) );}
 }
 
 void StoneSkin( CBlob@ blob, u16 stoneskinTime )
@@ -2986,7 +2992,7 @@ void StoneSkin( CBlob@ blob, u16 stoneskinTime )
 	blob.set_u16("stoneSkin", stoneskinTime);
 	blob.Sync("stoneSkin", true);
 	//if(isClient())
-	//{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + XORRandom(1)/10.0f);}
+	//{blob.getSprite().PlaySound("sidewind_init.ogg", 2.5f, 1.0f + (0.2f * _spell_common_r.NextFloat()) );}
 }
 
 void manaShot( CBlob@ blob, u8 manaUsed, u8 casterMana, bool silent = false)
@@ -3017,7 +3023,7 @@ void manaShot( CBlob@ blob, u8 manaUsed, u8 casterMana, bool silent = false)
 
 		if(!silent)
 		{
-			blob.getSprite().PlaySound("manaShot.ogg", 1.8f, 1.0f + XORRandom(1)/10.0f);
+			blob.getSprite().PlaySound("manaShot.ogg", 1.8f, 1.0f + (0.2f * _spell_common_r.NextFloat()) );
 		}
 	}
 }
