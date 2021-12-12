@@ -16,6 +16,7 @@ const f32 low_angle = 60.0f;
 void onInit(CBlob@ this)
 {
 	this.Tag("respawn");
+	this.Tag("kill other spells");
 
 	InitRespawnCommand(this);
 	InitClasses(this);

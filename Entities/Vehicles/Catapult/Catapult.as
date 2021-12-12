@@ -68,6 +68,8 @@ void onInit(CBlob@ this)
 
 	//fix
 	v.fire_time = 0;
+
+	this.Tag("kill other spells");
 }
 
 void onTick(CBlob@ this)
