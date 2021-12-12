@@ -137,11 +137,11 @@ void onTick(CBlob@ this)
 		if (!b.hasTag("flesh") && !b.hasTag("counterable"))
 		{ continue; }
 
-		Vec2f blobPos = b.getPosition();
+		bool isZombie = b.hasTag("zombie");
 
+		Vec2f blobPos = b.getPosition();
 		Vec2f kickDir = blobPos - thisPos;
 		kickDir.Normalize();
-
 		Vec2f kickVel = kickDir * 50.0f;
 
 		CPlayer@ targetPlayer = b.getPlayer();
@@ -159,7 +159,7 @@ void onTick(CBlob@ this)
 			}
 		}
 
-		if (!isClient())
+		if (!isClient()) // push ray particles
 		{ continue; }
 
 		Vec2f rayVec = blobPos - thisPos;
@@ -170,7 +170,7 @@ void onTick(CBlob@ this)
 
 		Vec2f rayDeviation = rayNorm;
 		rayDeviation.RotateByDegrees(90);
-		rayDeviation *= 4.0f;
+		rayDeviation *= 4.0f; //perpendicular particle deviation
 
 		SColor color = getTeamColor(teamNum);
 
@@ -179,9 +179,9 @@ void onTick(CBlob@ this)
 			u8 alpha = 40 + (170.0f * _tent_defenses_r.NextFloat()); //randomize alpha
 			color.setAlpha(alpha);
 
-			f32 waveTravel = i - gameTime;
+			f32 waveTravel = i - gameTime; //forward and backwards wave travel
 			f32 sinInput = waveTravel * 0.2f;
-			f32 stepDeviation = Maths::Sin(sinInput);
+			f32 stepDeviation = Maths::Sin(sinInput); //particle deviation multiplier
 
 			if (i < 8)
 			{
@@ -208,9 +208,13 @@ void onTick(CBlob@ this)
 				p.Z = 8;
 				p.timeout = 3;
 			}
+			
+			if (isZombie)
+			{ i++; }
 		}
+		// push ray particles end
 		
-	}
+	} //for loop end
 
 	if (!isClient())
 	{ return; }
