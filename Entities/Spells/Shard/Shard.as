@@ -222,7 +222,7 @@ void shieldSparks(Vec2f pos, int amountPerFan, f32 orientation, int teamNum)
 		
 		SColor col = getTeamColor(teamNum);
 		
-        CParticle@ p = ParticlePixel( pos, vel, col, true );
+        CParticle@ p = ParticlePixelUnlimited( pos, vel, col, true );
         if(p is null) return; //bail if we stop getting particles
 
     	p.fastcollision = true;
@@ -240,7 +240,7 @@ void shieldSparks(Vec2f pos, int amountPerFan, f32 orientation, int teamNum)
 		
 		SColor col = getTeamColor(teamNum);
 		
-        CParticle@ p = ParticlePixel( pos, vel, col, false );
+        CParticle@ p = ParticlePixelUnlimited( pos, vel, col, false );
         if(p is null) return; //bail if we stop getting particles
 
     	p.fastcollision = true;

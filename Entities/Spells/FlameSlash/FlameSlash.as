@@ -108,7 +108,7 @@ void onTick(CBlob@ this)
 
 					Vec2f pixelVel = (aimDir*XORRandom(10));
 
-    		   		CParticle@ p = ParticlePixel( pixelPos , pixelVel , SColor( 255, 255, 255, 0) , true , XORRandom(7)+3);
+    		   		CParticle@ p = ParticlePixelUnlimited( pixelPos , pixelVel , SColor( 255, 255, 255, 0) , true );
     		    	if(p !is null)
     		    	{
     		    	    p.fastcollision = true;

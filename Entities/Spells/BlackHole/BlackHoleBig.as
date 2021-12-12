@@ -171,7 +171,7 @@ void sparks(Vec2f pos, int amount)
         vel.RotateBy(_sprk_r.NextFloat() * 360.0f);
 		
 		int colorShade = _sprk_r.NextRanged(128);
-        CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, colorShade, colorShade), true );
+        CParticle@ p = ParticlePixelUnlimited( pos, vel, SColor( 255, colorShade, colorShade, colorShade), true );
         if(p is null) return; //bail if we stop getting particles
 
         p.timeout = 40 + _sprk_r.NextRanged(20);

@@ -173,7 +173,7 @@ void onTick( CBlob@ this)
 			for(int i = 0; i < 100; i ++)
 			{
 				Vec2f particleVel = Vec2f( 1.5f ,0).RotateByDegrees(XORRandom(361));
-				CParticle@ p = ParticlePixel( this.getPosition() , particleVel , color , false , XORRandom(11) + 5 );
+				CParticle@ p = ParticlePixelUnlimited( this.getPosition() , particleVel , color , false );
 				if(p !is null)
 				{
 					p.gravity = Vec2f_zero;
@@ -182,6 +182,7 @@ void onTick( CBlob@ this)
 					p.fastcollision = true;
 					p.bounce = 0;
 					p.lighting = false;
+					p.timeout = XORRandom(11) + 5;
 				}
 			}
 		}

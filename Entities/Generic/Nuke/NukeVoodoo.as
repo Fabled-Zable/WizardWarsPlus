@@ -100,7 +100,11 @@ void sparks(Vec2f at, f32 angle, f32 speed, SColor color )
 {
     Vec2f vel = getRandomVelocity(angle+90.0f, speed, 45.0f);
     at.y -= 3.0f;
-    ParticlePixel( at, vel, color, true, 119 );
+    CParticle@ p = ParticlePixelUnlimited( at, vel, color, true);
+    if (p != null)
+    {
+        p.timeout = 119;
+    }
 }
 
 // run the tick so we explode in inventory

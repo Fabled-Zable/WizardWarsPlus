@@ -141,10 +141,11 @@ void onTick(CBlob@ this)
             for (int i = 0; i < 3; i++)
             {
                 Vec2f pixelPos = thisPos + Vec2f( XORRandom(26)-13,XORRandom(26)-13 );
-                CParticle@ p = ParticlePixel( pixelPos , Vec2f_zero , SColor( 255, 120+XORRandom(40), 0, 255) , true , XORRandom(7)+3);
+                CParticle@ p = ParticlePixelUnlimited( pixelPos , Vec2f_zero , SColor( 255, 120+XORRandom(40), 0, 255) , true);
                 if(p !is null)
                 {
                     p.gravity = Vec2f(0,-0.3f);
+                    p.timeout = XORRandom(7)+3;
                 }
             }
         }

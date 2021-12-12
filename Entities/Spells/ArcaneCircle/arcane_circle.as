@@ -75,11 +75,12 @@ void onTick(CBlob@ this)
                     int ry = XORRandom(4) - 2;
                     if(isClient())
                     {
-                        CParticle@ p = ParticlePixel(bPos, Vec2f(rx,ry), SColor(0,255,0,0),true,XORRandom(10));
+                        CParticle@ p = ParticlePixelUnlimited(bPos, Vec2f(rx,ry), SColor(0,255,0,0),true);
                         if(p !is null)
                         {
                             p.gravity = Vec2f(0,0);
                             p.damping = (XORRandom(25) + 75)/100.0;
+                            p.timeout = XORRandom(10);
                         }
                     }
                 }

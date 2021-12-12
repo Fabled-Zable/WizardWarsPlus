@@ -2598,7 +2598,7 @@ void CastNegentropy( CBlob@ this )
 		float particleDegrees = -aimAngle + i - 45;
 		Vec2f particlePos = Vec2f(XORRandom(64) , 0).RotateByDegrees(particleDegrees);
 		Vec2f particleVel = Vec2f( 0.4f ,0).RotateByDegrees(XORRandom(360));
-		CParticle@ p = ParticlePixel( this.getPosition() + particlePos , particleVel , color , false , XORRandom(16) + 15 );
+		CParticle@ p = ParticlePixelUnlimited( this.getPosition() + particlePos , particleVel , color , false );
 		if(p !is null)
 		{
 			p.gravity = Vec2f_zero;
@@ -2608,6 +2608,7 @@ void CastNegentropy( CBlob@ this )
 			p.bounce = 0;
 			p.lighting = false;
 			p.Z = 500;
+			p.timeout = XORRandom(16) + 15;
 		}
 	}
 }
@@ -3029,7 +3030,7 @@ void teleSparks(Vec2f pos, int amount, Vec2f pushVel = Vec2f(0,0))
         Vec2f vel(_sprk_r2.NextFloat() * 1.0f, 0);
         vel.RotateBy(_sprk_r2.NextFloat() * 360.0f);
 
-        CParticle@ p = ParticlePixel( pos, vel + pushVel, SColor( 255, 180+XORRandom(40), 0, 255), true );
+        CParticle@ p = ParticlePixelUnlimited( pos, vel + pushVel, SColor( 255, 180+XORRandom(40), 0, 255), true );
         if(p is null) return; //bail if we stop getting particles
 
     	p.fastcollision = true;

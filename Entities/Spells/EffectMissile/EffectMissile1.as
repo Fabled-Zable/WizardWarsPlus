@@ -348,7 +348,7 @@ void sparks(CBlob@ this, Vec2f pos, int amount)
 		CParticle@ p;
 		if ( followsAllies( this ) )
 		{
-			CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, colorShade, colorShade ), true );
+			CParticle@ p = ParticlePixelUnlimited( pos, vel, SColor( 255, colorShade, colorShade, colorShade ), true );
 			if(p !is null) //bail if we stop getting particles
 			{
     			p.fastcollision = true;
@@ -360,7 +360,7 @@ void sparks(CBlob@ this, Vec2f pos, int amount)
 		}
 		else if ( followsEnemies( this ) )
 		{
-			CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, colorShade, 0 ), true );
+			CParticle@ p = ParticlePixelUnlimited( pos, vel, SColor( 255, colorShade, colorShade, 0 ), true );
 			if(p !is null) //bail if we stop getting particles
 			{
     			p.fastcollision = true;

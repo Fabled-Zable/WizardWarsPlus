@@ -125,7 +125,7 @@ void makeFoNParticle(CBlob@ this, Vec2f pos, Vec2f vel )
 	dirNorm.Normalize();
 	Vec2f newVel = vel + dirNorm.RotateBy(60.0f)*12.0f;
 	
-	//CParticle@ p = ParticlePixel( newPos, newVel, SColor( 255, 0, 0, 0), true );
+	//CParticle@ p = ParticlePixelUnlimited( newPos, newVel, SColor( 255, 0, 0, 0), true );
 	CParticle@ p = ParticleAnimated( "GreenBlob.png", newPos, Vec2f(0,0), -newVel.getAngleDegrees(), 1.0f, 3+XORRandom(3), 0.0f, true );
 	if(p !is null)
 	{
@@ -148,7 +148,7 @@ void sparks(Vec2f pos, int amount)
         vel.RotateBy(_sprk_r.NextFloat() * 360.0f);
 		
 		int colorShade = _sprk_r.NextRanged(128);
-        CParticle@ p = ParticlePixel( pos, vel, SColor( 255, colorShade, 255, colorShade), true );
+        CParticle@ p = ParticlePixelUnlimited( pos, vel, SColor( 255, colorShade, 255, colorShade), true );
         if(p is null) return; //bail if we stop getting particles
 
     	p.fastcollision = true;
