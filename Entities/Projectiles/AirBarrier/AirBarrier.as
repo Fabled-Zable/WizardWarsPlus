@@ -57,8 +57,8 @@ void onTick( CBlob@ this )
 
 	Vec2f blobPos = ownerBlob.getPosition() + Vec2f(0.0f,-2.0f);
 	
-	f32 barrierHeight = (blobPos.y - (8 * 15));
-	f32 maxBarrierHeight = (map.tilemapheight * 0.15f); //max height is basically 85% of the map's height
+	f32 barrierHeight = (blobPos.y - (8 * 50));
+	f32 maxBarrierHeight = (map.tilemapheight - 32.0f); //max height is basically 85% of the map's height
 
 	if (barrierHeight < maxBarrierHeight) //do not let it go to space, aiight
 	{

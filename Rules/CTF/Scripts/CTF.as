@@ -49,7 +49,7 @@ void Config(CTFCore@ this)
 
 	//spawn after death time
 	//this.spawnTime = (getTicksASecond() * cfg.read_s32("spawn_time", 15));
-	this.spawnTime = getTicksASecond() * 30;
+	this.spawnTime = getTicksASecond() * 15;
 }
 
 shared string base_name() { return "tent"; }

@@ -1252,6 +1252,9 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 				default:return;
 			}
 
+			if (sv_gamemode == "CTF")
+			{ lifetime *= 2; }
+
 			Vec2f orbPos = aimpos;
 			Vec2f targetPos = orbPos + Vec2f(0.0f,2.0f);
 			Vec2f dirNorm = (targetPos - thispos);

@@ -124,7 +124,7 @@ void onTick(CBlob@ this)
 	CBitStream params;
 
 	CBlob@[] enemiesInRadius;
-	map.getBlobsInRadius(thisPos, 128.0f, @enemiesInRadius); //tent aura push
+	map.getBlobsInRadius(thisPos, 100.0f, @enemiesInRadius); //tent aura push
 	for (uint i = 0; i < enemiesInRadius.length; i++)
 	{
 		CBlob@ b = enemiesInRadius[i];
@@ -142,7 +142,7 @@ void onTick(CBlob@ this)
 		Vec2f blobPos = b.getPosition();
 		Vec2f kickDir = blobPos - thisPos;
 		kickDir.Normalize();
-		Vec2f kickVel = kickDir * 40.0f; //push force
+		Vec2f kickVel = kickDir * 50.0f; //push force
 
 		CPlayer@ targetPlayer = b.getPlayer();
 		if (targetPlayer == null)
@@ -229,7 +229,7 @@ void onTick(CBlob@ this)
 		color.setAlpha(alpha);
 
 		f32 randomDeviation = (i*0.3f) * _tent_defenses_r.NextFloat(); //random pixel deviation
-		Vec2f prePos = Vec2f(130.0f - randomDeviation, 0);
+		Vec2f prePos = Vec2f(102.0f - randomDeviation, 0); //distance
 		prePos.RotateByDegrees(360.0f * _tent_defenses_r.NextFloat()); //random 360 rotation
 
 		Vec2f pPos = thisPos + prePos;
