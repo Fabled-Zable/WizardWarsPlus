@@ -2,353 +2,193 @@
 
 #include "Hitters.as";
 #include "ShieldCommon.as";
-#include "LimitedAttacks.as";
 #include "Explosion.as";
 #include "CommonFX.as";
 
-const f32 MEDIUM_SPEED = 9.0f;
-const f32 FAST_SPEED = 16.0f;
-// Speed required to pierce Wooden tiles.
+Random _gatling_basicshot_r(67521);
+
+const string oldPosString = "old_pos";
+const string newPosString = "new_pos";
 
 void onInit(CBlob@ this)
 {
+	this.server_SetTimeToDie(5);
 
-	this.set_u8("blocks_pierced", 0);
-	this.set_bool("static", false);
-
-	this.server_SetTimeToDie(20);
-
-	this.getShape().getConsts().mapCollisions = false;
-	this.getShape().getConsts().bullet = true;
-	this.getShape().getConsts().net_threshold_multiplier = 4.0f;
-
-	LimitedAttack_setup(this);
-
-	u32[] offsets;
-	this.set("offsets", offsets);
-	// Offsets of the tiles that have been hit.
+	CShape@ shape = this.getShape();
+	if (shape != null)
+	{
+		shape.getConsts().mapCollisions = false;
+		shape.getConsts().bullet = true;
+		shape.getConsts().net_threshold_multiplier = 4.0f;
+		shape.SetGravityScale(0.0f);
+	}
 
 	this.Tag("projectile");
+
+	this.set_Vec2f(oldPosString, Vec2f_zero);
+	this.set_Vec2f(newPosString, Vec2f_zero);
+
 	this.getSprite().SetFrame(0);
-	this.getSprite().getConsts().accurateLighting = true;
-	this.getSprite().SetFacingLeft(!this.getSprite().isFacingLeft());
 
-	this.SetMapEdgeFlags(CBlob::map_collide_left | CBlob::map_collide_right);
-
+	this.SetMapEdgeFlags(CBlob::map_collide_up | CBlob::map_collide_down | CBlob::map_collide_sides);
 }
 
 void onTick(CBlob@ this)
 {
+	CMap@ map = getMap(); //standard map check
+	if (map is null)
+	{ return; }
 
-	f32 angle = 0;
+	Vec2f thisOldPos = this.get_Vec2f(oldPosString);
+	Vec2f thisPos = this.getPosition();
+	Vec2f thisVel = this.getVelocity();
 
-	if (!this.get_bool("static"))
+	f32 travelDist = thisVel.getLength();
+	Vec2f futurePos = thisPos + thisVel;
+
+	doTrailParticles(thisOldPos, thisPos);
+	this.set_Vec2f(oldPosString, thisPos);
+	
+	CBlob@[] blobsAtPos;
+	map.getBlobsAtPosition(thisPos, @blobsAtPos);
+
+	for (uint i = 0; i < blobsAtPos.length; i++)
 	{
+		CBlob@ b = blobsAtPos[i];
+		if (b is null)
+		{ continue; }
 
-		Vec2f velocity = this.getVelocity();
-		angle = velocity.Angle();
+		if (!doesCollideWithBlob(this, b))
+		{ continue; }
 
-		Pierce(this, velocity, angle);
+		this.server_Hit(b, thisPos, thisVel, 0.2f, Hitters::arrow, false);
+		this.server_Die();
+		return;
+	}
 
-		if (this.hasTag("bomb ammo") && !this.hasTag("bomb"))
+	Vec2f wallPos = Vec2f_zero;
+	bool hitWall = map.rayCastSolidNoBlobs(thisPos, futurePos, wallPos); //if there's a wall, end the travel early
+	if (hitWall)
+	{
+		futurePos = wallPos;
+		Vec2f fixedTravel = futurePos - thisPos;
+		travelDist = fixedTravel.getLength();
+	}
+
+	HitInfo@[] hitInfos;
+	bool hasHit = map.getHitInfosFromRay(thisPos, -thisVel.getAngleDegrees(), travelDist, this, @hitInfos);
+	if (hasHit)
+	{
+		for (uint i = 0; i < hitInfos.length; i++)
 		{
+			HitInfo@ hi = hitInfos[i];
+			CBlob@ b = hi.blob;
+			if (b == null) // check
+			{ continue; }
+			
+			if (!doesCollideWithBlob(this, b))
+			{ continue; }
 
-			this.set_bool("map_damage_raycast", false);
-			this.set_f32("map_damage_radius", 24.0f);
-
-			this.Tag("bomb");
-			this.getSprite().SetFrame(1);
-
+			thisPos = hi.hitpos;
+			this.setPosition(thisPos);
+			this.server_Hit(b, thisPos, thisVel, 0.2f, Hitters::arrow, false);
+			this.server_Die();
+			return;
 		}
 	}
-	else
+	
+	if (hitWall) //if there was no hit, but there is a wall, move bullet there and die
 	{
-
-		angle = Maths::get360DegreesFrom256(this.get_u8("angle"));
-
-		this.setVelocity(Vec2f_zero);
-		this.setPosition(Vec2f(this.get_f32("lock_x"), this.get_f32("lock_y")));
-		this.getShape().SetStatic(true);
-		this.doTickScripts = false;
-
+		this.setPosition(futurePos);
+		this.server_Die();
 	}
+}
 
-	this.setAngleDegrees(-angle + 180.0f);
+void doTrailParticles(Vec2f oldPos = Vec2f_zero, Vec2f newPos = Vec2f_zero)
+{
+	if (!isClient())
+	{ return; }
 
+	if (oldPos == Vec2f_zero || newPos == Vec2f_zero)
+	{ return; }
+
+	Vec2f trailVec = newPos - oldPos;
+	int steps = trailVec.getLength();
+	Vec2f trailNorm = trailVec;
+	trailNorm.Normalize();
+
+	SColor color = SColor(255,255,255,255);
+
+	for(int i = 0; i < steps; i++)
+   	{
+		u8 alpha = 40 + (170.0f * _gatling_basicshot_r.NextFloat()); //randomize alpha
+		color.setAlpha(alpha);
+
+		Vec2f pPos = (trailNorm * i) + oldPos;
+
+    	CParticle@ p = ParticlePixelUnlimited(pPos, Vec2f_zero, color, true);
+    	if(p !is null)
+    	{
+			p.collides = false;
+			p.gravity = Vec2f_zero;
+			p.bounce = 0;
+			p.Z = 8;
+			p.timeout = 2;
+		}
+	}
 }
 
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 {
+	int thisTeamNum = this.getTeamNum();
+	int blobTeamNum = blob.getTeamNum();
 
-	CBlob@ carrier = blob.getCarriedBlob();
-
-	if (carrier !is null)
-		if (carrier.hasTag("player")
-		        && (this.getTeamNum() == carrier.getTeamNum() || blob.hasTag("temp blob")))
-			return false;
-
-	return (this.getTeamNum() != blob.getTeamNum() || blob.getShape().isStatic())
-	       && blob.isCollidable();
-
+	return
+	(
+		thisTeamNum != blobTeamNum ||
+		blob.hasTag("dead")
+	);
 }
 
-Random _ballista_bolt_r(67521);
-
-void Pierce(CBlob@ this, Vec2f velocity, const f32 angle)
+int closestBlobIndex(CBlob@ this, CBlob@[] blobs, bool friendly)
 {
+    f32 bestDistance = 99999999;
+    int bestIndex = -1;
 
-	CMap@ map = this.getMap();
-
-	const f32 speed = velocity.getLength();
-	const f32 damage = speed > MEDIUM_SPEED ? 4.0f : 3.5f;
-
-	Vec2f direction = velocity;
-	direction.Normalize();
-
-	Vec2f position = this.getPosition();
-	Vec2f tip_position = position + direction * 12.0f;
-	Vec2f middle_position = position + direction * 6.0f;
-	Vec2f tail_position = position - direction * 12.0f;
-
-	Vec2f[] positions =
+	if(friendly)
 	{
-
-		position,
-		tip_position,
-		middle_position,
-		tail_position
-
-	};
-
-	if (isClient()) //pretty trail
-	{ 
-		Vec2f trailPos = tail_position;
-		u32 gameTime = getGameTime();
-
-		f32 trailSwing = Maths::Sin(gameTime * 0.1f);
-		f32 swingAngle = 30.0f * trailSwing;
-
-		u16 particleNum = 5;
-
-		int teamNum = this.getTeamNum();
-		SColor color = getTeamColorWW(teamNum);
-
-		for(int i = 0; i < particleNum; i++)
-	    {
-			u8 alpha = 200.0f + (55.0f * _ballista_bolt_r.NextFloat()); //randomize alpha
-			color.setAlpha(alpha);
-			
-			u16 pID = i+1;
-
-			f32 pRatio = float(pID) / float(particleNum);
-
-			f32 pAddedSpeed = 4.0f + ( 2.0f * pRatio);
-			Vec2f pVel = velocity + ( -direction * pAddedSpeed );
-
-			f32 pMaxRandomAngle = 2.0f;
-			f32 pAngle = swingAngle + ( (pMaxRandomAngle*0.5f) - (pMaxRandomAngle * _ballista_bolt_r.NextFloat()) );
-			pVel.RotateByDegrees(pAngle);
-
-	        CParticle@ p = ParticlePixelUnlimited(trailPos, pVel, color, true);
-	        if(p !is null)
-	        {
-	   	        p.collides = false;
-	   	        p.gravity = Vec2f_zero;
-	            p.bounce = 0;
-	            p.Z = 7;
-	            p.timeout = 30;
-	    	}
-		}
-	}
-	
-
-
-
-	for (uint i = 0; i < positions.length; i ++)
-	{
-
-		Vec2f temp_position = positions[i];
-		TileType type = map.getTile(temp_position).type;
-
-		if (map.isTileSolid(type))
+		for(int i = 0; i < blobs.length; i++)
 		{
+			CBlob@ currentBlob = blobs[i];
+    	    if(currentBlob is null || currentBlob is this || currentBlob.getTeamNum() != this.getTeamNum())
+			{continue;}
 
-			u32[]@ offsets;
-			this.get("offsets", @offsets);
-			const u32 offset = map.getTileOffset(temp_position);
-
-			if (offsets.find(offset) != -1)
-				continue;
-
-			BallistaHitMap(this, offset, temp_position, velocity, damage, Hitters::ballista);
-			this.server_HitMap(temp_position, velocity, damage, Hitters::ballista);
-
-		}
+    		//f32 dist = this.getDistanceTo(currentBlob);
+			f32 dist = Vec2f( currentBlob.getPosition() - this.getAimPos() ).getLength();
+    		if(bestDistance > dist)
+    		{
+    	    	bestDistance = dist;
+    	        bestIndex = i;
+    	    }
+    	}
 	}
-
-	HitInfo@[] infos;
-
-	if (speed > 0.1f && map.getHitInfosFromArc(tail_position, -angle, 10, (tip_position - tail_position).getLength(), this, true, @infos))
+	else
 	{
-
-		for (uint i = 0; i < infos.length; i ++)
+		for(int i = 0; i < blobs.length; i++)
 		{
+			CBlob@ currentBlob = blobs[i];
+    	    if(currentBlob is null || currentBlob is this || currentBlob.getTeamNum() == this.getTeamNum())
+			{continue;}
 
-			CBlob@ blob = infos[i].blob;
-			Vec2f hit_position = infos[i].hitpos;
-
-			if (blob !is null)
-			{
-				if (blob.getShape().getConsts().platform && !CollidesWithPlatform(this, blob, velocity))
-					continue;
-
-				if (!doesCollideWithBlob(this, blob) || LimitedAttack_has_hit_actor(this, blob))
-					continue;
-
-				this.server_Hit(blob, hit_position, velocity, damage, Hitters::ballista, true);
-				BallistaHitBlob(this, hit_position, velocity, damage, blob, Hitters::ballista);
-				LimitedAttack_add_actor(this, blob);
-
-			}
-		}
+    		//f32 dist = this.getDistanceTo(currentBlob);
+			f32 dist = Vec2f( currentBlob.getPosition() - this.getAimPos() ).getLength();
+    		if(bestDistance > dist)
+    		{
+    	    	bestDistance = dist;
+    	        bestIndex = i;
+    	    }
+    	}
 	}
+    
+    return bestIndex;
 }
-
-bool DoExplosion(CBlob@ this, Vec2f velocity)
-{
-
-	if (this.hasTag("bomb"))
-	{
-
-		if (this.hasTag("dead"))
-			return true;
-
-		Explode(this, 16.0f, 2.0f);
-		LinearExplosion(this, velocity, 64.0f, 8.0f, 2, 4.0f, Hitters::bomb);
-
-		this.Tag("dead");
-		this.server_Die();
-		this.getSprite().Gib();
-
-		return true;
-
-	}
-
-	return false;
-
-}
-
-void BallistaHitBlob(CBlob@ this, Vec2f hit_position, Vec2f velocity, const f32 damage, CBlob@ blob, u8 customData)
-{
-
-	if (DoExplosion(this, velocity)
-	        || this.get_bool("static"))
-		return;
-
-	if (blob.hasTag("flesh"))
-		this.getSprite().PlaySound("ArrowHitFleshFast.ogg");
-	else this.getSprite().PlaySound("ArrowHitGroundFast.ogg");
-
-	if (!blob.getShape().isStatic())
-		return;
-
-	if (blob.getHealth() > 0.0f)
-	{
-
-		const f32 angle = velocity.Angle();
-
-		if (blob.hasTag("wooden"))
-		{
-			this.setVelocity(velocity * 0.5f);
-
-			u8 blocks_pierced = this.get_u8("blocks_pierced");
-			const f32 speed = velocity.getLength();
-
-			if (blocks_pierced < 1 && speed > FAST_SPEED)
-				this.set_u8("blocks_pierced", blocks_pierced + 1);
-			else SetStatic(this, angle);
-
-		}
-		else SetStatic(this, angle);
-
-	}
-	else this.setVelocity(velocity * 0.7f);
-
-}
-
-void BallistaHitMap(CBlob@ this, const u32 offset, Vec2f hit_position, Vec2f velocity, const f32 damage, u8 customData)
-{
-
-	if (DoExplosion(this, velocity)
-	        || this.get_bool("static"))
-		return;
-
-	this.getSprite().PlaySound("ArrowHitGroundFast.ogg");
-
-	CMap@ map = getMap();
-	TileType type = map.getTile(offset).type;
-	const f32 angle = velocity.Angle();
-
-	if (type == CMap::tile_bedrock)
-	{
-
-		this.Tag("dead");
-		this.server_Die();
-		this.getSprite().Gib();
-
-	}
-	else if (!map.isTileGroundStuff(type))
-	{
-
-		if (map.getSectorAtPosition(hit_position, "no build") is null)
-			map.server_DestroyTile(hit_position, 1.0f, this);
-
-		u8 blocks_pierced = this.get_u8("blocks_pierced");
-		const f32 speed = velocity.getLength();
-
-		this.setVelocity(velocity * 0.5f);
-		this.push("offsets", offset);
-
-		if (blocks_pierced < 1 && speed > FAST_SPEED
-		        && map.isTileWood(type))
-			this.set_u8("blocks_pierced", blocks_pierced + 1);
-		else SetStatic(this, angle);
-
-	}
-	else if (map.isTileSolid(type))
-		SetStatic(this, angle);
-
-}
-
-void SetStatic(CBlob@ this, const f32 angle)
-{
-
-	Vec2f position = this.getPosition();
-
-	this.set_u8("angle", Maths::get256DegreesFrom360(angle));
-	this.set_bool("static", true);
-	this.set_f32("lock_x", position.x);
-	this.set_f32("lock_y", position.y);
-
-	this.Sync("static", true);
-	this.Sync("lock_x", true);
-	this.Sync("lock_y", true);
-
-	this.setVelocity(Vec2f_zero);
-	this.setPosition(position);
-	this.getShape().SetStatic(true);
-
-	this.getCurrentScript().runFlags |= Script::remove_after_this;
-
-}
-
-bool CollidesWithPlatform(CBlob@ this, CBlob@ blob, Vec2f velocity)
-{
-	f32 platform_angle = blob.getAngleDegrees();	
-	Vec2f direction = Vec2f(0.0f, -1.0f);
-	direction.RotateBy(platform_angle);
-	float velocity_angle = direction.AngleWith(velocity);
-
-	return !(velocity_angle > -90.0f && velocity_angle < 90.0f);
-}
-

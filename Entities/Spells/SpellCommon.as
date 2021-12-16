@@ -1278,7 +1278,7 @@ void CastSpell(CBlob@ this, const s8 charge_state, const Spell spell, Vec2f aimp
 		{
 			CMap@ map = getMap(); //standard map check
 			if (map is null)
-			{return;}
+			{ return; }
 
 			int teamNum = this.getTeamNum();
 

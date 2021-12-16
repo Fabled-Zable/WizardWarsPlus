@@ -164,7 +164,7 @@ void onTick( CBlob@ this )
 			fireVec += thisVel; //adds ship speed
 
 			params.write_u16(this.getNetworkID()); //ownerID
-			params.write_u8(0); //shot type
+			params.write_u8(1); //shot type
 			params.write_Vec2f(firePos); //shot position
 			params.write_Vec2f(fireVec); //shot velocity
 			
@@ -243,13 +243,13 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 
 			case 1:
 			{
-				blobName = "bee";
+				blobName = "gatling_basicshot";
 			}
 			break;
 
 			case 2:
 			{
-				blobName = "impaler";
+				blobName = "bee";
 			}
 			break;
 			default: return;
