@@ -11,6 +11,9 @@
 #include "Help.as";
 #include "BombCommon.as";
 
+const string shot_command_ID = "shot";
+const string hit_command_ID = "hit";
+
 void onInit( CBlob@ this )
 {
 	SmallshipInfo ship;
@@ -32,6 +35,14 @@ void onInit( CBlob@ this )
 	manaInfo.maxMana = FrigateParams::MAX_MANA;
 	manaInfo.manaRegen = FrigateParams::MANA_REGEN;
 	this.set("manaInfo", @manaInfo);*/
+
+	this.set_u32( "m1_heldTime", 0 );
+	this.set_u32( "m2_heldTime", 0 );
+
+	this.set_u32( "m1_shotTime", 0 );
+	this.set_u32( "m2_shotTime", 0 );
+
+	this.set_bool( "leftCannonTurn", false);
 
 	this.set_s8( "charge_time", 0 );
 	this.set_u8( "charge_state", FrigateParams::not_aiming );
@@ -57,7 +68,8 @@ void onInit( CBlob@ this )
 	this.getShape().SetRotationsAllowed(false);
 	//this.getShape().SetGravityScale(0);
 
-    this.addCommandID( "spell" );
+    this.addCommandID( shot_command_ID );
+	this.addCommandID( hit_command_ID );
 	this.addCommandID( "pulsed" );
 	this.getShape().getConsts().net_threshold_multiplier = 0.5f;
 
@@ -101,6 +113,11 @@ void onSetPlayer( CBlob@ this, CPlayer@ player )
 
 void onTick( CBlob@ this )
 {
+	// vvvvvvvvvvvvvv CLIENT-SIDE ONLY vvvvvvvvvvvvvvvvvvv
+	//if (!isClient()) return;
+	if (this.isInInventory()) return;
+	if (!this.isMyPlayer()) return;
+
     SmallshipInfo@ ship;
 	if (!this.get( "smallshipInfo", @ship )) 
 	{ return; }
@@ -109,15 +126,70 @@ void onTick( CBlob@ this )
 	if ( thisPlayer is null )
 	{ return; }
 
-
-	// vvvvvvvvvvvvvv CLIENT-SIDE ONLY vvvvvvvvvvvvvvvvvvv
-	if (!isClient()) return;
-
 	SpaceshipVars@ moveVars;
     if (!this.get( "moveVars", @moveVars )) {
         return;
     }
 
+	Vec2f thisPos = this.getPosition();
+	Vec2f thisVel = this.getVelocity();
+	f32 blobAngle = this.getAngleDegrees();
+	blobAngle = (blobAngle+360.0f) % 360;
+
+	//gun logic
+	bool pressed_m1 = this.isKeyPressed(key_action1);
+	bool pressed_m2 = this.isKeyPressed(key_action2);
+	
+	u32 m1Time = this.get_u32( "m1_heldTime");
+	u32 m2Time = this.get_u32( "m2_heldTime");
+
+	u32 m1ShotTicks = this.get_u32( "m1_shotTime" );
+	u32 m2ShotTicks = this.get_u32( "m2_shotTime" );
+
+	if (pressed_m1 && m1Time >= ship.firing_delay)
+	{
+		if (m1ShotTicks >= ship.firing_rate * moveVars.firingRateFactor)
+		{
+			CBitStream params;
+			bool leftCannon = this.get_bool( "leftCannonTurn" );
+			this.set_bool( "leftCannonTurn", !leftCannon);
+
+			f32 leftMult = leftCannon ? 1.0f : -1.0f;
+			Vec2f firePos = Vec2f(8, 4 * leftMult); //barrel pos
+			firePos.RotateByDegrees(blobAngle);
+			firePos += thisPos; //fire pos
+
+			Vec2f fireVec = Vec2f(1.0f,0) * ship.shot_speed; 
+			fireVec.RotateByDegrees(blobAngle); //shot vector
+			fireVec += thisVel; //adds ship speed
+
+			params.write_u16(this.getNetworkID()); //ownerID
+			params.write_u8(0); //shot type
+			params.write_Vec2f(firePos); //shot position
+			params.write_Vec2f(fireVec); //shot velocity
+			
+			this.SendCommand(this.getCommandID(shot_command_ID), params);
+
+			m1ShotTicks = 0;
+		}
+	}
+
+	if (pressed_m1)
+	{ m1Time++; }
+	else { m1Time = 0; }
+	
+	if (pressed_m2)
+	{ m2Time++; }
+	else { m2Time = 0; }
+	this.set_u32( "m1_heldTime", m1Time );
+	this.set_u32( "m2_heldTime", m2Time );
+
+	m1ShotTicks++;
+	//m2ShotTicks++;
+	this.set_u32( "m1_shotTime", m1ShotTicks );
+	this.set_u32( "m2_shotTime", m2ShotTicks );
+
+	//sound logic
 	Vec2f vel = this.getVelocity();
 	float posVelX = Maths::Abs(vel.x);
 	float posVelY = Maths::Abs(vel.y);
@@ -130,14 +202,68 @@ void onTick( CBlob@ this )
 		this.getSprite().SetEmitSoundVolume(1.0f * (posVelX > posVelY ? posVelX : posVelY));
 	}
 
-	if (this.isInInventory()) return;
+	
 
     //ManageSpell( this, ship, playerPrefsInfo, moveVars );
 }
 
 void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 {
-    if (cmd == this.getCommandID("spell"))  //from standardcontrols
+    if (cmd == this.getCommandID(shot_command_ID)) // 1 shot instance
+    {
+		if (!isServer())
+		{ return; }
+		
+		u16 ownerID;
+		if (!params.saferead_u16(ownerID)) return;
+
+		u8 shotType;
+		if (!params.saferead_u8(shotType)) return;
+
+		Vec2f blobPos;
+		Vec2f blobVel;
+		if (!params.saferead_Vec2f(blobPos)) return;
+		if (!params.saferead_Vec2f(blobVel)) return;
+
+		CBlob@ ownerBlob = getBlobByNetworkID(ownerID);
+		if (ownerBlob == null || ownerBlob.hasTag("dead"))
+		{ return; }
+		
+		if (blobPos == Vec2f_zero || blobVel == Vec2f_zero)
+		{ return; }
+
+		string blobName = "orb";
+		switch (shotType)
+		{
+			case 0:
+			{
+				blobName = "orb";
+			}
+			break;
+
+			case 1:
+			{
+				blobName = "bee";
+			}
+			break;
+
+			case 2:
+			{
+				blobName = "impaler";
+			}
+			break;
+			default: return;
+		}
+
+		CBlob@ blob = server_CreateBlob( blobName , ownerBlob.getTeamNum(), blobPos);
+		if (blob !is null)
+		{
+			blob.IgnoreCollisionWhileOverlapped( ownerBlob );
+			blob.SetDamageOwnerPlayer( ownerBlob.getPlayer() );
+			blob.setVelocity( blobVel );
+		}
+	}
+	else if (cmd == this.getCommandID(hit_command_ID)) // if a shot hits, this gets sent
     {
 		
 	}

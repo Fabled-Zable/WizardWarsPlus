@@ -29,9 +29,9 @@ namespace FighterParams
 	//gun general
 	const ::u32 firing_rate = 2; // ticks per shot, won't fire if 0
 	const ::u32 firing_burst = 1; // bullets per shot, won't fire if 0
-	const ::u32 firing_delay = 1; // ticks before first shot
+	const ::u32 firing_delay = 0; // ticks before first shot
 	const ::u32 firing_spread = 1; // degrees
-	const ::f32 shot_speed = 0.0f; // pixels per tick, 0 = instant
+	const ::f32 shot_speed = 20.0f; // pixels per tick, 0 = instant
 }
 
 class SmallshipInfo

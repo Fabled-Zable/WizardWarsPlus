@@ -8,7 +8,7 @@ shared class SpaceshipVars
 	f32 dragFactor = 1.0f; //multiplier for drag
 
 	f32 firingRateFactor = 1.0f; //lower is higher rate
-	f32 firingSpradFactor = 1.0f; //multiplier for bullet spread
+	f32 firingSpreadFactor = 1.0f; //multiplier for bullet spread
 };
 
 //cleanup all vars here - reset clean slate for next frame
@@ -21,5 +21,5 @@ void CleanUp(CMovement@ this, CBlob@ thisBlob, SpaceshipVars@ moveVars)
     moveVars.dragFactor = 1.0f;
 
     moveVars.firingRateFactor = 1.0f;
-    moveVars.firingSpradFactor = 1.0f;
+    moveVars.firingSpreadFactor = 1.0f;
 }

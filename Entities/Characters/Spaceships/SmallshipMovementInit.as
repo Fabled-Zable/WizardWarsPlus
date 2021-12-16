@@ -12,7 +12,7 @@ void onInit(CMovement@ this)
 	moveVars.dragFactor = 1.0f; //multiplier for drag
 
 	moveVars.firingRateFactor = 1.0f; //lower is higher rate
-	moveVars.firingSpradFactor = 1.0f; //multiplier for bullet spread
+	moveVars.firingSpreadFactor = 1.0f; //multiplier for bullet spread
 
 	this.getBlob().set("moveVars", moveVars);
 }
