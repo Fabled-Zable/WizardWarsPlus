@@ -1,6 +1,6 @@
 // Knight animations
 
-#include "KnightCommon.as";
+#include "SmallshipCommon.as";
 #include "RunnerAnimCommon.as";
 #include "RunnerCommon.as";
 #include "KnockedCommon.as";
@@ -10,6 +10,11 @@
 #include "ShieldCommon.as"
 
 const string shiny_layer = "shiny bit";
+
+const string up_fire = "forward_burn";
+const string down_fire = "backward_burn";
+const string left_fire = "board_burn";
+const string right_fire = "starboard_burn";
 
 void onInit(CSprite@ this)
 {
@@ -23,55 +28,11 @@ void onPlayerInfoChanged(CSprite@ this)
 
 void LoadSprites(CSprite@ this)
 {
-	int armour = PLAYER_ARMOUR_STANDARD;
-
-	CPlayer@ p = this.getBlob().getPlayer();
-	if (p !is null)
-	{
-		armour = p.getArmourSet();
-		if (armour == PLAYER_ARMOUR_STANDARD)
-		{
-			Accolades@ acc = getPlayerAccolades(p.getUsername());
-			if (acc.hasCape())
-			{
-				armour = PLAYER_ARMOUR_CAPE;
-			}
-		}
-	}
-
-	switch (armour)
-	{
-	case PLAYER_ARMOUR_STANDARD:
-		ensureCorrectRunnerTexture(this, "knight", "Knight");
-		break;
-	case PLAYER_ARMOUR_CAPE:
-		ensureCorrectRunnerTexture(this, "knight_cape", "KnightCape");
-		break;
-	case PLAYER_ARMOUR_GOLD:
-		ensureCorrectRunnerTexture(this, "knight_gold", "KnightGold");
-		break;
-	}
-
-	string texname = getRunnerTextureName(this);
-
-	// add blade
-	this.RemoveSpriteLayer("chop");
-	CSpriteLayer@ chop = this.addTexturedSpriteLayer("chop", this.getTextureName(), 32, 32);
-
-	if (chop !is null)
-	{
-		Animation@ anim = chop.addAnimation("default", 0, true);
-		anim.AddFrame(35);
-		anim.AddFrame(43);
-		anim.AddFrame(63);
-		chop.SetVisible(false);
-		chop.SetRelativeZ(1000.0f);
-	}
 
 	// add shiny
+	/*
 	this.RemoveSpriteLayer(shiny_layer);
 	CSpriteLayer@ shiny = this.addSpriteLayer(shiny_layer, "AnimeShiny.png", 16, 16);
-
 	if (shiny !is null)
 	{
 		Animation@ anim = shiny.addAnimation("default", 2, true);
@@ -79,7 +40,61 @@ void LoadSprites(CSprite@ this)
 		anim.AddFrames(frames);
 		shiny.SetVisible(false);
 		shiny.SetRelativeZ(1.0f);
+	}*/
+
+	// add engine burns
+	this.RemoveSpriteLayer(up_fire);
+	this.RemoveSpriteLayer(down_fire);
+	this.RemoveSpriteLayer(left_fire);
+	this.RemoveSpriteLayer(right_fire);
+	CSpriteLayer@ upFire = this.addSpriteLayer(up_fire, "Flash1.png", 32, 32);
+	CSpriteLayer@ downFire = this.addSpriteLayer(down_fire, "Flash1.png", 32, 32);
+	CSpriteLayer@ leftFire = this.addSpriteLayer(left_fire, "Flash1.png", 32, 32);
+	CSpriteLayer@ rightFire = this.addSpriteLayer(right_fire, "Flash1.png", 32, 32);
+	if (upFire !is null)
+	{
+		Animation@ anim = upFire.addAnimation("default", 2, true);
+		int[] frames = {0, 1, 2, 3};
+		anim.AddFrames(frames);
+		upFire.SetVisible(false);
+		upFire.SetRelativeZ(-1.1f);
+		//upFire.RotateBy(0, Vec2f_zero);
+		upFire.SetOffset(Vec2f(8, 0));
 	}
+	if (downFire !is null)
+	{
+		Animation@ anim = downFire.addAnimation("default", 2, true);
+		int[] frames = {0, 1, 2, 3};
+		anim.AddFrames(frames);
+		downFire.SetVisible(false);
+		downFire.SetRelativeZ(-1.2f);
+		downFire.ScaleBy(0.5f, 0.5f);
+		//downFire.RotateBy(0, Vec2f_zero);
+		downFire.SetOffset(Vec2f(-6, 0));
+	}
+	if (leftFire !is null)
+	{
+		Animation@ anim = leftFire.addAnimation("default", 2, true);
+		int[] frames = {0, 1, 2, 3};
+		anim.AddFrames(frames);
+		leftFire.SetVisible(false);
+		leftFire.SetRelativeZ(-1.3f);
+		leftFire.ScaleBy(0.3f, 0.3f);
+		leftFire.RotateBy(90, Vec2f_zero);
+		leftFire.SetOffset(Vec2f(0, 5));
+	}
+	if (rightFire !is null)
+	{
+		Animation@ anim = rightFire.addAnimation("default", 2, true);
+		int[] frames = {0, 1, 2, 3};
+		anim.AddFrames(frames);
+		rightFire.SetVisible(false);
+		rightFire.SetRelativeZ(-1.4f);
+		rightFire.ScaleBy(0.3f, 0.3f);
+		rightFire.RotateBy(90, Vec2f_zero);
+		rightFire.SetOffset(Vec2f(0, -5));
+	}
+	
 }
 
 void onTick(CSprite@ this)
@@ -89,12 +104,17 @@ void onTick(CSprite@ this)
 	Vec2f pos = blob.getPosition();
 	Vec2f aimpos;
 
-	KnightInfo@ knight;
+	/*KnightInfo@ knight;
 	if (!blob.get("knightInfo", @knight))
 	{
 		return;
-	}
+	}*/
 
+	SmallshipInfo@ ship;
+	if (!blob.get( "smallshipInfo", @ship )) 
+	{ return; }
+	
+	/*
 	bool knocked = isKnocked(blob);
 
 	bool shieldState = isShieldState(knight.state);
@@ -133,14 +153,6 @@ void onTick(CSprite@ this)
 		{
 			this.SetFrameIndex(2);
 		}
-
-		CSpriteLayer@ chop = this.getSpriteLayer("chop");
-
-		if (chop !is null)
-		{
-			chop.SetVisible(false);
-		}
-
 		return;
 	}
 
@@ -350,31 +362,6 @@ void onTick(CSprite@ this)
 		}
 	}
 
-	CSpriteLayer@ chop = this.getSpriteLayer("chop");
-
-	if (chop !is null)
-	{
-		chop.SetVisible(wantsChopLayer);
-		if (wantsChopLayer)
-		{
-			f32 choplength = 5.0f;
-
-			chop.animation.frame = chopframe;
-			Vec2f offset = Vec2f(choplength, 0.0f);
-			offset.RotateBy(chopAngle, Vec2f_zero);
-			if (!this.isFacingLeft())
-				offset.x *= -1.0f;
-			offset.y += this.getOffset().y * 0.5f;
-
-			chop.SetOffset(offset);
-			chop.ResetTransform();
-			if (this.isFacingLeft())
-				chop.RotateBy(180.0f + chopAngle, Vec2f());
-			else
-				chop.RotateBy(chopAngle, Vec2f());
-		}
-	}
-
 	//set the shiny dot on the sword
 
 	CSpriteLayer@ shiny = this.getSpriteLayer(shiny_layer);
@@ -390,9 +377,26 @@ void onTick(CSprite@ this)
 			shiny.RotateBy(10, Vec2f());
 			shiny.SetOffset(Vec2f(12, -2 + ratio * 8));
 		}
-	}
+	}*/
+
+	//set engine burns to correct places
+
+	CSpriteLayer@ upFire	= this.getSpriteLayer(up_fire);
+	CSpriteLayer@ downFire	= this.getSpriteLayer(down_fire);
+	CSpriteLayer@ leftFire	= this.getSpriteLayer(left_fire);
+	CSpriteLayer@ rightFire	= this.getSpriteLayer(right_fire);
+
+	if (upFire !is null)
+	{ upFire.SetVisible(ship.forward_thrust); }
+	if (downFire !is null)
+	{ downFire.SetVisible(ship.backward_thrust); }
+	if (leftFire !is null)
+	{ leftFire.SetVisible(ship.board_thrust); }
+	if (rightFire !is null)
+	{ rightFire.SetVisible(ship.starboard_thrust); }
 
 	//set the head anim
+	/*
 	if (knocked)
 	{
 		blob.Tag("dead head");
@@ -406,10 +410,11 @@ void onTick(CSprite@ this)
 	{
 		blob.Untag("attack head");
 		blob.Untag("dead head");
-	}
+	}*/
 
 }
 
+/*
 void onGib(CSprite@ this)
 {
 	if (g_kidssafe)
@@ -472,4 +477,4 @@ void onRender(CSprite@ this)
 			DrawCursorAt(surface_position, cursorTexture);
 		}
 	}
-}
+}*/

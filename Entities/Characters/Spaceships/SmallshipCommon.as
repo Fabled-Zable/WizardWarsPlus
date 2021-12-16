@@ -21,7 +21,7 @@ namespace FighterParams
 
 	// ship general
 	const ::f32 main_engine_force = 0.3f;
-	const ::f32 secondary_engine_force = 0.2f;
+	const ::f32 secondary_engine_force = 0.1f;
 	const ::f32 rcs_force = 0.1f;
 	const ::f32 ship_turn_speed = 10.0f; // degrees per tick, 0 = instant (30 ticks a second)
 	const ::f32 ship_drag = 0.1f; // air drag
@@ -36,10 +36,10 @@ namespace FighterParams
 
 class SmallshipInfo
 {
-	s32 charge_time;
-	u8 charge_state;
-	bool spells_cancelling;
-	u8 pulse_amount;
+	bool forward_thrust;
+	bool backward_thrust;
+	bool board_thrust;
+	bool starboard_thrust;
 
 	// ship general
 	f32 main_engine_force;
@@ -57,10 +57,10 @@ class SmallshipInfo
 
 	SmallshipInfo()
 	{
-		charge_time = 0;
-		charge_state = 0;
-		spells_cancelling = false;
-		pulse_amount = 3;
+		forward_thrust = false;
+		backward_thrust = false;
+		board_thrust = false;
+		starboard_thrust = false;
 
 		//ship general
 		main_engine_force = 3.0f;

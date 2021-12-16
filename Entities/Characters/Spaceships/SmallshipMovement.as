@@ -113,25 +113,40 @@ void onTick(CMovement@ this)
 			Vec2f thrustVel = Vec2f(ship.main_engine_force, 0);
 			thrustVel.RotateByDegrees(blobAngle);
 			forward += thrustVel;
+			ship.forward_thrust = true;
 		}
+		else
+		{ ship.forward_thrust = false; }
+
 		if(down)
 		{
 			Vec2f thrustVel = Vec2f(ship.secondary_engine_force, 0);
 			thrustVel.RotateByDegrees(blobAngle + 180.0f);
 			backward += thrustVel;
+			ship.backward_thrust = true;
 		}
+		else
+		{ ship.backward_thrust = false; }
+
 		if(left)
 		{
 			Vec2f thrustVel = Vec2f(ship.rcs_force, 0);
 			thrustVel.RotateByDegrees(blobAngle + 270.0f);
 			board += thrustVel;
+			ship.board_thrust = true;
 		}
+		else
+		{ ship.board_thrust = false; }
+		
 		if(right)
 		{
 			Vec2f thrustVel = Vec2f(ship.rcs_force, 0);
 			thrustVel.RotateByDegrees(blobAngle + 90.0f);
 			starboard += thrustVel;
+			ship.starboard_thrust = true;
 		}
+		else
+		{ ship.starboard_thrust = false; }
 
 		Vec2f addedVel = Vec2f_zero;
 		addedVel += forward / float(keysPressedAmount); //divide thrust between multiple sides
@@ -151,9 +166,16 @@ void onTick(CMovement@ this)
 
 		vel += addedVel * moveVars.engineFactor; //final speed modified by engine variable
 	}
+	else
+	{
+		ship.forward_thrust = false;
+		ship.backward_thrust = false;
+		ship.board_thrust = false;
+		ship.starboard_thrust = false;
+	}
 
 	f32 maxSpeed = ship.max_speed * moveVars.maxSpeedFactor;
-	if (vel.getLength() > maxSpeed) //max speed logic
+	if (maxSpeed != 0 && vel.getLength() > maxSpeed) //max speed logic - 0 means no cap
 	{
 		vel.Normalize();
 		vel *= maxSpeed;
