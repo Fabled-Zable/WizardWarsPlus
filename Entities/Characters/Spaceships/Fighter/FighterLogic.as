@@ -1,12 +1,12 @@
 // Frigate logic
 
-#include "FrigateCommon.as"
+#include "FighterCommon.as"
+#include "SpaceshipVars.as"
 #include "PlayerPrefsCommon.as"
 #include "MagicCommon.as";
 #include "ThrowCommon.as"
 #include "KnockedCommon.as"
 #include "Hitters.as"
-#include "SpaceshipCommon.as"
 #include "ShieldCommon.as";
 #include "Help.as";
 #include "BombCommon.as";
@@ -17,8 +17,8 @@ const u8 rechargeSeconds = 1; //seconds for recharge
 
 void onInit( CBlob@ this )
 {
-	FrigateInfo frigate;
-	this.set("frigateInfo", @frigate);
+	FighterInfo fighter;
+	this.set("fighterInfo", @fighter);
 	
 	ManaInfo manaInfo;
 	manaInfo.maxMana = FrigateParams::MAX_MANA;
@@ -127,8 +127,8 @@ void onTick( CBlob@ this )
 		}
 	}		
 
-    FrigateInfo@ frigate;
-	if (!this.get( "frigateInfo", @frigate )) 
+    FighterInfo@ fighter;
+	if (!this.get( "fighterInfo", @fighter )) 
 	{
 		return;
 	}
@@ -152,29 +152,29 @@ void onTick( CBlob@ this )
 
 	if (getGameTime() % (30*rechargeSeconds) == 0) //Pulse regeneration
 	{
-		s8 pulses = frigate.pulse_amount;
+		s8 pulses = fighter.pulse_amount;
         
 		if (pulses < 3)
 		{
-			frigate.pulse_amount += 1;
+			fighter.pulse_amount += 1;
         }
     }
 
 	/*if(getKnockedRemaining(this) > 0)
 	{
-		frigate.charge_state = 0;
-		frigate.charge_time = 0;
+		fighter.charge_state = 0;
+		fighter.charge_time = 0;
 		return;
 	}*/
 
-    SpaceshipMoveVars@ moveVars;
+
+	// vvvvvvvvvvvvvv CLIENT-SIDE ONLY vvvvvvvvvvvvvvvvvvv
+	if (!isClient()) return;
+
+	SpaceshipVars@ moveVars;
     if (!this.get( "moveVars", @moveVars )) {
         return;
     }
-
-	// vvvvvvvvvvvvvv CLIENT-SIDE ONLY vvvvvvvvvvvvvvvvvvv
-
-	if (!getNet().isClient()) return;
 
 	Vec2f vel = this.getVelocity();
 	float posVelX = Maths::Abs(vel.x);
@@ -190,7 +190,7 @@ void onTick( CBlob@ this )
 
 	if (this.isInInventory()) return;
 
-    ManageSpell( this, frigate, playerPrefsInfo, moveVars );
+    ManageSpell( this, fighter, playerPrefsInfo, moveVars );
 }
 
 void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
@@ -215,15 +215,15 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
     }
 	if (cmd == this.getCommandID("pulsed"))
 	{
-		FrigateInfo@ frigate;
-		if (!this.get( "frigateInfo", @frigate )) 
+		FighterInfo@ fighter;
+		if (!this.get( "fighterInfo", @fighter )) 
 		{
 			return;
 		}
 
 		//CastNegentropy(this);
 
-		frigate.pulse_amount -= 1;
+		fighter.pulse_amount -= 1;
 	}
 }
 
