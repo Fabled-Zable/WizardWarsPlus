@@ -5,6 +5,10 @@
 
 void onInit( CBlob@ this )
 {
+	this.getShape().SetGravityScale( 0.0f );
+	this.server_SetTimeToDie(15);
+	this.Tag("fire bolt");
+
     this.set_u8("custom_hitter", Hitters2::orb);
 	this.Tag("exploding");
 	
@@ -21,18 +25,29 @@ void onInit( CBlob@ this )
 }
 
 void onTick( CBlob@ this )
-{     
+{
 	if(this.getCurrentScript().tickFrequency == 1)
 	{
-		this.getShape().SetGravityScale( 0.0f );
-		this.server_SetTimeToDie(7);
 		this.SetLight( true );
 		this.SetLightRadius( 32.0f );
 		this.SetLightColor( getTeamColor(this.getTeamNum()) );
 		this.set_string("custom_explosion_sound", "OrbExplosion.ogg");
 		this.getSprite().PlaySound("SpriteFire1.ogg", 0.2f, 1.5f + XORRandom(10)/10.0f);
 		this.getSprite().SetZ(1000.0f);
-		this.Tag("fire bolt");
+
+		CBrain@ brain = this.getBrain();
+		if (brain != null)
+		{
+			if (!brain.isActive())
+			{
+				//print ("activating brain");
+				brain.server_SetActive(true);
+			}
+			else
+			{
+				//print ("brain was somehow already active");
+			}
+		}
 		
 		//makes a stupid annoying sound
 		//ParticleZombieLightning( this.getPosition() );
@@ -58,53 +73,10 @@ void onTick( CBlob@ this )
 	Vec2f target;
 	bool targetSet;
 	bool brake;
-	
-	CPlayer@ p = this.getDamageOwnerPlayer();
-	if( p !is null)	{
-		CBlob@ b = p.getBlob();
-		if( b !is null)	{
-			if( p.isMyPlayer() )
-			{
-				Vec2f aimPos = b.getAimPos();
-				CBitStream params;
-				params.write_Vec2f(aimPos);
-				this.SendCommand(this.getCommandID("aimpos sync"), params);
-			}
-			target = this.get_Vec2f("aimpos");
-			targetSet = true;
-			brake = b.isKeyPressed( key_action3 );
-		}
-	}
-	
-	if(targetSet)
-	{
-		if(!brake)
-		{
-			this.getShape().setDrag(5.0f);
-			
-			Vec2f vel = this.getVelocity();
-			Vec2f dir = target-this.getPosition();
-			float distanceToCursor = dir.Length();
-			if(distanceToCursor > 5.0f)
-			{
-				dir.Normalize();
-				dir *= 5.0f;
-			}
-
-			vel += dir;
-			
-			this.setVelocity(vel);
-		}
-		else
-		{
-			this.getShape().setDrag(0.001f);
-		}
-	}
 }
 
 bool isEnemy( CBlob@ this, CBlob@ target )
 {
-	CBlob@ friend = getBlobByNetworkID(target.get_netid("brain_friend_id"));
 	return 
 	(
 		( target.getTeamNum() != this.getTeamNum() && (target.hasTag("kill other spells") || target.hasTag("door") || target.getName() == "trap_block") || target.hasTag("barrier") )
@@ -113,7 +85,6 @@ bool isEnemy( CBlob@ this, CBlob@ target )
 			target.hasTag("flesh") 
 			&& !target.hasTag("dead") 
 			&& target.getTeamNum() != this.getTeamNum() 
-			&& ( friend is null || friend.getTeamNum() != this.getTeamNum() )
 		)
 	);
 }	
