@@ -1,6 +1,6 @@
 // Fighter Movement
 
-#include "FighterCommon.as"
+#include "SmallshipCommon.as"
 #include "SpaceshipVars.as"
 #include "MakeDustParticle.as";
 #include "KnockedCommon.as";
@@ -31,8 +31,8 @@ void onTick(CMovement@ this)
 	if (!thisBlob.get("moveVars", @moveVars))
 	{ return; }
 
-    FighterInfo@ frigate;
-	if (!this.get( "fighterInfo", @frigate )) 
+    SmallshipInfo@ ship;
+	if (!thisBlob.get( "smallshipInfo", @ship )) 
 	{ return; }
     /*
 	const bool left		= thisBlob.isKeyPressed(key_left);
@@ -64,25 +64,21 @@ void onTick(CMovement@ this)
 
 	Vec2f vel = thisBlob.getVelocity();
 	Vec2f pos = thisBlob.getPosition();
+    Vec2f dir = thisBlob.getAngleDegrees();
+    
 	CShape@ shape = thisBlob.getShape();
     if (shape != null)
     {
         shape.SetGravityScale(0.0f);
-	    shape.setDrag(moveVars.dragMult);
+	    shape.setDrag(ship.ship_drag * moveVars.dragFactor);
     }
 
 	const f32 vellen = shape.vellen;
 	const bool onground = thisBlob.isOnGround() || thisBlob.isOnLadder();
 
-    f32 speed = 0.05*moveVars.flySpeed;
-    f32 acellBoost = moveVars.flyFactor;
-    f32 dashSpeed = 8;
-    s32 dashRate = 30/4;
-
+    if (keysPressedAmount == 0)
+    { return; }
     
-    //Vec2f deltaV = Vec2f_zero;
-    deltaV *= 1.0f / float(keysPressedAmount); //divide thrust between multiple sides
-
     Vec2f[] deltaV =
 	{
 		forward = Vec2f_zero,
@@ -93,41 +89,46 @@ void onTick(CMovement@ this)
 
     if(allKeys.up)
     {
-        deltaV.forward += Vec2f(0,-speed*0.8);
+        Vec2f thrustVel = Vec2f(ship.main_engine_force, 0);
+        thrustVel.RotateByDegrees(dir);
+        deltaV.forward += thrustVel;
     }
     if(allKeys.down)
     {
-        deltaV.backward += Vec2f(0,speed*0.8);
+        Vec2f thrustVel = Vec2f(ship.secondary_engine_force, 0);
+        thrustVel.RotateByDegrees(dir);
+        deltaV.backward += thrustVel;
     }
     if(allKeys.left)
     {
-        deltaV.board += Vec2f(speed,0);
+        Vec2f thrustVel = Vec2f(ship.rcs_force, 0);
+        thrustVel.RotateByDegrees(dir);
+        deltaV.board += thrustVel;
     }
     if(allKeys.right)
     {
-        deltaV.starboard += Vec2f(-speed,0);
+        Vec2f thrustVel = Vec2f(ship.rcs_force, 0);
+        thrustVel.RotateByDegrees(dir);
+        deltaV.starboard += thrustVel;
     }
 
-    for (uint i = 0; i < allKeys.length; i ++)
+    Vec2f addedVel = Vec2f_zero;
+    for (uint i = 0; i < deltaV.length; i ++)
     {
-        bool currentKey = allKeys[i];
-        if (currentKey)
-        { keysPressedAmount++; }
+        Vec2f@ currentVec = deltaV[i];
+        addedVel += currentVec / float(keysPressedAmount); //divide thrust between multiple sides
     }
 
-    if(thisBlob.getPosition().y/8 >=  getMap().tilemapheight - 2)
+    if (thisBlob.getPosition().y/8 >=  getMap().tilemapheight - 2)
     {
         vel = Vec2f(vel.x,-1);
     }
-
-    if(thisBlob.getPosition().y <= 2)
+    else if (thisBlob.getPosition().y <= 2)
     {
         vel = Vec2f(vel.x,1);
     }
 
-    
-
-    thisBlob.setVelocity(vel + (deltaV*acellBoost));
+    thisBlob.setVelocity(vel + (addedVel * moveVars.engineFactor));
 
 	CleanUp(this, thisBlob, moveVars);
 }
