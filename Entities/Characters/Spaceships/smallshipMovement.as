@@ -30,6 +30,10 @@ void onTick(CMovement@ this)
 	SpaceshipVars@ moveVars;
 	if (!thisBlob.get("moveVars", @moveVars))
 	{ return; }
+
+    FighterInfo@ frigate;
+	if (!this.get( "fighterInfo", @frigate )) 
+	{ return; }
     /*
 	const bool left		= thisBlob.isKeyPressed(key_left);
 	const bool right	= thisBlob.isKeyPressed(key_right);
@@ -39,20 +43,20 @@ void onTick(CMovement@ this)
     
     const bool[] allKeys =
 	{
+        up = thisBlob.isKeyPressed(key_up),
+		down = thisBlob.isKeyPressed(key_down),
 		left = thisBlob.isKeyPressed(key_left),
-		right = thisBlob.isKeyPressed(key_right),
-		up = thisBlob.isKeyPressed(key_up),
-		down = thisBlob.isKeyPressed(key_down)
+		right = thisBlob.isKeyPressed(key_right)
 	};
 
     u8 keysPressedAmount = 0;
     for (uint i = 0; i < allKeys.length; i ++)
     {
-        if (allKeys[i])
+        bool currentKey = allKeys[i];
+        if (currentKey)
         { keysPressedAmount++; }
     }
     
-
 	const bool isknocked = isKnocked(thisBlob) || (thisBlob.get_bool("frozen") == true);
 
 	const bool is_client = isClient();
@@ -70,54 +74,45 @@ void onTick(CMovement@ this)
 	const f32 vellen = shape.vellen;
 	const bool onground = thisBlob.isOnGround() || thisBlob.isOnLadder();
 
-	if (is_client && getGameTime() % 3 == 0)
-	{
-		const string acceltag = "engine_is_accelerating";
-		if (thisBlob.isKeyPressed(key_left) || thisBlob.isKeyPressed(key_right))
-		{
-			if (vel.x < 0.4f && vel.x > -0.4f)
-			{
-				if (!thisBlob.hasTag(acceltag))
-				{
-					thisBlob.Tag(acceltag);
-					Sound::Play("engine_accel.ogg", pos, 3.0f);
-					thisBlob.set_u32("accelSoundDelay", getGameTime() + 200);
-				}
-			}
-		}
-		else if(getGameTime() > thisBlob.get_u32("accelSoundDelay"))
-		{
-			thisBlob.Untag(acceltag);
-		}
-	}
-
-	
-
-
     f32 speed = 0.05*moveVars.flySpeed;
     f32 acellBoost = moveVars.flyFactor;
     f32 dashSpeed = 8;
     s32 dashRate = 30/4;
 
+    
+    //Vec2f deltaV = Vec2f_zero;
+    deltaV *= 1.0f / float(keysPressedAmount); //divide thrust between multiple sides
 
-    Vec2f deltaV = Vec2f_zero;
+    Vec2f[] deltaV =
+	{
+		forward = Vec2f_zero,
+		backward = Vec2f_zero,
+        board = Vec2f_zero,
+		starboard = Vec2f_zero
+	};
 
-    if(thisBlob.isKeyPressed(key_right))
+    if(allKeys.up)
     {
-        deltaV += Vec2f(speed,0);
+        deltaV.forward += Vec2f(0,-speed*0.8);
     }
-    if(thisBlob.isKeyPressed(key_left))
+    if(allKeys.down)
     {
-        deltaV += Vec2f(-speed,0);
+        deltaV.backward += Vec2f(0,speed*0.8);
+    }
+    if(allKeys.left)
+    {
+        deltaV.board += Vec2f(speed,0);
+    }
+    if(allKeys.right)
+    {
+        deltaV.starboard += Vec2f(-speed,0);
     }
 
-    if(thisBlob.isKeyPressed(key_up))
+    for (uint i = 0; i < allKeys.length; i ++)
     {
-        deltaV += Vec2f(0,-speed*0.8);
-    }
-    if(thisBlob.isKeyPressed(key_down))
-    {
-        deltaV += Vec2f(0,speed*0.8);
+        bool currentKey = allKeys[i];
+        if (currentKey)
+        { keysPressedAmount++; }
     }
 
     if(thisBlob.getPosition().y/8 >=  getMap().tilemapheight - 2)
@@ -129,6 +124,8 @@ void onTick(CMovement@ this)
     {
         vel = Vec2f(vel.x,1);
     }
+
+    
 
     thisBlob.setVelocity(vel + (deltaV*acellBoost));
 

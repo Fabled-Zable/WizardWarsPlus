@@ -19,70 +19,6 @@ namespace FighterParams
 	const ::s32 MAX_MANA = 300;
 	const ::s32 MANA_REGEN = 5;
 	
-	const ::string[] zombieTypes = {"zombie", "skeleton", "greg", "wraith"};
-
-	const ::Spell[] spells = 
-	{
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-			
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-			
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-			 
-		Spell("disruption_wave", "Disruption Wave", 51, "Unleash a destructive burst of warping energy, tearing apart anything in its path.",
-				SpellType::other, 30, 30, 2, 360.0f, true),
-			 
-		Spell("counter_spell", "Counter Spell", 16, "Destroy all spells around you. Also able to severely damage summoned creatures.",
-			SpellType::other, 10, 10, 0, 8.0f, true),
-			 
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-			 
-		Spell("voltage_field", "Voltage Field", 54, "Releases a bubble of electricity that knocks away projectiles and enemies that collide with it. Cannot cast spells while active.",
-				SpellType::other, 15, 60, 6, 1.0f),
-			
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-			
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-			
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-				
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-							
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-				
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-				
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-							
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-				
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),
-							
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),	
-
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),	
-							
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f),		
-
-		Spell("", "", 0, "Empty spell.",
-				SpellType::other, 1, 1, 0, 0.0f)				
-	};
 }
 
 class FighterInfo
@@ -96,7 +32,9 @@ class FighterInfo
 	f32 main_engine_force;
 	f32 secondary_engine_force;
 	f32 rcs_force;
-	u32 ship_turn_speed; // degrees per tick, 0 = instant (30 ticks a second)
+	f32 ship_turn_speed; // degrees per tick, 0 = instant (30 ticks a second)
+	f32 ship_drag; // air drag
+	//gun general
 	u32 firing_rate; // ticks per shot, won't fire if 0
 	u32 firing_burst; // bullets per shot, won't fire if 0
 	u32 firing_delay; // ticks before first shot
@@ -104,7 +42,7 @@ class FighterInfo
 	f32 shot_speed; // pixels per tick, 0 = instant
 	f32 max_speed; // 0 = infinite speed
 
-	FrigateInfo()
+	FighterInfo()
 	{
 		charge_time = 0;
 		charge_state = 0;
@@ -115,7 +53,9 @@ class FighterInfo
 		main_engine_force = 3.0f;
 		secondary_engine_force = 2.0f;
 		rcs_force = 1.0f;
-		ship_turn_speed = 1;
+		ship_turn_speed = 1.0f;
+		ship_drag = 0.1f;
+		//gun general
 		firing_rate = 1;
 		firing_burst = 1;
 		firing_delay = 1;
