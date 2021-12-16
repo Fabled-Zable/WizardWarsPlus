@@ -1,11 +1,11 @@
 // Runner Movement
 
-#include "RunnerCommon.as"
+#include "SpaceshipVars.as"
 
 void onInit(CMovement@ this)
 {
 	SpaceshipVars moveVars;
-	
+
 	moveVars.engineFactor = 1.0f; //multiplier for engine output force
 	moveVars.maxSpeedFactor = 1.0f; //multiplier for max speed
 	moveVars.turnSpeedFactor = 1.0f; //multiplier for turn speed

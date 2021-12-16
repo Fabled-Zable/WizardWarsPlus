@@ -34,19 +34,18 @@ void onTick(CMovement@ this)
 	SmallshipInfo@ ship;
 	if (!thisBlob.get( "smallshipInfo", @ship )) 
 	{ return; }
-	/*
+	
 	const bool left		= thisBlob.isKeyPressed(key_left);
 	const bool right	= thisBlob.isKeyPressed(key_right);
 	const bool up		= thisBlob.isKeyPressed(key_up);
 	const bool down		= thisBlob.isKeyPressed(key_down);
-	*/
 	
-	const bool[] allKeys =
+	bool[] allKeys =
 	{
-		up = thisBlob.isKeyPressed(key_up),
-		down = thisBlob.isKeyPressed(key_down),
-		left = thisBlob.isKeyPressed(key_left),
-		right = thisBlob.isKeyPressed(key_right)
+		up,
+		down,
+		left,
+		right
 	};
 
 	u8 keysPressedAmount = 0;
@@ -61,26 +60,35 @@ void onTick(CMovement@ this)
 	const bool is_client = isClient();
 
 	Vec2f vel = thisBlob.getVelocity();
+	Vec2f oldVel = vel;
 	Vec2f pos = thisBlob.getPosition();
 	f32 blobAngle = thisBlob.getAngleDegrees();
+	blobAngle = (blobAngle+360.0f) % 360;
 
 	Vec2f aimPos = thisBlob.getAimPos();
-	f32 aimAngle = aimPos.getAngleDegrees();
-	f32 turnSpeed = ship.ship_turn_speed * moveVars.turnSpeedFactor;
+	Vec2f aimVec = aimPos - pos;
+	f32 aimAngle = aimVec.getAngleDegrees();
+	aimAngle *= -1.0f;
 
-	f32 angleDiff = blobAngle - aimAngle;
-	angleDiff = (angleDiff + 180) % 360 - 180;
+	if (blobAngle != aimAngle)
+	{
+		f32 turnSpeed = ship.ship_turn_speed * moveVars.turnSpeedFactor;
 
-	if (angleDiff < turnSpeed && angleDiff > -turnSpeed) //if turn difference is smaller than turn speed, snap to it
-	{
-		thisBlob.setAngleDegrees(aimAngle);
+		f32 angleDiff = blobAngle - aimAngle;
+		angleDiff = (angleDiff + 180) % 360 - 180;
+
+		if (turnSpeed <= 0 || (angleDiff < turnSpeed && angleDiff > -turnSpeed)) //if turn difference is smaller than turn speed, snap to it
+		{
+			thisBlob.setAngleDegrees(aimAngle);
+		}
+		else
+		{
+			f32 turnAngle = angleDiff > 0 ? -turnSpeed : turnSpeed; //either left or right turn
+			thisBlob.setAngleDegrees(blobAngle + turnAngle);
+			thisBlob.setAngleDegrees(blobAngle + turnAngle);
+		}
+		blobAngle = thisBlob.getAngleDegrees();
 	}
-	else
-	{
-		turnAngle = aimAngle > angleDiff ? turnSpeed : -turnSpeed; //either left or right turn
-		thisBlob.setAngleDegrees(blobAngle + turnAngle);
-	}
-	blobAngle.thisBlob.getAngleDegrees();
 	
 	
 	CShape@ shape = thisBlob.getShape();
@@ -95,47 +103,44 @@ void onTick(CMovement@ this)
 
 	if (keysPressedAmount != 0)
 	{
-		Vec2f[] deltaV =
-		{
-			forward = Vec2f_zero,
-			backward = Vec2f_zero,
-			board = Vec2f_zero,
-			starboard = Vec2f_zero
-		};
+		Vec2f forward		= Vec2f_zero;
+		Vec2f backward		= Vec2f_zero;
+		Vec2f board			= Vec2f_zero;
+		Vec2f starboard		= Vec2f_zero;
 
-		if(allKeys.up)
+		if(up)
 		{
 			Vec2f thrustVel = Vec2f(ship.main_engine_force, 0);
 			thrustVel.RotateByDegrees(blobAngle);
-			deltaV.forward += thrustVel;
+			forward += thrustVel;
 		}
-		if(allKeys.down)
+		if(down)
 		{
 			Vec2f thrustVel = Vec2f(ship.secondary_engine_force, 0);
-			thrustVel.RotateByDegrees(blobAngle);
-			deltaV.backward += thrustVel;
+			thrustVel.RotateByDegrees(blobAngle + 180.0f);
+			backward += thrustVel;
 		}
-		if(allKeys.left)
+		if(left)
 		{
 			Vec2f thrustVel = Vec2f(ship.rcs_force, 0);
-			thrustVel.RotateByDegrees(blobAngle);
-			deltaV.board += thrustVel;
+			thrustVel.RotateByDegrees(blobAngle + 270.0f);
+			board += thrustVel;
 		}
-		if(allKeys.right)
+		if(right)
 		{
 			Vec2f thrustVel = Vec2f(ship.rcs_force, 0);
-			thrustVel.RotateByDegrees(blobAngle);
-			deltaV.starboard += thrustVel;
+			thrustVel.RotateByDegrees(blobAngle + 90.0f);
+			starboard += thrustVel;
 		}
 
 		Vec2f addedVel = Vec2f_zero;
-		for (uint i = 0; i < deltaV.length; i ++)
-		{
-			Vec2f@ currentVec = deltaV[i];
-			addedVel += currentVec / float(keysPressedAmount); //divide thrust between multiple sides
-		}
+		addedVel += forward / float(keysPressedAmount); //divide thrust between multiple sides
+		addedVel += backward / float(keysPressedAmount);
+		addedVel += board / float(keysPressedAmount);
+		addedVel += starboard / float(keysPressedAmount);
+		
 
-		if (thisBlob.getPosition().y/8 >=  getMap().tilemapheight - 2)
+		if (thisBlob.getPosition().y/8 >=  getMap().tilemapheight - 2) //if too high or too low, bounce back
 		{
 			vel = Vec2f(vel.x,-1);
 		}
@@ -144,7 +149,19 @@ void onTick(CMovement@ this)
 			vel = Vec2f(vel.x,1);
 		}
 
-		thisBlob.setVelocity(vel + (addedVel * moveVars.engineFactor));
+		vel += addedVel * moveVars.engineFactor; //final speed modified by engine variable
+	}
+
+	f32 maxSpeed = ship.max_speed * moveVars.maxSpeedFactor;
+	if (vel.getLength() > maxSpeed) //max speed logic
+	{
+		vel.Normalize();
+		vel *= maxSpeed;
+	}
+
+	if (oldVel != vel) //if vel changed, set new velocity
+	{
+		thisBlob.setVelocity(vel);
 	}
 	
 	CleanUp(this, thisBlob, moveVars);

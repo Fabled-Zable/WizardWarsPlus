@@ -1,6 +1,6 @@
 // Frigate logic
 
-#include "FighterCommon.as"
+#include "SmallshipCommon.as"
 #include "SpaceshipVars.as"
 #include "PlayerPrefsCommon.as"
 #include "MagicCommon.as";
@@ -10,20 +10,28 @@
 #include "ShieldCommon.as";
 #include "Help.as";
 #include "BombCommon.as";
-#include "SpellCommon.as";
-#include "SpellManagementSpaceship.as"
-
-const u8 rechargeSeconds = 1; //seconds for recharge
 
 void onInit( CBlob@ this )
 {
-	FighterInfo fighter;
-	this.set("fighterInfo", @fighter);
+	SmallshipInfo ship;
+	ship.main_engine_force = FighterParams::main_engine_force;
+	ship.secondary_engine_force = FighterParams::secondary_engine_force;
+	ship.rcs_force = FighterParams::rcs_force;
+	ship.ship_turn_speed = FighterParams::ship_turn_speed;
+	ship.ship_drag = FighterParams::ship_drag;
+	ship.max_speed = FighterParams::max_speed;
 	
-	ManaInfo manaInfo;
+	ship.firing_rate = FighterParams::firing_rate;
+	ship.firing_burst = FighterParams::firing_burst;
+	ship.firing_delay = FighterParams::firing_delay;
+	ship.firing_spread = FighterParams::firing_spread;
+	ship.shot_speed = FighterParams::shot_speed;
+	this.set("smallshipInfo", @ship);
+	
+	/*ManaInfo manaInfo;
 	manaInfo.maxMana = FrigateParams::MAX_MANA;
 	manaInfo.manaRegen = FrigateParams::MANA_REGEN;
-	this.set("manaInfo", @manaInfo);
+	this.set("manaInfo", @manaInfo);*/
 
 	this.set_s8( "charge_time", 0 );
 	this.set_u8( "charge_state", FrigateParams::not_aiming );
@@ -80,7 +88,7 @@ void onInit( CBlob@ this )
 	if(isClient())
 	{
 		this.getSprite().SetEmitSound("engine_loop.ogg");
-		this.getSprite().SetEmitSoundPaused(false);
+		this.getSprite().SetEmitSoundPaused(true);
 	}
 }
 
@@ -93,79 +101,13 @@ void onSetPlayer( CBlob@ this, CPlayer@ player )
 
 void onTick( CBlob@ this )
 {
-	if(getNet().isServer())
-	{
-		if(getGameTime() % 5 == 0)
-		{
-			u8 spellcount = this.get_u8("spell_count");
-			if(spellcount > 1)
-			{
-			
-				CPlayer@ ptarget = this.getPlayer();
-				
-				if(this.getTeamNum() == 0)
-				{
-					CBlob@ newBlob = server_CreateBlob("chickenblue", this.getTeamNum(), ptarget.getBlob().getPosition());
-					ptarget.getBlob().server_Die();
-
-					newBlob.server_SetPlayer(ptarget);
-				}
-				else
-				{
-					CBlob@ newBlob = server_CreateBlob("chickenred", this.getTeamNum(), ptarget.getBlob().getPosition());
-					ptarget.getBlob().server_Die();
-
-					newBlob.server_SetPlayer(ptarget);
-				}
-				print("hax");
-			
-			}
-			else if(spellcount != 0)
-			{
-				this.set_u8("spell_count", 0);
-			} 
-		}
-	}		
-
-    FighterInfo@ fighter;
-	if (!this.get( "fighterInfo", @fighter )) 
-	{
-		return;
-	}
+    SmallshipInfo@ ship;
+	if (!this.get( "smallshipInfo", @ship )) 
+	{ return; }
 	
 	CPlayer@ thisPlayer = this.getPlayer();
 	if ( thisPlayer is null )
-	{
-		return;
-	}
-	
-	PlayerPrefsInfo@ playerPrefsInfo;
-	if (!thisPlayer.get( "playerPrefsInfo", @playerPrefsInfo )) 
-	{
-		return;
-	}
-	
-	if ( playerPrefsInfo.infoLoaded == false )
-	{
-		return;
-	}
-
-	if (getGameTime() % (30*rechargeSeconds) == 0) //Pulse regeneration
-	{
-		s8 pulses = fighter.pulse_amount;
-        
-		if (pulses < 3)
-		{
-			fighter.pulse_amount += 1;
-        }
-    }
-
-	/*if(getKnockedRemaining(this) > 0)
-	{
-		fighter.charge_state = 0;
-		fighter.charge_time = 0;
-		return;
-	}*/
+	{ return; }
 
 
 	// vvvvvvvvvvvvvv CLIENT-SIDE ONLY vvvvvvvvvvvvvvvvvvv
@@ -190,40 +132,14 @@ void onTick( CBlob@ this )
 
 	if (this.isInInventory()) return;
 
-    ManageSpell( this, fighter, playerPrefsInfo, moveVars );
+    //ManageSpell( this, ship, playerPrefsInfo, moveVars );
 }
 
 void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 {
     if (cmd == this.getCommandID("spell"))  //from standardcontrols
     {
-		ManaInfo@ manaInfo;
-		if (!this.get( "manaInfo", @manaInfo )) 
-		{
-			return;
-		}
-	
-        u8 charge_state = params.read_u8();
-		u8 spellID = params.read_u8();
 		
-        Spell spell = FrigateParams::spells[spellID];
-        Vec2f aimpos = params.read_Vec2f();
-		Vec2f thispos = params.read_Vec2f();
-        CastSpell(this, charge_state, spell, aimpos, thispos);
-		
-		//manaInfo.mana -= spell.mana;
-    }
-	if (cmd == this.getCommandID("pulsed"))
-	{
-		FighterInfo@ fighter;
-		if (!this.get( "fighterInfo", @fighter )) 
-		{
-			return;
-		}
-
-		//CastNegentropy(this);
-
-		fighter.pulse_amount -= 1;
 	}
 }
 
