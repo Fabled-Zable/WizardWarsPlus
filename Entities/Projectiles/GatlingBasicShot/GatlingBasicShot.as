@@ -2,17 +2,18 @@
 
 #include "Hitters.as";
 #include "ShieldCommon.as";
-#include "Explosion.as";
 #include "CommonFX.as";
 
 Random _gatling_basicshot_r(67521);
 
 const string oldPosString = "old_pos";
-const string newPosString = "new_pos";
+const string firstTickString = "first_tick";
+
+const f32 damage = 0.4f;
 
 void onInit(CBlob@ this)
 {
-	this.server_SetTimeToDie(5);
+	this.server_SetTimeToDie(1);
 
 	CShape@ shape = this.getShape();
 	if (shape != null)
@@ -26,10 +27,9 @@ void onInit(CBlob@ this)
 	this.Tag("projectile");
 
 	this.set_Vec2f(oldPosString, Vec2f_zero);
-	this.set_Vec2f(newPosString, Vec2f_zero);
+	this.set_bool(firstTickString, true);
 
 	this.getSprite().SetFrame(0);
-
 	this.SetMapEdgeFlags(CBlob::map_collide_up | CBlob::map_collide_down | CBlob::map_collide_sides);
 }
 
@@ -39,19 +39,28 @@ void onTick(CBlob@ this)
 	if (map is null)
 	{ return; }
 
-	Vec2f thisOldPos = this.get_Vec2f(oldPosString);
 	Vec2f thisPos = this.getPosition();
 	Vec2f thisVel = this.getVelocity();
-
+	
 	f32 travelDist = thisVel.getLength();
 	Vec2f futurePos = thisPos + thisVel;
 
-	doTrailParticles(thisOldPos, thisPos);
-	this.set_Vec2f(oldPosString, thisPos);
+	if (isClient()) //muzzle flash
+	{
+		if (this.get_bool(firstTickString))
+		{
+			doMuzzleFlash(thisPos, thisVel);
+			this.set_bool(firstTickString, false);
+		}
+
+		Vec2f thisOldPos = this.get_Vec2f(oldPosString);
+		doTrailParticles(thisOldPos, thisPos);
+		this.set_Vec2f(oldPosString, thisPos);
+	}
+	
 	
 	CBlob@[] blobsAtPos;
-	map.getBlobsAtPosition(thisPos, @blobsAtPos);
-
+	map.getBlobsAtPosition(thisPos, @blobsAtPos); //check to see if inside an enemy blob
 	for (uint i = 0; i < blobsAtPos.length; i++)
 	{
 		CBlob@ b = blobsAtPos[i];
@@ -61,7 +70,7 @@ void onTick(CBlob@ this)
 		if (!doesCollideWithBlob(this, b))
 		{ continue; }
 
-		this.server_Hit(b, thisPos, thisVel, 0.2f, Hitters::arrow, false);
+		this.server_Hit(b, thisPos, thisVel, damage, Hitters::arrow, false);
 		this.server_Die();
 		return;
 	}
@@ -77,7 +86,7 @@ void onTick(CBlob@ this)
 
 	HitInfo@[] hitInfos;
 	bool hasHit = map.getHitInfosFromRay(thisPos, -thisVel.getAngleDegrees(), travelDist, this, @hitInfos);
-	if (hasHit)
+	if (hasHit) //hitray scan
 	{
 		for (uint i = 0; i < hitInfos.length; i++)
 		{
@@ -91,7 +100,7 @@ void onTick(CBlob@ this)
 
 			thisPos = hi.hitpos;
 			this.setPosition(thisPos);
-			this.server_Hit(b, thisPos, thisVel, 0.2f, Hitters::arrow, false);
+			this.server_Hit(b, thisPos, thisVel, damage, Hitters::arrow, false);
 			this.server_Die();
 			return;
 		}
@@ -100,8 +109,21 @@ void onTick(CBlob@ this)
 	if (hitWall) //if there was no hit, but there is a wall, move bullet there and die
 	{
 		this.setPosition(futurePos);
+		if (isClient())
+		{
+			Sound::Play("dig_dirt2.ogg", futurePos, 1.5f + (0.2f * _gatling_basicshot_r.NextFloat()), 1.0f + (0.2f * _gatling_basicshot_r.NextFloat()));
+		}
 		this.server_Die();
 	}
+}
+
+void onDie( CBlob@ this )
+{
+	Vec2f thisOldPos = this.get_Vec2f(oldPosString);
+	Vec2f thisPos = this.getPosition();
+
+	doTrailParticles(thisOldPos, thisPos); //do one last trail particle on death
+	this.set_Vec2f(oldPosString, thisPos);
 }
 
 void doTrailParticles(Vec2f oldPos = Vec2f_zero, Vec2f newPos = Vec2f_zero)
@@ -138,6 +160,49 @@ void doTrailParticles(Vec2f oldPos = Vec2f_zero, Vec2f newPos = Vec2f_zero)
 	}
 }
 
+void doMuzzleFlash(Vec2f thisPos = Vec2f_zero, Vec2f flashVec = Vec2f_zero)
+{
+	if (!isClient())
+	{ return; }
+
+	if (thisPos == Vec2f_zero || flashVec == Vec2f_zero)
+	{ return; }
+	
+	Vec2f flashNorm = flashVec;
+	flashNorm.Normalize();
+
+	const int particleNum = 20; //particle amount
+
+	SColor color = SColor(255,255,255,255);
+
+	for(int i = 0; i < particleNum; i++)
+   	{
+		u8 alpha = 40 + (170.0f * _gatling_basicshot_r.NextFloat()); //randomize alpha
+		color.setAlpha(alpha);
+
+		Vec2f pPos = thisPos;
+		Vec2f pVel = flashNorm;
+		pVel *= 0.2f + _gatling_basicshot_r.NextFloat();
+
+		f32 randomDegrees = 20.0f;
+		randomDegrees *= 1.0f - (2.0f * _gatling_basicshot_r.NextFloat());
+		pVel.RotateByDegrees(randomDegrees);
+		pVel *= 2.5; //final speed multiplier
+
+    	CParticle@ p = ParticlePixelUnlimited(pPos, pVel, color, true);
+    	if(p !is null)
+    	{
+			p.collides = false;
+			p.gravity = Vec2f_zero;
+			p.bounce = 0;
+			p.Z = 8;
+			p.timeout = 2.0f + (6.0f * _gatling_basicshot_r.NextFloat());
+		}
+	}
+	
+	Sound::Play("BasicShotSound.ogg", thisPos, 0.3f , 1.3f + (0.1f * _gatling_basicshot_r.NextFloat()));
+}
+
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 {
 	int thisTeamNum = this.getTeamNum();
@@ -145,50 +210,30 @@ bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 
 	return
 	(
-		thisTeamNum != blobTeamNum ||
-		blob.hasTag("dead")
+		(
+			thisTeamNum != blobTeamNum ||
+			blob.hasTag("dead")
+		)
+		&&
+		(
+			blob.hasTag("flesh") ||
+			blob.hasTag("hull")
+		)
 	);
 }
 
-int closestBlobIndex(CBlob@ this, CBlob@[] blobs, bool friendly)
+void onHitBlob( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ targetBlob, u8 customData )
 {
-    f32 bestDistance = 99999999;
-    int bestIndex = -1;
+	if (!isClient())
+	{ return; }
 
-	if(friendly)
+	if (targetBlob.hasTag("hull"))
 	{
-		for(int i = 0; i < blobs.length; i++)
-		{
-			CBlob@ currentBlob = blobs[i];
-    	    if(currentBlob is null || currentBlob is this || currentBlob.getTeamNum() != this.getTeamNum())
-			{continue;}
-
-    		//f32 dist = this.getDistanceTo(currentBlob);
-			f32 dist = Vec2f( currentBlob.getPosition() - this.getAimPos() ).getLength();
-    		if(bestDistance > dist)
-    		{
-    	    	bestDistance = dist;
-    	        bestIndex = i;
-    	    }
-    	}
+		Sound::Play("dry_hit.ogg", worldPoint, 1.0f + (0.2f * _gatling_basicshot_r.NextFloat()), 1.0f + (0.2f * _gatling_basicshot_r.NextFloat()));
 	}
-	else
+	else if (targetBlob.hasTag("flesh"))
 	{
-		for(int i = 0; i < blobs.length; i++)
-		{
-			CBlob@ currentBlob = blobs[i];
-    	    if(currentBlob is null || currentBlob is this || currentBlob.getTeamNum() == this.getTeamNum())
-			{continue;}
-
-    		//f32 dist = this.getDistanceTo(currentBlob);
-			f32 dist = Vec2f( currentBlob.getPosition() - this.getAimPos() ).getLength();
-    		if(bestDistance > dist)
-    		{
-    	    	bestDistance = dist;
-    	        bestIndex = i;
-    	    }
-    	}
+		Sound::Play("ArrowHitFlesh.ogg", worldPoint, 2.0f + (0.1f * _gatling_basicshot_r.NextFloat()), 1.2f );
 	}
-    
-    return bestIndex;
+
 }

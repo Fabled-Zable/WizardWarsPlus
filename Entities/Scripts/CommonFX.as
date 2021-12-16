@@ -23,6 +23,36 @@ void makeManaDrainParticles( Vec2f pPos, int amount )
     }
 }
 
+void makeHullHitSparks( Vec2f pPos, int amount )
+{
+	if ( !isClient() )
+	return;
+	
+	for (int i = 0; i < amount; i++)
+    {
+        Vec2f pVel(_sprk_r2.NextFloat() * 7.0f, 0);
+        pVel.RotateBy(_sprk_r2.NextFloat() * 360.0f);
+
+		u8 alpha = 255;
+		u8 red = 200.0f + (50.0f * _sprk_r2.NextFloat());
+		u8 green = 200.0f + (50.0f * _sprk_r2.NextFloat());
+		u8 blue = 80.0f * _sprk_r2.NextFloat();
+
+		SColor color = SColor(alpha, red, green, blue);
+		
+		CParticle@ p = ParticlePixelUnlimited(pPos, pVel, color, true);
+        if(p !is null)
+        {
+            p.collides = false;
+            p.gravity = Vec2f_zero;
+            p.bounce = 0;
+            p.Z = 200;
+            p.timeout = 3.0f + (3.0f * _sprk_r2.NextFloat());
+			p.damping = 0.8f;
+        }
+    }
+}
+
 SColor getTeamColorWW( int teamNum = -1, SColor color = SColor(255, 255, 0, 0) )
 {
     switch (teamNum)

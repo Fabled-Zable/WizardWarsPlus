@@ -94,8 +94,17 @@ void onTick(CMovement@ this)
 	CShape@ shape = thisBlob.getShape();
 	if (shape != null)
 	{
-		shape.SetGravityScale(0.0f);
-		shape.setDrag(ship.ship_drag * moveVars.dragFactor);
+		f32 gravScale = 0.0f;
+		if (shape.getGravityScale() != gravScale)
+		{
+			shape.SetGravityScale(0.0f);
+		}
+		
+		f32 dragScale = ship.ship_drag * moveVars.dragFactor;
+		if (shape.getDrag() != dragScale)
+		{
+			shape.setDrag(dragScale);
+		}
 	}
 
 	const f32 vellen = shape.vellen;

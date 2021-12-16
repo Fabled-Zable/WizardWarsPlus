@@ -27,11 +27,11 @@ namespace FighterParams
 	const ::f32 ship_drag = 0.1f; // air drag
 	const ::f32 max_speed = 200.f; // 0 = infinite speed
 	//gun general
-	const ::u32 firing_rate = 2; // ticks per shot, won't fire if 0
+	const ::u32 firing_rate = 4; // ticks per shot, won't fire if 0
 	const ::u32 firing_burst = 1; // bullets per shot, won't fire if 0
 	const ::u32 firing_delay = 0; // ticks before first shot
 	const ::u32 firing_spread = 1; // degrees
-	const ::f32 shot_speed = 20.0f; // pixels per tick, 0 = instant
+	const ::f32 shot_speed = 20.0f; // pixels per tick, won't fire if 0
 }
 
 class SmallshipInfo

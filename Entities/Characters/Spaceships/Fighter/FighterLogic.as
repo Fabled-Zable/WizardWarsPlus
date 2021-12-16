@@ -10,6 +10,7 @@
 #include "ShieldCommon.as";
 #include "Help.as";
 #include "BombCommon.as";
+#include "CommonFX.as"
 
 const string shot_command_ID = "shot";
 const string hit_command_ID = "hit";
@@ -53,7 +54,7 @@ void onInit( CBlob@ this )
 	this.set_bool("shifted", false);
 	
 	this.Tag("player");
-	this.Tag("flesh");
+	this.Tag("hull");
 	this.Tag("ignore crouch");
 	
 	this.push("names to activate", "keg");
@@ -97,11 +98,11 @@ void onInit( CBlob@ this )
 	if(getNet().isServer())
 		this.set_u8("spell_count", 0);
 
-	if(isClient())
+	/*if(isClient())
 	{
 		this.getSprite().SetEmitSound("engine_loop.ogg");
 		this.getSprite().SetEmitSoundPaused(true);
-	}
+	}*/
 }
 
 void onSetPlayer( CBlob@ this, CPlayer@ player )
@@ -190,7 +191,7 @@ void onTick( CBlob@ this )
 	this.set_u32( "m2_shotTime", m2ShotTicks );
 
 	//sound logic
-	Vec2f vel = this.getVelocity();
+	/*Vec2f vel = this.getVelocity();
 	float posVelX = Maths::Abs(vel.x);
 	float posVelY = Maths::Abs(vel.y);
 	if(posVelX > 2.9f)
@@ -200,7 +201,7 @@ void onTick( CBlob@ this )
 	else
 	{
 		this.getSprite().SetEmitSoundVolume(1.0f * (posVelX > posVelY ? posVelX : posVelY));
-	}
+	}*/
 
 	
 
@@ -273,39 +274,53 @@ f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hit
 {
     if (( hitterBlob.getName() == "wraith" || hitterBlob.getName() == "orb" ) && hitterBlob.getTeamNum() == this.getTeamNum())
         return 0;
+
+	if (isClient())
+	{
+		makeHullHitSparks( worldPoint, 15 );
+	}
+
     return damage;
 }
 
 void onHitBlob( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData )
 {
-	if (customData == Hitters::stab)
-	{
-		if (damage > 0.0f)
-		{
+	//empty
+}
 
-			// fletch arrow
-			if ( hitBlob.hasTag("tree") )	// make arrow from tree
-			{
-				if (getNet().isServer())
-				{
-					CBlob@ mat_arrows = server_CreateBlob( "mat_arrows", this.getTeamNum(), this.getPosition() );
-					if (mat_arrows !is null)
-					{
-						mat_arrows.server_SetQuantity(10);//fletch_num_arrows);
-						mat_arrows.Tag("do not set materials");
-						this.server_PutInInventory( mat_arrows );
-					}
-				}
-				this.getSprite().PlaySound( "Entities/Items/Projectiles/Sounds/ArrowHitGround.ogg" );
-			}
-			else
-				this.getSprite().PlaySound("KnifeStab.ogg");
-		}
+void onDie( CBlob@ this )
+{
+	Vec2f thisPos = this.getPosition();
+	blast( thisPos , 12);
+}
 
-		if (blockAttack(hitBlob, velocity, 0.0f))
-		{
-			this.getSprite().PlaySound("/Stun", 1.0f, this.getSexNum() == 0 ? 1.0f : 2.0f);
-			setKnocked( this, 30 );
-		}
-	}
+Random _fighter_logic_r(67532);
+void blast( Vec2f pos , int amount)
+{
+	if(!isClient())
+	{return;}
+
+	Sound::Play("GenericExplosion1.ogg", pos, 0.8f, 0.8f + XORRandom(10)/10.0f);
+
+	for (int i = 0; i < amount; i++)
+    {
+        Vec2f vel(_fighter_logic_r.NextFloat() * 3.0f, 0);
+        vel.RotateBy(_fighter_logic_r.NextFloat() * 360.0f);
+
+        CParticle@ p = ParticleAnimated("GenericBlast6.png", 
+									pos, 
+									vel, 
+									float(XORRandom(360)), 
+									1.5f, 
+									2 + XORRandom(4), 
+									0.0f, 
+									false );
+									
+        if(p is null) continue; //bail if we stop getting particles
+		
+    	p.fastcollision = true;
+        p.damping = 0.85f;
+		p.Z = 200.0f;
+		p.lighting = false;
+    }
 }
