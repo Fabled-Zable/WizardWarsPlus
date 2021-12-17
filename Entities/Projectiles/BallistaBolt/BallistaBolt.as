@@ -157,6 +157,7 @@ void Pierce(CBlob@ this, Vec2f velocity, const f32 angle)
 	            p.bounce = 0;
 	            p.Z = 7;
 	            p.timeout = 30;
+				p.setRenderStyle(RenderStyle::light);
 	    	}
 		}
 	}

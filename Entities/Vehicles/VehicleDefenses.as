@@ -149,6 +149,7 @@ void onTick(CBlob@ this)
             p.bounce = 0;
             p.Z = 7;
             p.timeout = 8;
+			p.setRenderStyle(RenderStyle::light);
         }
     }
 }

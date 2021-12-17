@@ -5,11 +5,6 @@
 
 Random _flag_defenses_r(94217); //with the seed, I extract a float ranging from 0 to 1 for random events
 
-void onInit(CBlob@ this)
-{
-
-}
-
 void onTick(CBlob@ this)
 {
 	CMap@ map = getMap(); //standard map check
@@ -140,6 +135,7 @@ void onTick(CBlob@ this)
             p.bounce = 0;
             p.Z = 7;
             p.timeout = 4;
+			p.setRenderStyle(RenderStyle::light);
         }
     }
 }

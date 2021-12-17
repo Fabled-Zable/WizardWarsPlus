@@ -134,7 +134,7 @@ void onTick(CBlob@ this)
 		if (b.getTeamNum() == teamNum)
 		{ continue; }
 
-		if (!b.hasTag("flesh") && !b.hasTag("counterable"))
+		if (!b.hasTag("hull") && !b.hasTag("flesh") && !b.hasTag("counterable"))
 		{ continue; }
 
 		bool isZombie = b.hasTag("zombie");
@@ -176,8 +176,9 @@ void onTick(CBlob@ this)
 
 		for(int i = 0; i < steps; i++)
    		{
-			u8 alpha = 40 + (170.0f * _tent_defenses_r.NextFloat()); //randomize alpha
-			color.setAlpha(alpha);
+			f32 chance = _tent_defenses_r.NextFloat(); //chance to not spawn particle
+			if (chance > 0.3f)
+			{ continue; }
 
 			f32 waveTravel = i - gameTime; //forward and backwards wave travel
 			f32 sinInput = waveTravel * 0.2f;
@@ -246,6 +247,7 @@ void onTick(CBlob@ this)
             p.bounce = 0;
             p.Z = 7;
             p.timeout = 12;
+			p.setRenderStyle(RenderStyle::light);
         }
     }
 }

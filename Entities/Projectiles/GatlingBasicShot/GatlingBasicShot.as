@@ -141,9 +141,9 @@ void doTrailParticles(Vec2f oldPos = Vec2f_zero, Vec2f newPos = Vec2f_zero)
 
 	SColor color = SColor(255,255,255,255);
 
-	for(int i = 0; i < steps; i++)
+	for(int i = 0; i <= steps; i++)
    	{
-		u8 alpha = 40 + (170.0f * _gatling_basicshot_r.NextFloat()); //randomize alpha
+		u8 alpha = (210.0f * _gatling_basicshot_r.NextFloat()); //randomize alpha
 		color.setAlpha(alpha);
 
 		Vec2f pPos = (trailNorm * i) + oldPos;
@@ -156,6 +156,7 @@ void doTrailParticles(Vec2f oldPos = Vec2f_zero, Vec2f newPos = Vec2f_zero)
 			p.bounce = 0;
 			p.Z = 8;
 			p.timeout = 2;
+			p.setRenderStyle(RenderStyle::light);
 		}
 	}
 }
