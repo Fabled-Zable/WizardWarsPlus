@@ -1,19 +1,15 @@
-// Frigate logic
+// Fighter logic
 
 #include "SmallshipCommon.as"
 #include "SpaceshipVars.as"
 #include "PlayerPrefsCommon.as"
-#include "MagicCommon.as";
+#include "MagicCommon.as"
 #include "ThrowCommon.as"
 #include "KnockedCommon.as"
 #include "Hitters.as"
-#include "ShieldCommon.as";
-#include "Help.as";
-#include "BombCommon.as";
+#include "ShieldCommon.as"
+#include "Help.as"
 #include "CommonFX.as"
-
-const string shot_command_ID = "shot";
-const string hit_command_ID = "hit";
 
 void onInit( CBlob@ this )
 {
@@ -69,9 +65,6 @@ void onInit( CBlob@ this )
 	this.getShape().SetRotationsAllowed(false);
 	//this.getShape().SetGravityScale(0);
 
-    this.addCommandID( shot_command_ID );
-	this.addCommandID( hit_command_ID );
-	this.addCommandID( "pulsed" );
 	this.getShape().getConsts().net_threshold_multiplier = 0.5f;
 
     AddIconToken( "$Skeleton$", "SpellIcons.png", Vec2f(16,16), 0 );
@@ -208,67 +201,7 @@ void onTick( CBlob@ this )
     //ManageSpell( this, ship, playerPrefsInfo, moveVars );
 }
 
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
-{
-    if (cmd == this.getCommandID(shot_command_ID)) // 1 shot instance
-    {
-		if (!isServer())
-		{ return; }
-		
-		u16 ownerID;
-		if (!params.saferead_u16(ownerID)) return;
 
-		u8 shotType;
-		if (!params.saferead_u8(shotType)) return;
-
-		Vec2f blobPos;
-		Vec2f blobVel;
-		if (!params.saferead_Vec2f(blobPos)) return;
-		if (!params.saferead_Vec2f(blobVel)) return;
-
-		CBlob@ ownerBlob = getBlobByNetworkID(ownerID);
-		if (ownerBlob == null || ownerBlob.hasTag("dead"))
-		{ return; }
-		
-		if (blobPos == Vec2f_zero || blobVel == Vec2f_zero)
-		{ return; }
-
-		string blobName = "orb";
-		switch (shotType)
-		{
-			case 0:
-			{
-				blobName = "orb";
-			}
-			break;
-
-			case 1:
-			{
-				blobName = "gatling_basicshot";
-			}
-			break;
-
-			case 2:
-			{
-				blobName = "bee";
-			}
-			break;
-			default: return;
-		}
-
-		CBlob@ blob = server_CreateBlob( blobName , ownerBlob.getTeamNum(), blobPos);
-		if (blob !is null)
-		{
-			blob.IgnoreCollisionWhileOverlapped( ownerBlob );
-			blob.SetDamageOwnerPlayer( ownerBlob.getPlayer() );
-			blob.setVelocity( blobVel );
-		}
-	}
-	else if (cmd == this.getCommandID(hit_command_ID)) // if a shot hits, this gets sent
-    {
-		
-	}
-}
 
 f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData )
 {

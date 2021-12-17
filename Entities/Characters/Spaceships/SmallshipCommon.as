@@ -1,6 +1,7 @@
-//Fighter Include
+//Smallship Include
 
-#include "MagicCommon.as";
+const string shot_command_ID = "shot";
+const string hit_command_ID = "hit";
 
 namespace FighterParams
 {
