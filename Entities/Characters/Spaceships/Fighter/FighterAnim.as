@@ -421,7 +421,7 @@ void onTick(CSprite@ this)
 
 		f32 swingMaxAngle = 30.0f * trailSwing;
 
-		u16 particleNum = 10;
+		u16 particleNum = 9; //loop will do this + 1
 
 		int teamNum = blob.getTeamNum();
 		SColor color = getTeamColorWW(teamNum);
@@ -447,7 +447,7 @@ void onTick(CSprite@ this)
 	   	        p.gravity = Vec2f_zero;
 	            p.bounce = 0;
 	            p.Z = 7;
-	            p.timeout = 30;
+	            p.timeout = 30.0f + (15.0f * _fighter_anim_r.NextFloat());
 				p.setRenderStyle(RenderStyle::light);
 	    	}
 		}
