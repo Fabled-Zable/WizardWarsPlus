@@ -6,15 +6,15 @@
 #include "KnockedCommon.as";
 #include "PixelOffsets.as"
 #include "RunnerTextures.as"
-#include "Accolades.as"
+#include "CommonFX.as"
 #include "ShieldCommon.as"
-
-const string shiny_layer = "shiny bit";
 
 const string up_fire = "forward_burn";
 const string down_fire = "backward_burn";
 const string left_fire = "board_burn";
 const string right_fire = "starboard_burn";
+
+Random _fighter_anim_r(14861);
 
 void onInit(CSprite@ this)
 {
@@ -101,7 +101,13 @@ void onTick(CSprite@ this)
 {
 	// store some vars for ease and speed
 	CBlob@ blob = this.getBlob();
-	Vec2f pos = blob.getPosition();
+	if (blob == null)
+	{ return; }
+
+	Vec2f blobPos = blob.getPosition();
+	Vec2f blobVel = blob.getVelocity();
+	f32 blobAngle = blob.getAngleDegrees();
+	blobAngle = (blobAngle+360.0f) % 360;
 	Vec2f aimpos;
 
 	/*KnightInfo@ knight;
@@ -386,14 +392,67 @@ void onTick(CSprite@ this)
 	CSpriteLayer@ leftFire	= this.getSpriteLayer(left_fire);
 	CSpriteLayer@ rightFire	= this.getSpriteLayer(right_fire);
 
+	bool mainEngine = ship.forward_thrust;
 	if (upFire !is null)
-	{ upFire.SetVisible(ship.forward_thrust); }
+	{ upFire.SetVisible(mainEngine); }
 	if (downFire !is null)
 	{ downFire.SetVisible(ship.backward_thrust); }
 	if (leftFire !is null)
 	{ leftFire.SetVisible(ship.board_thrust); }
 	if (rightFire !is null)
 	{ rightFire.SetVisible(ship.starboard_thrust); }
+
+
+
+	if (mainEngine)
+	{
+		Vec2f engineOffset = Vec2f(-8.0f, 0);
+		engineOffset.RotateByDegrees(blobAngle);
+		Vec2f trailPos = blobPos + engineOffset;
+
+		Vec2f trailNorm = Vec2f(-1.0f, 0);
+		trailNorm.RotateByDegrees(blobAngle);
+
+		u32 gameTime = getGameTime();
+
+		//f32 trailSwing = Maths::Sin(gameTime * 0.1f) + 1.0f;
+		//trailSwing *= 0.5f;
+		f32 trailSwing = Maths::Sin(gameTime * 0.1f);
+
+		f32 swingMaxAngle = 30.0f * trailSwing;
+
+		u16 particleNum = 10;
+
+		int teamNum = blob.getTeamNum();
+		SColor color = getTeamColorWW(teamNum);
+
+		for(int i = 0; i <= particleNum; i++)
+	    {
+			u8 alpha = 200.0f + (55.0f * _fighter_anim_r.NextFloat()); //randomize alpha
+			color.setAlpha(alpha);
+
+			f32 pRatio = float(i) / float(particleNum);
+			f32 pAngle = (pRatio*2.0f) - 1.0f;
+
+			Vec2f pVel = trailNorm;
+			pVel.RotateByDegrees(swingMaxAngle*pAngle);
+			pVel *= 3.0f - Maths::Abs(pAngle);
+
+			pVel += blobVel;
+
+	        CParticle@ p = ParticlePixelUnlimited(trailPos, pVel, color, true);
+	        if(p !is null)
+	        {
+	   	        p.collides = false;
+	   	        p.gravity = Vec2f_zero;
+	            p.bounce = 0;
+	            p.Z = 7;
+	            p.timeout = 30;
+				p.setRenderStyle(RenderStyle::light);
+	    	}
+		}
+	}
+
 
 	//set the head anim
 	/*
